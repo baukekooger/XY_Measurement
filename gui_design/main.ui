@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>876</width>
-    <height>649</height>
+    <width>585</width>
+    <height>512</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -120,12 +120,12 @@
         <item row="0" column="0">
          <widget class="QStackedWidget" name="stackedWidget_experiment">
           <property name="currentIndex">
-           <number>2</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="page_transmission">
            <layout class="QGridLayout" name="gridLayout_6">
             <item row="0" column="0">
-             <widget class="SpectrometerWidget" name="widget_spectrometer_transmission" native="true">
+             <widget class="SpectrometerPlotWidget" name="widget_spectrometerplot_transmission" native="true">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
                 <horstretch>0</horstretch>
@@ -139,22 +139,37 @@
               <item>
                <widget class="FileWidget" name="widget_file_transmission" native="true">
                 <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
                 </property>
                </widget>
               </item>
               <item>
                <widget class="MotorWidget" name="widget_motor_transmission" native="true">
                 <property name="sizePolicy">
-                 <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>0</width>
+                  <height>30</height>
+                 </size>
+                </property>
                </widget>
+              </item>
+              <item>
+               <widget class="SpectrometerWidget" name="widget_spectrometer_transmission" native="true"/>
               </item>
              </layout>
             </item>
@@ -165,7 +180,7 @@
             <item row="0" column="0">
              <layout class="QVBoxLayout" name="verticalLayout_excitation_Emission_left">
               <item>
-               <widget class="SpectrometerWidget" name="widget_spectrometer_excitationEmission" native="true">
+               <widget class="SpectrometerPlotWidget" name="widget_spectrometerplot_excitationEmission" native="true">
                 <property name="minimumSize">
                  <size>
                   <width>100</width>
@@ -175,7 +190,7 @@
                </widget>
               </item>
               <item>
-               <widget class="PowerMeterWidget" name="widget_powermeter_excitationEmission" native="true">
+               <widget class="PowerMeterPlotWidget" name="widget_powermeterplot_excitationEmission" native="true">
                 <property name="minimumSize">
                  <size>
                   <width>100</width>
@@ -190,6 +205,12 @@
              <layout class="QVBoxLayout" name="verticalLayout_excitationEmission_right">
               <item>
                <widget class="FileWidget" name="widget_file_excitationEmission" native="true">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="minimumSize">
                  <size>
                   <width>80</width>
@@ -200,6 +221,12 @@
               </item>
               <item>
                <widget class="MotorWidget" name="widget_motor_excitationEmission" native="true">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="minimumSize">
                  <size>
                   <width>80</width>
@@ -209,7 +236,34 @@
                </widget>
               </item>
               <item>
-               <widget class="LaserWidget" name="widget_laser_excitationEmission" native="true"/>
+               <widget class="SpectrometerWidget" name="widget_spectrometer_excitationEmission" native="true">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="PowerMeterWidget" name="widget_powermeter_excitationEmission" native="true">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="LaserWidget" name="widget_laser_excitationEmission" native="true">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+               </widget>
               </item>
              </layout>
             </item>
@@ -220,7 +274,7 @@
             <item row="0" column="0">
              <layout class="QVBoxLayout" name="verticalLayout">
               <item>
-               <widget class="SpectrometerWidget" name="widget_spectrometer_decay" native="true">
+               <widget class="SpectrometerPlotWidget" name="widget_spectrometer_decay" native="true">
                 <property name="minimumSize">
                  <size>
                   <width>100</width>
@@ -235,6 +289,12 @@
              <layout class="QVBoxLayout" name="verticalLayout_2">
               <item>
                <widget class="FileWidget" name="widget_file_decay" native="true">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="minimumSize">
                  <size>
                   <width>80</width>
@@ -245,6 +305,12 @@
               </item>
               <item>
                <widget class="MotorWidget" name="widget_motor_decay" native="true">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="minimumSize">
                  <size>
                   <width>80</width>
@@ -255,6 +321,12 @@
               </item>
               <item>
                <widget class="LaserWidget" name="widget_laser_decay" native="true">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="minimumSize">
                  <size>
                   <width>80</width>
@@ -320,7 +392,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>876</width>
+     <width>585</width>
      <height>21</height>
     </rect>
    </property>
@@ -341,6 +413,24 @@
    <container>1</container>
   </customwidget>
   <customwidget>
+   <class>SpectrometerPlotWidget</class>
+   <extends>QWidget</extends>
+   <header>gui_action/plot_spectrometer</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>PowerMeterPlotWidget</class>
+   <extends>QWidget</extends>
+   <header>gui_action/plot_powermeter</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>LaserWidget</class>
+   <extends>QWidget</extends>
+   <header>gui_action/widget_laser</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
    <class>SpectrometerWidget</class>
    <extends>QWidget</extends>
    <header>gui_action/widget_spectrometer</header>
@@ -350,12 +440,6 @@
    <class>PowerMeterWidget</class>
    <extends>QWidget</extends>
    <header>gui_action/widget_powermeter</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class>LaserWidget</class>
-   <extends>QWidget</extends>
-   <header>gui_action/widget_laser</header>
    <container>1</container>
   </customwidget>
  </customwidgets>
