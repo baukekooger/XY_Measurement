@@ -33,6 +33,6 @@ class PowerMeterPlotWidget(QtWidgets.QWidget):
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
-    main = PowerMeterWidget()
+    main = PowerMeterPlotWidget()
     main.show()
     sys.exit(app.exec_())

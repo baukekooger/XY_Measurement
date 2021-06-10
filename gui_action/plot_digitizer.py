@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 import random
 
 
-class SpectrometerPlotWidget(QtWidgets.QWidget):
+class DigitizerPlotWidget(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.figure = plt.figure()
@@ -33,6 +33,6 @@ class SpectrometerPlotWidget(QtWidgets.QWidget):
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
-    main = SpectrometerPlotWidget()
+    main = DigitizerPlotWidget()
     main.show()
     sys.exit(app.exec_())
