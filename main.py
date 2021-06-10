@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QTimer
+from PyQt5.QtCore import QTimer, QThread
 from gui_design.main import Ui_MainWindow
 import time
 
@@ -10,6 +10,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.ui.stackedWidget.setCurrentIndex(0)
+
+        self.threads = {}
+        self.statemachine = None
+        self.statemachineThread = QThread()
 
         self.ui.pushButton_transmission.clicked.connect(lambda state, page=0: self.goto_experiment(page))
         self.ui.pushButton_excitation_emission.clicked.connect(lambda state, page=1: self.goto_experiment(page))
