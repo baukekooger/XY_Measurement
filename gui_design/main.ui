@@ -120,7 +120,7 @@
         <item row="0" column="0">
          <widget class="QStackedWidget" name="stackedWidget_experiment">
           <property name="currentIndex">
-           <number>1</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="page_transmission">
            <property name="sizePolicy">
@@ -179,7 +179,7 @@
                 </property>
                 <layout class="QGridLayout" name="gridLayout_7">
                  <item row="1" column="0">
-                  <widget class="MotorWidget" name="widget_motor_transmission" native="true">
+                  <widget class="XYStageWidget" name="widget_xystage_transmission" native="true">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                      <horstretch>0</horstretch>
@@ -381,7 +381,7 @@
                   </widget>
                  </item>
                  <item row="1" column="0">
-                  <widget class="MotorWidget" name="widget_motor_excitation_emission" native="true">
+                  <widget class="XYStageWidget" name="widget_xystage_excitation_emission" native="true">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                      <horstretch>0</horstretch>
@@ -474,7 +474,7 @@
                   </widget>
                  </item>
                  <item row="1" column="0">
-                  <widget class="MotorWidget" name="widget_motor_decay" native="true">
+                  <widget class="XYStageWidget" name="widget_xystage_decay" native="true">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                      <horstretch>0</horstretch>
@@ -601,9 +601,9 @@
    <container>1</container>
   </customwidget>
   <customwidget>
-   <class>MotorWidget</class>
+   <class>XYStageWidget</class>
    <extends>QWidget</extends>
-   <header>gui_action/widget_motor</header>
+   <header>gui_action/widget_xystage</header>
    <container>1</container>
   </customwidget>
   <customwidget>

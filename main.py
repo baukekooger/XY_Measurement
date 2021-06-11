@@ -5,6 +5,23 @@ import time
 
 
 class MainWindow(QtWidgets.QMainWindow):
+    # define which experiments and instruments are present in the gui as attributes of the class
+    experiments_stacked = {
+        0: 'transmission',
+        1: 'excitation_emission',
+        2: 'decay'
+    }
+    widgets_stacked = {
+        'transmission': ['xystage', 'spectrometer'],
+        'excitation_emission': ['xystage', 'spectrometer', 'laser', 'shuttercontrol'],
+        'decay': ['xystage', 'digitizer', 'laser', 'shuttercontrol']
+    }
+    instruments_threads = {
+            'transmission': ['xystage', 'spectrometer'],
+            'excitation_emission': ['xystage', 'spectrometer', 'laser', 'shuttercontrol', 'powermeter'],
+            'decay': ['xystage', 'digitizer', 'laser', 'shuttercontrol']
+    }
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.ui = Ui_MainWindow()
@@ -15,37 +32,31 @@ class MainWindow(QtWidgets.QMainWindow):
         self.statemachine = None
         self.statemachineThread = QThread()
 
-        self.ui.pushButton_transmission.clicked.connect(lambda state, page=0: self.goto_experiment(page))
-        self.ui.pushButton_excitation_emission.clicked.connect(lambda state, page=1: self.goto_experiment(page))
-        self.ui.pushButton_decay.clicked.connect(lambda state, page=2: self.goto_experiment(page))
-        self.ui.pushButton_return.clicked.connect(self.goto_home)
+        self.ui.pushButton_transmission.clicked.connect(lambda state, page=0: self.choose_experiment(page))
+        self.ui.pushButton_excitation_emission.clicked.connect(lambda state, page=1: self.choose_experiment(page))
+        self.ui.pushButton_decay.clicked.connect(lambda state, page=2: self.choose_experiment(page))
+        self.ui.pushButton_return.clicked.connect(self.return_home)
         self.ui.pushButton_start_experiment.clicked.connect(self.start_experiment)
         self.ui.pushButton_start_experiment.setEnabled(False)
         self.ui.pushButton_alignment_experiment.clicked.connect(self.alignment_experiment_gui)
 
-    def goto_experiment(self, page):
+    def choose_experiment(self, page):
+        experiment = self.experiments_stacked[page]
+        self.statemachine = experiment
+        for inst in self.instruments_threads[experiment]:
+            self.threads[inst] = QThread()
+        # self.movetothreads()
         self.ui.stackedWidget.setCurrentIndex(1)
         self.ui.stackedWidget_experiment.setCurrentIndex(page)
 
-    def goto_home(self):
+    def return_home(self):
+        # add something that quits all threads from the experiment such that a new experiment can be done
         self.ui.stackedWidget.setCurrentIndex(0)
 
     def alignment_experiment_gui(self):
         # switches to alignment mode by going to different pages in the instrument widgets
         # and adjusts their size. strict naming of widgets is necessary for this to work.
         # also calls initialization of either alignment or experiment mode
-
-        experiments_stacked = {
-                                0: 'transmission',
-                                1: 'excitation_emission',
-                                2: 'decay'
-                                }
-
-        widgets_stacked = {
-                'transmission': ['motor', 'spectrometer'],
-                'excitation_emission': ['motor', 'spectrometer', 'laser', 'shuttercontrol'],
-                'decay': ['motor', 'digitizer', 'laser', 'shuttercontrol']
-        }
 
         if self.ui.pushButton_alignment_experiment.text() == 'Set Experiment':
             page_widget = 0
@@ -60,9 +71,9 @@ class MainWindow(QtWidgets.QMainWindow):
             text_button = 'Set Experiment'
             enable_start = False
 
-        experiment = experiments_stacked[self.ui.stackedWidget_experiment.currentIndex()]
+        experiment = self.experiments_stacked[self.ui.stackedWidget_experiment.currentIndex()]
 
-        for instrument in widgets_stacked[experiment]:
+        for instrument in self.widgets_stacked[experiment]:
             eval(f'self.ui.widget_{instrument}_{experiment}.ui.stackedWidget.setCurrentIndex({page_widget})')
             eval(f'self.ui.widget_{instrument}_{experiment}.ui.{page_preffered}.setSizePolicy(QtWidgets.'
                  f'QSizePolicy.Preferred,QtWidgets.QSizePolicy.Fixed)')

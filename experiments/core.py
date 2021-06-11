@@ -1,9 +1,6 @@
 from transitions import Machine, State
-import threading
 import time
 import yaml
-import itertools
-
 
 def timed(func):
     def wrapper(self, *args, **kwargs):
