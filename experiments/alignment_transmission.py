@@ -8,14 +8,11 @@ from transitions import Machine, MachineError, State
 import logging
 import time
 from PyQt5.QtCore import QObject, QTimer, pyqtSignal, pyqtSlot, QEventLoop
-import yaml
 import numpy as np
 from contextlib import contextmanager
-from netCDF4 import Dataset
 
-from Qinstruments import (QLaser, QXYStage, QSpectrometer, QPowermeter,
-                          QDigitizer)
-from instruments import Shuttercontrol  # ,Monochromator
+from instruments.OceanOptics.spectrometer_pyqt import QSpectrometer
+from instruments.Thorlabs.xystage_pyqt import QXYStage
 
 logging.basicConfig(level=logging.INFO)
 
@@ -108,7 +105,7 @@ class BaseExperiment(QObject):
     def _connect_all(self):
         """Connects all instruments"""
         for instrument in self.instruments:
-            logging.info('Connecting to {}'.format(repr(instrument)))
+            logging.info(f'Connecting to {repr(instrument)}')
             instrument.connect()
             instrument.timeout = self.timeout
 
@@ -159,9 +156,7 @@ class Alignment(BaseExperiment):
         self.heartbeat.timeout.connect(self.measure_instruments)
         ## Devices
         self.xystage = QXYStage()
-        self.laser = QLaser()
         self.instruments.append(self.xystage)
-        self.instruments.append(self.laser)
 
     def measure_instruments(self):
         for instrument in self.instruments:
@@ -185,14 +180,13 @@ class Alignment(BaseExperiment):
         self.heartbeat.stop()
 
 
-class ExEmAlignment(Alignment):
-    """Alignment for excitation and emission experiments
+class TransmissionAlignment(Alignment):
+    """Alignment for transmission experiments
     """
 
     def __init__(self):
-        super().__init__(name='ExEmAlignment')
-        ## Devices
+        super().__init__(name='TransmissionAlignment')
+        # Devices
         self.spectrometer = QSpectrometer()
-        self.powermeter = QPowermeter()
         self.instruments.append(self.spectrometer)
-        self.instruments.append(self.powermeter)
+

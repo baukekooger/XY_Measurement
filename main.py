@@ -1,11 +1,12 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QTimer, QThread
 from gui_design.main import Ui_MainWindow
+from experiments.alignment_transmission import TransmissionAlignment
 import time
 
 
 class MainWindow(QtWidgets.QMainWindow):
-    # define which experiments and instruments are present in the gui as attributes of the class
+    # define which experiments and instruments are present in the gui
     experiments_stacked = {
         0: 'transmission',
         1: 'excitation_emission',
@@ -20,6 +21,14 @@ class MainWindow(QtWidgets.QMainWindow):
             'transmission': ['xystage', 'spectrometer'],
             'excitation_emission': ['xystage', 'spectrometer', 'laser', 'shuttercontrol', 'powermeter'],
             'decay': ['xystage', 'digitizer', 'laser', 'shuttercontrol']
+    }
+    statemachines = {
+        0: 'TransmissionAlignment()',
+        1: 'ExcitationEmissionAlignment()',
+        2: 'DecayAlignment()',
+        3: 'TransmissionExperiment()',
+        4: 'ExcitationEmissionAlignment()',
+        5: 'DecayAlignment()'
     }
 
     def __init__(self, *args, **kwargs):
@@ -38,20 +47,60 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.pushButton_return.clicked.connect(self.return_home)
         self.ui.pushButton_start_experiment.clicked.connect(self.start_experiment)
         self.ui.pushButton_start_experiment.setEnabled(False)
-        self.ui.pushButton_alignment_experiment.clicked.connect(self.alignment_experiment_gui)
+        self.ui.pushButton_alignment_experiment.clicked.connect(self.alignment_experiment)
 
     def choose_experiment(self, page):
-        experiment = self.experiments_stacked[page]
-        self.statemachine = experiment
-        for inst in self.instruments_threads[experiment]:
-            self.threads[inst] = QThread()
-        # self.movetothreads()
+        self.select_statemachine(page)
+
         self.ui.stackedWidget.setCurrentIndex(1)
         self.ui.stackedWidget_experiment.setCurrentIndex(page)
+
+    def select_statemachine(self, page):
+        if self.ui.pushButton_alignment_experiment.text() == 'Set Experiment':
+            self.statemachine = eval(self.statemachines[page])
+        else:
+            self.statemachine = eval(self.statemachines[page+3])
+        self.define_threads(self.experiments_stacked[page])
+
+    def define_threads(self, experiment):
+        for inst in self.instruments_threads[experiment]:
+            self.threads[inst] = QThread()
+        self.move_to_threads()
+
+    def move_to_threads(self):
+        self.statemachine.moveToThread(self.statemachineThread)
+        for key, thread in self.threads.items():
+            instrument = getattr(self.statemachine, key)
+            instrument.moveToThread(thread)
+        self.start_threads()
+        self.statemachine.run()
+        self.add_instruments_to_guis()
+
+    def start_threads(self):
+        self.statemachineThread.start()
+        for _, thread in self.threads.items():
+            thread.start()
+
+    def add_instruments_to_guis(self):
+        self.ui.widget_spectrometer_transmission.spectrometer = self.statemachine.spectrometer
+        self.ui.widget_spectrometerplot_transmission.spectrometer = self.statemachine.spectrometer
+        self.ui.widget_xystage_transmission.xystage = self.statemachine.xystage
+        self.ui.widget_xystage_transmission.connect_signals_slots()
+        self.ui.widget_spectrometerplot_transmission.connect_signals_slots()
+        self.ui.widget_spectrometer_transmission.connect_signals_slots()
+
+    def quit_threads(self):
+        self.statemachineThread.quit()
+        for _, thread in self.threads.items():
+            thread.quit()
 
     def return_home(self):
         # add something that quits all threads from the experiment such that a new experiment can be done
         self.ui.stackedWidget.setCurrentIndex(0)
+
+    def alignment_experiment(self):
+        # finalize the current statemachine and load the new statemachine.
+        self.alignment_experiment_gui()
 
     def alignment_experiment_gui(self):
         # switches to alignment mode by going to different pages in the instrument widgets

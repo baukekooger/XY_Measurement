@@ -1,17 +1,58 @@
 import logging
-from . import apt
-import numpy as np
+from instruments.Thorlabs import apt
 import time
-from math import ceil, floor
-import asyncio
 
 
-class XYStage:
+class Instrument:
+    """Base class for all Instruments.
+
+    Attributes:
+        polltime (float): time in [s] between each call to an instrument if a measurement has completed.
+        timeout (float): time in [s] before measurement is aborted and an error is returned.
+    """
+
+    def __init__(self, polltime=0.01, timeout=30):
+        self.measuring = False
+        self.polltime = polltime
+        self.timeout = timeout
+
+    @property
+    def name(self):
+        """Name of the Instrument"""
+        return type(self).__name__
+
+    def connect(self):
+        raise NotImplementedError(
+            'Instrument {} has not defined a connect method'.format(
+                type(self).__name__))
+
+    def disconnect(self):
+        raise NotImplementedError(
+            'Instrument {} has not defined a disconnect method'.format(
+                type(self).__name__))
+
+    def measure(self):
+        raise NotImplementedError(
+            'Instrument {} has not defined a measure method'.format(
+                type(self).__name__))
+
+    @classmethod
+    def disconnect_all(cls):
+        """Disconnects all connected Instruments"""
+        for instrument in cls.objs:
+            try:
+                instrument.disconnect()
+            except NotImplementedError:
+                pass
+
+
+class XYStage(Instrument):
     """
     Abstraction class to control both Thorlabs stages at once
     """
 
-    def __init__(self, xstage_serial, ystage_serial, polltime=0.1):
+    def __init__(self, xstage_serial=67844568, ystage_serial=67844567, polltime=0.1):
+        super().__init__()
         self.polltime = polltime
         # Position extremes
         self._xmax = 150
@@ -19,12 +60,15 @@ class XYStage:
         self._ymax = 150
         self._ymin = 0
         # XYStage status
+        # small stages: xstageserial=67844568, ystageserial=67844567
+        # big stages: xstageserial=45962470, ystageserial=45951910):
         self.xstage_serial = xstage_serial
         self.ystage_serial = ystage_serial
-        self.xstage = apt.Motor(xstage_serial)
-        self.ystage = apt.Motor(ystage_serial)
-        
-    def list_available_devices():
+        self.xstage = None
+        self.ystage = None
+        self.connected = False
+
+    def list_available_devices(self):
         return [device[1] for device in apt.list_available_devices()]
 
     @property
@@ -53,22 +97,35 @@ class XYStage:
             return
         self.ystage.move_to(value, blocking=False)
 
-    def close(self):
+    def connect(self):
+        self.xstage = apt.Motor(self.xstage_serial)
+        self.ystage = apt.Motor(self.ystage_serial)
+        self.connected = True
+
+    def disconnect(self):
+        if not self.connected:
+            return
         self.xstage = None
         self.ystage = None
-        apt.close()
+        apt.reconnect()
+        self.connected = False
 
     def reconnect(self):
-        connected = False
-        while not connected:
+        self.connected = False
+        while not self.connected:
             try:
                 apt.reconnect()
                 self.xstage = apt.Motor(self.xstage_serial)
                 self.ystage = apt.Motor(self.ystage_serial)
-                connected = True
-            except Exception:
-                logging.error('Failed to connect to XYStage... reattempting!')
+                self.connected = True
+            except Exception as e:
+                logging.error(f'Failed to connect to XYStage... reattempting! - error = {e}')
                 time.sleep(1)
+
+    def close(self):
+        self.xstage = None
+        self.ystage = None
+        apt.close()
     
     def home(self):
         """ Homes the XYStage, setting x and y to (0,0)
@@ -110,3 +167,4 @@ class XYStage:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
+
