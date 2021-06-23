@@ -1,0 +1,59 @@
+# This links the page index of the stackedwidget_experiment with the experiment names
+experiments : {
+    0: 'transmission',
+    1: 'excitation_emission',
+    2: 'decay'
+}
+
+# Instruments needed for each experiment
+instruments : {
+    'transmission': [ 'xystage', 'spectrometer' ],
+    'excitation_emission': [ 'xystage', 'spectrometer','laser','shuttercontrol','powermeter' ],
+    'decay': [ 'xystage', 'digitizer','laser','shuttercontrol' ]
+}
+
+# Lists all the widgets per experiment
+widgets : {
+    'transmission': {
+        'widget_file_transmission': '',
+        'widget_xystage_transmission': 'xystage',
+        'widget_spectrometer_transmission': 'spectrometer',
+        'widget_spectrometerplot_transmission': 'spectrometer'
+    },
+    'excitation_emission': {
+        'widget_file_excitation_emission': '',
+        'widget_xystage_excitation_emission': 'xystage',
+        'widget_spectrometer_excitation_emission': 'spectrometer',
+        'widget_spectrometerplot_excitation_emission': 'spectrometer',
+        'widget_powermeter_excitation_emission': 'powermeter',
+        'widget_powermeterplot_excitation_emission': 'powermeter',
+        'widget_laser_excitation_emission': 'laser',
+        'widget_shuttercontrol_excitation_emission': 'shuttercontrol'
+    },
+    'decay': {
+        'widget_file_decay': '',
+        'widget_xystage_decay': 'xystage',
+        'widget_digitizer_decay': 'digitizer',
+        'widget_digitizerplot_decay': 'digitizer',
+        'widget_laser_decay': 'laser',
+        'widget_shuttercontrol_decay': 'shuttercontrol'
+    }
+}
+# Gui settings for the alignment and set experiment states
+instrument_pages: {
+    'align': {
+        'page': 1,
+        'preffered': 'page_alignment',
+        'ignored': 'page_experiment',
+        'text_button': 'Set Experiment',
+        'enable_start': False
+    },
+    'setExperiment': {
+        'page': 0,
+        'preffered': 'page_experiment',
+        'ignored': 'page_alignment',
+        'text_button': 'Alignment',
+        'enable_start': True
+    }
+}
+

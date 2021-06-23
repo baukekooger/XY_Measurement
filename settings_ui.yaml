@@ -1,0 +1,46 @@
+excitation_emission:
+  widget_file_excitation_emission:
+    lineEdit_directory: ''
+    lineEdit_filename: ''
+    plainTextEdit_comments: ''
+  widget_laser_excitation_emission:
+    doubleSpinBox_wavelength_start: 0.0
+    doubleSpinBox_wavelength_step: 0.0
+    doubleSpinBox_wavelength_stop: 0.0
+    spinBox: 0
+  widget_powermeter_excitation_emission:
+    doubleSpinBox_integrationtime: 0.0
+  widget_shuttercontrol_excitation_emission: {}
+  widget_spectrometer_excitation_emission:
+    doubleSpinBox_averageing_alignment: 0.0
+    doubleSpinBox_averageing_experiment: 0.0
+    doubleSpinBox_integration_time_alignment: 0.0
+    doubleSpinBox_integration_time_experiment: 0.0
+  widget_xystage_excitation_emission:
+    doubleSpinBox_x: 0.0
+    doubleSpinBox_x_start: 0.0
+    doubleSpinBox_x_stop: 0.0
+    doubleSpinBox_y: 0.0
+    doubleSpinBox_y_start: 0.0
+    doubleSpinBox_y_stop: 0.0
+    spinBox_x_num: 0
+    spinBox_y_num: 0
+transmission:
+  widget_file_transmission:
+    lineEdit_directory: testdirectory
+    lineEdit_filename: 'This is da filename '
+    plainTextEdit_comments: Some test comments to see if they are stored properly
+  widget_spectrometer_transmission:
+    doubleSpinBox_averageing_alignment: 0.0
+    doubleSpinBox_averageing_experiment: 10.0
+    doubleSpinBox_integration_time_alignment: 0.0
+    doubleSpinBox_integration_time_experiment: 10.0
+  widget_xystage_transmission:
+    doubleSpinBox_x: 60.0
+    doubleSpinBox_x_start: 15.0
+    doubleSpinBox_x_stop: 90.0
+    doubleSpinBox_y: 20.0
+    doubleSpinBox_y_start: 10.0
+    doubleSpinBox_y_stop: 90.0
+    spinBox_x_num: 8
+    spinBox_y_num: 8

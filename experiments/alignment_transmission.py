@@ -174,10 +174,14 @@ class Alignment(BaseExperiment):
         self.heartbeat.start()
 
     def _finalize(self):
+        self.heartbeat.stop()
+        QTimer.singleShot(2000, self.disconnect_all)
+
+    def disconnect_all(self):
         for instrument in self.instruments:
             instrument.measuring = False
             instrument.disconnect()
-        self.heartbeat.stop()
+
 
 
 class TransmissionAlignment(Alignment):

@@ -1,0 +1,57 @@
+# Statemachine configuration for the python Transitions module
+# Uses the Hierarchical state machine model. NEVER name states with
+# an underscore as the underscore is the separator between parent
+# and children states.
+
+states: [
+        {'name': 'initialize'},
+        {'name': 'waitingForExperiment'},
+        {'name': 'defineExperiment', 'on_enter': '_define_experiment'},
+        {'name': 'connecting', 'on_enter': '_connect_all'},
+        {'name': 'align', 'on_enter': '_align', 'on_exit': '_stop_align'},
+        {'name': 'setExperiment', 'on_enter': '_load_configuration', 'on_exit': '_save_configuration'},
+        {'name': 'experiment', 'children': [{'name': 'openFile', 'on_enter': '_open_file'},
+                                            {'name': 'prepareMeasurement', 'on_enter': '_prepare_measurement'},
+                                            {'name': 'measuring', 'on_enter': '_measure'},
+                                            {'name': 'processingData', 'on_enter': '_process_data'},
+                                            {'name': 'writeFile', 'on_enter': '_write_file'},
+                                            {'name': 'calculateProgress', 'on_enter': '_calculate_progress'},
+                                            {'name': 'aborted', 'on_enter': '_abort'},
+                                            {'name': 'completed', 'on_enter': '_completed'}]}]
+
+transitions: [
+            {'trigger': 'start', 'source': 'initialize', 'dest': 'waitingForExperiment'},
+            {'trigger': 'choose_experiment', 'source': 'waitingForExperiment', 'dest': 'defineExperiment'},
+            {'trigger': 'connect_all', 'source': 'defineExperiment',
+             'dest': 'connecting'},
+            {'trigger': 'align', 'source': 'connecting', 'dest': 'align'},
+            {'trigger': 'align_experiment', 'source': 'align', 'dest': 'setExperiment'},
+            {'trigger': 'align_experiment', 'source': 'setExperiment', 'dest': 'align'},
+            {'trigger': 'prepare', 'source': ['experiment_openFile', 'experiment_calculateProgress'],
+             'dest': 'experiment_prepareMeasurement', 'unless': 'is_done'},
+            {'trigger': 'measure', 'source': 'experiment_prepareMeasurement',
+             'dest': 'experiment_measuring', 'unless': 'is_done'},
+            {'trigger': 'process_data', 'source': 'experiment_measuring',
+             'dest': 'experiment_processingData', 'unless': 'is_done'},
+            {'trigger': 'write_file', 'source': 'experiment_processingData',
+             'dest': 'experiment_writeFile'},
+            {'trigger': 'calculate_progress', 'source': 'experiment_writeFile',
+             'dest': 'experiment_calculateProgress', 'unless': 'is_done'},
+            {'trigger': 'return_home', 'source': ['align', 'setExperiment'], 'dest': 'waitingForExperiment'},
+            {'trigger': 'continue_experiment', 'source': ['experiment_aborted', 'experiment_completed'], 'dest': 'experiment'},
+            {'trigger': 'return_setexperiment', 'source': 'experiment', 'dest': 'setExperiment'},
+            {'trigger': 'init_experiment', 'source': 'setExperiment', 'dest': 'experiment'},
+            {'trigger': 'start_experiment', 'source': 'experiment', 'dest': 'experiment_openFile'},
+            {'trigger': 'measurment_complete', 'source': 'experiment_calculateProgress', 'dest': 'experiment_completed'},
+            {'trigger': 'abort', 'source': ['experiment_openFile', 'experiment_prepareMeasurement',
+                                            'experiment_measuring', 'experiment_processingData',
+                                            'experiment_writeFile', 'experiment_calculateProgress'],
+                                            'dest': 'experiment_aborted'}]
+
+auto_transitions: False
+initial: 'initialize'
+show_conditions: True
+show_state_attributes: True
+queued: True
+before_state_change: '_from_state'
+after_state_change: '_in_state'

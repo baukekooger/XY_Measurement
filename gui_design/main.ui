@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>796</width>
-    <height>631</height>
+    <width>644</width>
+    <height>453</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -120,7 +120,7 @@
         <item row="0" column="0">
          <widget class="QStackedWidget" name="stackedWidget_experiment">
           <property name="currentIndex">
-           <number>2</number>
+           <number>0</number>
           </property>
           <widget class="QWidget" name="page_transmission">
            <property name="sizePolicy">
@@ -167,8 +167,8 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>209</width>
-                  <height>476</height>
+                  <width>165</width>
+                  <height>272</height>
                  </rect>
                 </property>
                 <property name="sizePolicy">
@@ -310,8 +310,8 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>535</width>
-                  <height>476</height>
+                  <width>383</width>
+                  <height>298</height>
                  </rect>
                 </property>
                 <property name="sizePolicy">
@@ -416,7 +416,7 @@
               <widget class="QWidget" name="layoutWidget">
                <layout class="QGridLayout" name="gridLayout_plot_decay">
                 <item row="0" column="0">
-                 <widget class="DigitizerPlotWidget" name="plot_digitizer_decay" native="true">
+                 <widget class="DigitizerPlotWidget" name="widget_digitizerplot_decay" native="true">
                   <property name="minimumSize">
                    <size>
                     <width>200</width>
@@ -436,8 +436,8 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>120</width>
-                  <height>476</height>
+                  <width>95</width>
+                  <height>298</height>
                  </rect>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_10">
@@ -586,8 +586,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>796</width>
-     <height>21</height>
+     <width>644</width>
+     <height>31</height>
     </rect>
    </property>
   </widget>

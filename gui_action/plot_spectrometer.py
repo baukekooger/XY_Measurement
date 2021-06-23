@@ -25,7 +25,7 @@ class SpectrometerPlotWidget(QtWidgets.QWidget):
     def connect_signals_slots(self):
         self.spectrometer.measurement_complete.connect(self.plot)
 
-    @pyqtSlot(list,list)
+    @pyqtSlot(list, list)
     def plot(self, intensities, times):
         self.figure.clear()
         ax = self.figure.add_subplot(111)
