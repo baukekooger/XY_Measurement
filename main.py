@@ -33,6 +33,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.pushButton_start_experiment.clicked.connect(self.start_experiment)
         self.ui.pushButton_start_experiment.setEnabled(False)
         self.ui.pushButton_alignment_experiment.clicked.connect(self.alignment_experiment)
+        self.statemachine.signal_return_setexperiment.connect(self.reset_setexperiment)
 
     def choose_experiment(self, page):
         self.experiment = self.config['experiments'][page]
@@ -139,27 +140,63 @@ class MainWindow(QtWidgets.QMainWindow):
         # fills the user interface with the last values known for that experiment.
         with open('settings_ui.yaml') as f:
             settings = yaml_safe_load(f)
-        for widget in settings[self.experiment].keys():
-            widget_handle = getattr(self.ui, widget)
-            for subwidgetkey, value in settings[self.experiment][widget].items():
-                subwidgethandle = getattr(widget_handle.ui, subwidgetkey)
-                if isinstance(subwidgethandle, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
-                    subwidgethandle.setValue(value)
-                if isinstance(subwidgethandle, QtWidgets.QLineEdit):
-                    subwidgethandle.setText(value)
-                if isinstance(subwidgethandle, (QtWidgets.QPlainTextEdit, QtWidgets.QTextEdit)):
-                    subwidgethandle.setPlainText(value)
-                if isinstance(subwidgethandle, QtWidgets.QCheckBox):
-                    subwidgethandle.setChecked(value)
+        try:
+            for widget in settings[self.experiment].keys():
+                widget_handle = getattr(self.ui, widget)
+                for subwidgetkey, value in settings[self.experiment][widget].items():
+                    subwidgethandle = getattr(widget_handle.ui, subwidgetkey)
+                    if isinstance(subwidgethandle, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
+                        subwidgethandle.setValue(value)
+                    if isinstance(subwidgethandle, QtWidgets.QLineEdit):
+                        subwidgethandle.setText(value)
+                    if isinstance(subwidgethandle, (QtWidgets.QPlainTextEdit, QtWidgets.QTextEdit)):
+                        subwidgethandle.setPlainText(value)
+                    if isinstance(subwidgethandle, QtWidgets.QCheckBox):
+                        subwidgethandle.setChecked(value)
+        except AttributeError as e:
+            print(f"Can't load UI, UI configuration has been modified. {e}")
 
     def start_experiment(self):
-        print('the experiment has started')
-        self.ui.pushButton_return.setEnabled(False)
-        QTimer.singleShot(1000, self.experiment_finished)
+        # disable buttons and shit
+        self.store_ui()
+        self.ui.pushButton_start_experiment.setText('Stop')
+        self.ui.pushButton_alignment_experiment.setDisabled(True)
+        self.ui.pushButton_start_experiment.disconnect()
+        self.ui.pushButton_start_experiment.clicked.connect(self.abort_experiment)
+        self.statemachine.run_experiment()
+
+    def abort_experiment(self):
+        self.ui.stackedWidget_experiment.setDisabled(True)
+        self.ui.pushButton_start_experiment.setDisabled(True)
+        self.ui.pushButton_alignment_experiment.setDisabled(True)
+        self.ui.pushButton_return.setDisabled(True)
+        self.statemachine.abort()
+
+    def reset_setexperiment(self):
+        self.ui.pushButton_start_experiment.disconnect()
+        self.ui.pushButton_start_experiment.clicked.connect(self.start_experiment)
+        self.ui.pushButton_start_experiment.setText('Start')
+        self.ui.pushButton_alignment_experiment.setEnabled(True)
+        self.ui.stackedWidget_experiment.setEnabled(True)
+        self.ui.pushButton_start_experiment.setEnabled(True)
+        self.ui.pushButton_return.setEnabled(True)
 
     def experiment_finished(self):
         print('the experiment has finished')
         self.ui.pushButton_return.setEnabled(True)
+
+    def closeEvent(self, event):
+        self.ui.centralwidget.setDisabled(True)
+        # QtWidgets.QMessageBox.information(self, 'Closing Application', 'Disconnecting all instruments, '
+        #                                                                'closing application')
+        if self.statemachine.state == 'align':
+            self.alignment_experiment()
+            time.sleep(self.statemachine.polltime)
+        self.statemachine.abort()
+        self.statemachine.disconnect_all()
+        self.quit_all_threads()
+        print('done closing')
+        event.accept()
 
 
 if __name__ == '__main__':

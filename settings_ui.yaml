@@ -1,7 +1,7 @@
 excitation_emission:
   widget_file_excitation_emission:
     lineEdit_directory: ''
-    lineEdit_filename: ''
+    lineEdit_sample: ''
     plainTextEdit_comments: ''
   widget_laser_excitation_emission:
     doubleSpinBox_wavelength_start: 0.0
@@ -27,20 +27,22 @@ excitation_emission:
     spinBox_y_num: 0
 transmission:
   widget_file_transmission:
-    lineEdit_directory: testdirectory
-    lineEdit_filename: 'This is da filename '
-    plainTextEdit_comments: Some test comments to see if they are stored properly
+    lineEdit_directory: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY
+    lineEdit_sample: Newsample
+    plainTextEdit_comments: 'This is still a test '
   widget_spectrometer_transmission:
-    doubleSpinBox_averageing_alignment: 0.0
-    doubleSpinBox_averageing_experiment: 10.0
-    doubleSpinBox_integration_time_alignment: 0.0
-    doubleSpinBox_integration_time_experiment: 10.0
+    spinBox_averageing_alignment: 10
+    spinBox_averageing_experiment: 1
+    spinBox_integration_time_alignment: 200
+    spinBox_integration_time_experiment: 500
   widget_xystage_transmission:
-    doubleSpinBox_x: 60.0
-    doubleSpinBox_x_start: 15.0
-    doubleSpinBox_x_stop: 90.0
-    doubleSpinBox_y: 20.0
-    doubleSpinBox_y_start: 10.0
-    doubleSpinBox_y_stop: 90.0
-    spinBox_x_num: 8
-    spinBox_y_num: 8
+    checkBox_homed_x: true
+    checkBox_homed_y: true
+    doubleSpinBox_x: 50.0
+    doubleSpinBox_x_start: 1.0
+    doubleSpinBox_x_stop: 30.0
+    doubleSpinBox_y: 50.0
+    doubleSpinBox_y_start: 2.0
+    doubleSpinBox_y_stop: 50.0
+    spinBox_x_num: 2
+    spinBox_y_num: 3

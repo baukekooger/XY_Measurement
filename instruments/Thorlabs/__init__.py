@@ -1,6 +1,6 @@
 import os
 import platform
-from .xystages import XYStage
+
 
 # Add library to PYTHONPATH
 if platform.architecture()[0] == '64bit':

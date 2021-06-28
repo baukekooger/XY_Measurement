@@ -93,3 +93,5 @@ class PlotStateMachine:
     def _prepare_measurement(self):
         pass
 
+    def _define_triggers(self):
+        pass
