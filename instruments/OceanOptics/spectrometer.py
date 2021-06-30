@@ -33,9 +33,11 @@ class QSpectrometer(QObject):
         self._integrationtime = integrationtime
         self._average_measurements = average_measurements
         self.dark = []
+        self.lamp = []
         self.min_integrationtime = None
         self.last_intensity = []
         self.last_times = []
+        self.transmission = False
 
     @property
     def name(self):
@@ -142,6 +144,8 @@ class QSpectrometer(QObject):
                 n += 1
             if any(self.dark):
                 intensity = intensity - self.dark
+            if self.transmission and all(self.lamp):
+                intensity = intensity/self.lamp
 
         self.measuring = False
         logging.info('Spectrometer Done')
@@ -168,5 +172,17 @@ class QSpectrometer(QObject):
     def clear_dark(self):
         self.dark = np.zeros(len(self.spec.wavelengths()))
 
+    @pyqtSlot()
+    def measure_lamp(self):
+        """Performs a mutex-locked lamp measurement.
+        The result will be stored and emitted.
+        """
+        with(QMutexLocker(self.mutex)):
+            self.lamp, t = self.measure()
+        self.measurement_complete.emit(self.lamp, t)
+        self.last_intensity = self.lamp
+        self.last_times = t
+        return self.dark, t
 
-
+    def clear_lamp(self):
+        self.lamp = np.zeros(len(self.spec.wavelengths()))

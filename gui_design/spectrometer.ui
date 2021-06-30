@@ -261,6 +261,12 @@
               <property name="text">
                <string>Dark</string>
               </property>
+              <property name="checkable">
+               <bool>true</bool>
+              </property>
+              <property name="checked">
+               <bool>false</bool>
+              </property>
              </widget>
             </item>
             <item>
@@ -273,6 +279,9 @@
               </property>
               <property name="text">
                <string>Lamp</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
               </property>
              </widget>
             </item>
@@ -303,6 +312,9 @@
               </property>
               <property name="text">
                <string>Transmission</string>
+              </property>
+              <property name="checkable">
+               <bool>true</bool>
               </property>
              </widget>
             </item>

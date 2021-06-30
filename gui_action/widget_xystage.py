@@ -21,17 +21,30 @@ class XYStageWidget(QtWidgets.QWidget):
         self.xystage.homing_status.connect(self.set_homing)
         self.ui.doubleSpinBox_x.editingFinished.connect(self._handle_move_x)
         self.ui.doubleSpinBox_y.editingFinished.connect(self._handle_move_y)
-        self.ui.pushButton_home_motors.clicked.connect(self.xystage.home)
+        self.ui.pushButton_home_motors.clicked.connect(self._handle_home)
         self.ui.doubleSpinBox_x.setMaximum(self.xystage.xmax)
         self.ui.doubleSpinBox_y.setMaximum(self.xystage.ymax)
 
     def _handle_move_x(self):
-        self.xystage.x = self.ui.doubleSpinBox_x.value()
-        self.ui.doubleSpinBox_x.clear()
+        if not self.xystage.xhomed:
+            QtWidgets.QMessageBox.information(self, 'homing warning', 'x stage not homed, wait for stages to home')
+            self._handle_home()
+            self.ui.doubleSpinBox_x.clear()
+        else:
+            self.xystage.x = self.ui.doubleSpinBox_x.value()
+            self.ui.doubleSpinBox_x.clear()
 
     def _handle_move_y(self):
-        self.xystage.y = self.ui.doubleSpinBox_y.value()
-        self.ui.doubleSpinBox_y.clear()
+        if not self.xystage.yhomed:
+            QtWidgets.QMessageBox.information(self, 'homing warning', 'y stage not homed, wait for stages to home')
+            self._handle_home()
+            self.ui.doubleSpinBox_y.clear()
+        else:
+            self.xystage.y = self.ui.doubleSpinBox_y.value()
+            self.ui.doubleSpinBox_y.clear()
+
+    def _handle_home(self):
+        self.xystage.home()
 
     @pyqtSlot(float, float)
     def set_position(self, x, y):

@@ -30,6 +30,8 @@ class QXYStage(QObject):
         self.xstage = None
         self.ystage = None
         self.connected = False
+        self.xhomed = None
+        self.yhomed = None
 
     @property
     def name(self):
@@ -66,6 +68,8 @@ class QXYStage(QObject):
         self.xstage = apt.Motor(self.xstage_serial)
         self.ystage = apt.Motor(self.ystage_serial)
         self.connected = True
+        self.xhomed = self.xstage.has_homing_been_completed
+        self.yhomed = self.ystage.has_homing_been_completed
 
     def disconnect(self):
         if not self.connected:
@@ -129,10 +133,10 @@ class QXYStage(QObject):
         with(QMutexLocker(self.mutex)):
             x = self.x
             y = self.y
-            homex = self.xstage.has_homing_been_completed
-            homey = self.ystage.has_homing_been_completed
+            self.xhomed = self.xstage.has_homing_been_completed
+            self.yhomed = self.ystage.has_homing_been_completed
         self.measurement_complete.emit(x, y)
-        self.homing_status.emit(homex, homey)
+        self.homing_status.emit(self.xhomed, self.yhomed)
 
         return x, y
 

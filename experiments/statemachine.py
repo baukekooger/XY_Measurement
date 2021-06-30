@@ -166,10 +166,17 @@ class StateMachine(QObject):
         self.measurement_parameters = {}
         self._add_measurement_parameter('x', x)
         self._add_measurement_parameter('y', y)
+        dark_lamp_x = np.array((20, 0))
+        dark_lamp_y = np.array((80, 0))
+        self.measurement_parameters['x'] = np.hstack((dark_lamp_x, self.measurement_parameters['x']))
+        self.measurement_parameters['y'] = np.hstack((dark_lamp_y, self.measurement_parameters['y'])) 
+
         # spectrometer settings
         smsettings = settings[self.experiment][f'widget_spectrometer_{self.experiment}']
         self.instruments['spectrometer'].integrationtime = smsettings['spinBox_integration_time_experiment']
         self.instruments['spectrometer'].average_measurements = smsettings['spinBox_averageing_experiment']
+        self.instruments['spectrometer'].clear_dark()
+        self.instruments['spectrometer'].clear_lamp()
 
     def _add_measurement_parameter(self, name, parameter):
         length = None
@@ -238,11 +245,11 @@ class StateMachine(QObject):
         spectrometersettings = self.dataset.createGroup(f'{self.experiment}/settings/spectrometer')
         spectrometersettings.integrationtime = self.instruments['spectrometer'].integrationtime
         spectrometersettings.average_measurements = self.instruments['spectrometer'].average_measurements
-        self.dataset.createDimension('xy_position', 2)
-        self.dataset.createDimension('emission_wavelengths', len(self.instruments['spectrometer'].wavelengths))
-        self.dataset.createDimension('spectrometer_intervals', self.instruments['spectrometer'].
+        self.dataset[f'{self.experiment}'].createDimension('xy_position', 2)
+        self.dataset[f'{self.experiment}'].createDimension('emission_wavelengths', len(self.instruments['spectrometer'].wavelengths))
+        self.dataset[f'{self.experiment}'].createDimension('spectrometer_intervals', self.instruments['spectrometer'].
                                      average_measurements * 2)
-        self.dataset.createDimension('excitation_wavelengths', 1)
+        self.dataset[f'{self.experiment}'].createDimension('excitation_wavelengths', 1)
         # new state
 
     @timed
@@ -251,7 +258,12 @@ class StateMachine(QObject):
         y = self.measurement_parameters['y'][self.measurement_index]
         x_inx = list(np.unique(self.measurement_parameters['x'])).index(x)
         y_inx = list(np.unique(self.measurement_parameters['y'])).index(y)
-        datagroup = self.dataset.createGroup(f'{self.experiment}/x{x_inx}y{y_inx}')
+        if self.measurement_index == 0:
+            datagroup = self.dataset.createGroup(f'{self.experiment}/dark')
+        elif self.measurement_index == 1:
+            datagroup = self.dataset.createGroup(f'{self.experiment}/lamp')
+        else:
+            datagroup = self.dataset.createGroup(f'{self.experiment}/x{x_inx-1}y{y_inx-1}')
         try:
             xy_pos = datagroup['position']
             em_wl = datagroup['emission']

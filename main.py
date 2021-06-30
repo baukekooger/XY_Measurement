@@ -1,5 +1,5 @@
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import QTimer, QThread
+from PyQt5.QtCore import QTimer, QThread, pyqtSlot
 from gui_design.main import Ui_MainWindow
 from yaml import safe_load as yaml_safe_load, dump
 from experiments.statemachine import StateMachine
@@ -34,6 +34,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.pushButton_start_experiment.setEnabled(False)
         self.ui.pushButton_alignment_experiment.clicked.connect(self.alignment_experiment)
         self.statemachine.signal_return_setexperiment.connect(self.reset_setexperiment)
+        self.ui.widget_spectrometer_transmission.transmission_set.connect(self.set_spectrometeraxes)
 
     def choose_experiment(self, page):
         self.experiment = self.config['experiments'][page]
@@ -156,14 +157,23 @@ class MainWindow(QtWidgets.QMainWindow):
         except AttributeError as e:
             print(f"Can't load UI, UI configuration has been modified. {e}")
 
+    @pyqtSlot(bool)
+    def set_spectrometeraxes(self, set_transmissionaxes):
+        self.ui.widget_spectrometerplot_transmission.set_transmissionaxes = set_transmissionaxes
+
     def start_experiment(self):
         # disable buttons and shit
-        self.store_ui()
-        self.ui.pushButton_start_experiment.setText('Stop')
-        self.ui.pushButton_alignment_experiment.setDisabled(True)
-        self.ui.pushButton_start_experiment.disconnect()
-        self.ui.pushButton_start_experiment.clicked.connect(self.abort_experiment)
-        self.statemachine.run_experiment()
+        self.statemachine.instruments['xystage'].measure()
+        if not all([self.statemachine.instruments['xystage'].xhomed, self.statemachine.instruments['xystage'].xhomed]):
+            QtWidgets.QMessageBox.information(self, 'homing warning', 'not all stages homed, wait for home to complete')
+            self.statemachine.instruments['xystage'].home()
+        else:
+            self.store_ui()
+            self.ui.pushButton_start_experiment.setText('Stop')
+            self.ui.pushButton_alignment_experiment.setDisabled(True)
+            self.ui.pushButton_start_experiment.disconnect()
+            self.ui.pushButton_start_experiment.clicked.connect(self.abort_experiment)
+            self.statemachine.run_experiment()
 
     def abort_experiment(self):
         self.ui.stackedWidget_experiment.setDisabled(True)
