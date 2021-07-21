@@ -3,8 +3,8 @@ from PyQt5.QtCore import QTimer, QThread, pyqtSlot
 from gui_design.main import Ui_MainWindow
 from yaml import safe_load as yaml_safe_load, dump
 from experiments.statemachine import StateMachine
-
 import time
+import datetime
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -34,7 +34,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.pushButton_start_experiment.setEnabled(False)
         self.ui.pushButton_alignment_experiment.clicked.connect(self.alignment_experiment)
         self.statemachine.signal_return_setexperiment.connect(self.reset_setexperiment)
-        self.ui.widget_spectrometer_transmission.transmission_set.connect(self.set_spectrometeraxes)
+        self.statemachine.ect.connect(self.update_completion_time)
+        self.statemachine.progress.connect(self.update_progress)
 
     def choose_experiment(self, page):
         self.experiment = self.config['experiments'][page]
@@ -128,6 +129,9 @@ class MainWindow(QtWidgets.QMainWindow):
                     elif isinstance(widget_value, QtWidgets.QLineEdit):
                         widgethandle = getattr(widget.ui, key)
                         settings[self.experiment][widget_inst][key] = widgethandle.text()
+                    elif isinstance(widget_value, QtWidgets.QComboBox):
+                        widgethandle = getattr(widget.ui, key)
+                        settings[self.experiment][widget_inst][key] = widgethandle.currentIndex()
                     elif isinstance(widget_value, (QtWidgets.QPlainTextEdit, QtWidgets.QTextEdit)):
                         widgethandle = getattr(widget.ui, key)
                         settings[self.experiment][widget_inst][key] = widgethandle.toPlainText()
@@ -148,11 +152,13 @@ class MainWindow(QtWidgets.QMainWindow):
                     subwidgethandle = getattr(widget_handle.ui, subwidgetkey)
                     if isinstance(subwidgethandle, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
                         subwidgethandle.setValue(value)
-                    if isinstance(subwidgethandle, QtWidgets.QLineEdit):
+                    elif isinstance(subwidgethandle, QtWidgets.QLineEdit):
                         subwidgethandle.setText(value)
-                    if isinstance(subwidgethandle, (QtWidgets.QPlainTextEdit, QtWidgets.QTextEdit)):
+                    elif isinstance(subwidgethandle, QtWidgets.QComboBox):
+                        subwidgethandle.setCurrentIndex(value)
+                    elif isinstance(subwidgethandle, (QtWidgets.QPlainTextEdit, QtWidgets.QTextEdit)):
                         subwidgethandle.setPlainText(value)
-                    if isinstance(subwidgethandle, QtWidgets.QCheckBox):
+                    elif isinstance(subwidgethandle, QtWidgets.QCheckBox):
                         subwidgethandle.setChecked(value)
         except AttributeError as e:
             print(f"Can't load UI, UI configuration has been modified. {e}")
@@ -162,7 +168,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.widget_spectrometerplot_transmission.set_transmissionaxes = set_transmissionaxes
 
     def start_experiment(self):
-        # disable buttons and shit
+        # check if motors are homed, issue warning otherwise.
+        # then store ui settings and disable buttons that should not be pressed when experiment is run.
         self.statemachine.instruments['xystage'].measure()
         if not all([self.statemachine.instruments['xystage'].xhomed, self.statemachine.instruments['xystage'].xhomed]):
             QtWidgets.QMessageBox.information(self, 'homing warning', 'not all stages homed, wait for home to complete')
@@ -207,6 +214,14 @@ class MainWindow(QtWidgets.QMainWindow):
         self.quit_all_threads()
         print('done closing')
         event.accept()
+
+    @pyqtSlot(float)
+    def update_progress(self, progress):
+        self.ui.progressBar.setValue(progress)
+
+    @pyqtSlot(float)
+    def update_completion_time(self, ect):
+        self.ui.label_completion_time.setText(f'Estimated completion time {datetime.timedelta(seconds=ect)}')
 
 
 if __name__ == '__main__':

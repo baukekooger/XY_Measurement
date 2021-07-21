@@ -93,7 +93,7 @@ class StateMachine(QObject):
         self.startingtime = time.time()
 
     def _init_poll(self):
-        self.polltime = 0.1
+        self.polltime = 0.2
         self.heartbeat = QTimer()
         self.heartbeat.setInterval(int(self.polltime * 1000))
         self.heartbeat.timeout.connect(self._measure_instruments)
@@ -155,12 +155,13 @@ class StateMachine(QObject):
         with path_settings.open() as f:
             settings = yaml_safe_load(f)
         xysettings = settings[self.experiment][f'widget_xystage_{self.experiment}']
-        x_start = xysettings['doubleSpinBox_x_start']
-        x_stop = xysettings['doubleSpinBox_x_stop']
+        substrate = settings['self.experiment'][f'widget_file_{self.experiment}']['comboBox_substrate']
+        x_start = self.config['substrates'][substrate]['xstart']
+        x_stop = self.config['substrates'][substrate]['xstop']
         x_num = xysettings['spinBox_x_num']
         x = np.linspace(x_start, x_stop, num=x_num)
-        y_start = xysettings['doubleSpinBox_y_start']
-        y_stop = xysettings['doubleSpinBox_y_stop']
+        y_start = self.config['substrates'][substrate]['ystart']
+        y_stop = self.config['substrates'][substrate]['ystop']
         y_num = xysettings['spinBox_y_num']
         y = np.linspace(y_start, y_stop, num=y_num)
         self.measurement_parameters = {}
@@ -242,6 +243,9 @@ class StateMachine(QObject):
             yaml_dump(settings, outfile)
         # Open a new datafile
         self.dataset = Dataset(f'{fname}.hdf5', 'w', format='NETCDF4')
+        positionsettings = self.dataset.createGroup(f'{self.experiment}/settings/xystage')
+        positionsettings.xnum = len(np.unique(self.measurement_parameters['x'][2:]))
+        positionsettings.ynum = len(np.unique(self.measurement_parameters['y'][2:]))
         spectrometersettings = self.dataset.createGroup(f'{self.experiment}/settings/spectrometer')
         spectrometersettings.integrationtime = self.instruments['spectrometer'].integrationtime
         spectrometersettings.average_measurements = self.instruments['spectrometer'].average_measurements
@@ -254,16 +258,16 @@ class StateMachine(QObject):
 
     @timed
     def _write_file(self):
-        x = self.measurement_parameters['x'][self.measurement_index]
-        y = self.measurement_parameters['y'][self.measurement_index]
-        x_inx = list(np.unique(self.measurement_parameters['x'])).index(x)
-        y_inx = list(np.unique(self.measurement_parameters['y'])).index(y)
         if self.measurement_index == 0:
             datagroup = self.dataset.createGroup(f'{self.experiment}/dark')
         elif self.measurement_index == 1:
             datagroup = self.dataset.createGroup(f'{self.experiment}/lamp')
         else:
-            datagroup = self.dataset.createGroup(f'{self.experiment}/x{x_inx-1}y{y_inx-1}')
+            x = self.measurement_parameters['x'][self.measurement_index]
+            y = self.measurement_parameters['y'][self.measurement_index]
+            x_inx = list(np.unique(self.measurement_parameters['x'][2:])).index(x)
+            y_iny = list(np.unique(self.measurement_parameters['y'][2:])).index(y)
+            datagroup = self.dataset.createGroup(f'{self.experiment}/x{x_inx+1}y{y_iny+1}')
         try:
             xy_pos = datagroup['position']
             em_wl = datagroup['emission']
@@ -306,9 +310,22 @@ class StateMachine(QObject):
         self.measurement_index += 1
         self.calculate_progress()
 
+    def _prepare_measurement(self):
+        try:
+            global tstartmove
+            tstartmove = time.time()
+            x = self.measurement_parameters['x'][self.measurement_index]
+            y = self.measurement_parameters['y'][self.measurement_index]
+            self.heartbeat_xystage.start()
+            self.instruments['xystage'].move(x, y)
+            # logging.info('Movement took {} s to complete'.format(time.time() - t))
+        except IndexError:
+            raise IndexError
+
     @timed
     def _measure(self):
         self.heartbeat_xystage.stop()
+        self.measurement_duration += time.time() - tstartmove
         # Measure with spectrometer
         logging.info('Measuring...')
         with wait_for_signal(self.instruments['spectrometer'].measurement_complete):
@@ -319,15 +336,7 @@ class StateMachine(QObject):
         self.processedspectrum = self.instruments['spectrometer'].last_intensity
         self.spectrometertimes = self.instruments['spectrometer'].last_times
 
-    def _prepare_measurement(self):
-        try:
-            x = self.measurement_parameters['x'][self.measurement_index]
-            y = self.measurement_parameters['y'][self.measurement_index]
-            self.heartbeat_xystage.start()
-            self.instruments['xystage'].move(x, y)
-            # logging.info('Movement took {} s to complete'.format(time.time() - t))
-        except IndexError:
-            raise IndexError
+
 
     def _print_ready(self):
         print('movement is ready')
@@ -345,7 +354,7 @@ class StateMachine(QObject):
             ect (float): Estimated completion time as UNIX timestamp
         """
         progress = self.measurement_index / len(self.measurement_parameters['x'])
-        ect = (time.time() + self.measurement_duration /
+        ect = (self.measurement_duration /
                self.measurement_index *
                (len(self.measurement_parameters['x']) - self.measurement_index)
                )

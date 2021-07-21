@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>644</width>
-    <height>453</height>
+    <width>856</width>
+    <height>674</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -120,7 +120,7 @@
         <item row="0" column="0">
          <widget class="QStackedWidget" name="stackedWidget_experiment">
           <property name="currentIndex">
-           <number>0</number>
+           <number>2</number>
           </property>
           <widget class="QWidget" name="page_transmission">
            <property name="sizePolicy">
@@ -179,8 +179,8 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>170</width>
-                  <height>316</height>
+                  <width>558</width>
+                  <height>508</height>
                  </rect>
                 </property>
                 <property name="sizePolicy">
@@ -193,7 +193,7 @@
                  <item row="1" column="0">
                   <widget class="XYStageWidget" name="widget_xystage_transmission" native="true">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
@@ -203,23 +203,13 @@
                      <width>0</width>
                      <height>0</height>
                     </size>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="0">
-                  <widget class="SpectrometerWidget" name="widget_spectrometer_transmission" native="true">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
                    </property>
                   </widget>
                  </item>
                  <item row="0" column="0">
                   <widget class="FileWidget" name="widget_file_transmission" native="true">
                    <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
                      <horstretch>0</horstretch>
                      <verstretch>0</verstretch>
                     </sizepolicy>
@@ -232,7 +222,33 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="4" column="0">
+                 <item row="5" column="0">
+                  <widget class="SpectrometerWidget" name="widget_spectrometer_transmission" native="true">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0">
+                  <widget class="XYStagePlotWidget" name="widget_xystageplot_transmission" native="true">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>300</width>
+                     <height>300</height>
+                    </size>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="7" column="0">
                   <spacer name="verticalSpacer">
                    <property name="orientation">
                     <enum>Qt::Vertical</enum>
@@ -334,8 +350,8 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>401</width>
-                  <height>316</height>
+                  <width>38</width>
+                  <height>130</height>
                  </rect>
                 </property>
                 <property name="sizePolicy">
@@ -345,20 +361,23 @@
                  </sizepolicy>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_8">
-                 <item row="6" column="0">
-                  <spacer name="verticalSpacer_2">
-                   <property name="orientation">
-                    <enum>Qt::Vertical</enum>
+                 <item row="1" column="0">
+                  <widget class="XYStageWidget" name="widget_xystage_excitation_emission" native="true">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
                    </property>
-                   <property name="sizeHint" stdset="0">
+                   <property name="minimumSize">
                     <size>
-                     <width>20</width>
-                     <height>40</height>
+                     <width>0</width>
+                     <height>0</height>
                     </size>
                    </property>
-                  </spacer>
+                  </widget>
                  </item>
-                 <item row="3" column="0">
+                 <item row="4" column="0">
                   <widget class="PowerMeterWidget" name="widget_powermeter_excitation_emission" native="true">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -368,7 +387,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="0">
+                 <item row="3" column="0">
                   <widget class="SpectrometerWidget" name="widget_spectrometer_excitation_emission" native="true">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -378,7 +397,7 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="4" column="0">
+                 <item row="5" column="0">
                   <widget class="LaserWidget" name="widget_laser_excitation_emission" native="true">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -404,24 +423,24 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="1" column="0">
-                  <widget class="XYStageWidget" name="widget_xystage_excitation_emission" native="true">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
+                 <item row="6" column="0">
+                  <widget class="ShutterControlWidget" name="widget_shuttercontrol_excitation_emission" native="true"/>
+                 </item>
+                 <item row="7" column="0">
+                  <spacer name="verticalSpacer_2">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
                    </property>
-                   <property name="minimumSize">
+                   <property name="sizeHint" stdset="0">
                     <size>
-                     <width>0</width>
-                     <height>0</height>
+                     <width>20</width>
+                     <height>40</height>
                     </size>
                    </property>
-                  </widget>
+                  </spacer>
                  </item>
-                 <item row="5" column="0">
-                  <widget class="ShutterControlWidget" name="widget_shuttercontrol_excitation_emission" native="true"/>
+                 <item row="2" column="0">
+                  <widget class="XYStagePlotWidget" name="widget_xystageplot_excitation_emission" native="true"/>
                  </item>
                 </layout>
                </widget>
@@ -472,29 +491,35 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>98</width>
-                  <height>316</height>
+                  <width>133</width>
+                  <height>508</height>
                  </rect>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_10">
                  <item row="5" column="0">
-                  <spacer name="verticalSpacer_3">
-                   <property name="orientation">
-                    <enum>Qt::Vertical</enum>
-                   </property>
-                   <property name="sizeHint" stdset="0">
-                    <size>
-                     <width>20</width>
-                     <height>40</height>
-                    </size>
-                   </property>
-                  </spacer>
+                  <widget class="ShutterControlWidget" name="widget_shuttercontrol_decay" native="true"/>
                  </item>
-                 <item row="3" column="0">
+                 <item row="4" column="0">
                   <widget class="DigitizerWidget" name="widget_digitizer_decay" native="true"/>
                  </item>
                  <item row="0" column="0">
                   <widget class="FileWidget" name="widget_file_decay" native="true">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="0">
+                  <widget class="LaserWidget" name="widget_laser_decay" native="true">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
                      <horstretch>0</horstretch>
@@ -525,24 +550,21 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="2" column="0">
-                  <widget class="LaserWidget" name="widget_laser_decay" native="true">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
+                 <item row="6" column="0">
+                  <spacer name="verticalSpacer_3">
+                   <property name="orientation">
+                    <enum>Qt::Vertical</enum>
                    </property>
-                   <property name="minimumSize">
+                   <property name="sizeHint" stdset="0">
                     <size>
-                     <width>0</width>
-                     <height>0</height>
+                     <width>20</width>
+                     <height>40</height>
                     </size>
                    </property>
-                  </widget>
+                  </spacer>
                  </item>
-                 <item row="4" column="0">
-                  <widget class="ShutterControlWidget" name="widget_shuttercontrol_decay" native="true"/>
+                 <item row="2" column="0">
+                  <widget class="XYStagePlotWidget" name="widget_xystageplot_decay" native="true"/>
                  </item>
                 </layout>
                </widget>
@@ -554,6 +576,30 @@
          </widget>
         </item>
         <item row="1" column="0">
+         <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QLabel" name="label_completion_time">
+            <property name="minimumSize">
+             <size>
+              <width>300</width>
+              <height>0</height>
+             </size>
+            </property>
+            <property name="text">
+             <string>Estimated completion time: 25 min 30 s </string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QProgressBar" name="progressBar">
+            <property name="value">
+             <number>0</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item row="2" column="0">
          <layout class="QHBoxLayout" name="horizontalLayout_buttons">
           <item>
            <widget class="QPushButton" name="pushButton_return">
@@ -565,7 +611,7 @@
             </property>
             <property name="font">
              <font>
-              <pointsize>20</pointsize>
+              <pointsize>16</pointsize>
              </font>
             </property>
             <property name="text">
@@ -583,7 +629,7 @@
             </property>
             <property name="font">
              <font>
-              <pointsize>20</pointsize>
+              <pointsize>16</pointsize>
              </font>
             </property>
             <property name="text">
@@ -601,7 +647,7 @@
             </property>
             <property name="font">
              <font>
-              <pointsize>20</pointsize>
+              <pointsize>16</pointsize>
              </font>
             </property>
             <property name="text">
@@ -622,7 +668,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>644</width>
+     <width>856</width>
      <height>21</height>
     </rect>
    </property>
@@ -630,6 +676,12 @@
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>XYStagePlotWidget</class>
+   <extends>QWidget</extends>
+   <header>gui_action/plot_xystage</header>
+   <container>1</container>
+  </customwidget>
   <customwidget>
    <class>FileWidget</class>
    <extends>QWidget</extends>

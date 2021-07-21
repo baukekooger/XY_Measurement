@@ -110,26 +110,6 @@ class QSpectrometer(QObject):
                 | times measured over as
                     [ [tstart0, tstart1,...], [tstop0, tstop1, ...] ]
         """
-
-        # logging.info('Measuring Spectrometer')
-        #        print('Spectrometer: {}'.format(threading.currentThread()))
-        # with(QMutexLocker(self.mutex)):
-        #     # Perform 'fake' measurement if the integration times don't match
-        #     # This clears the Spectrometer's cache
-        #     cache_cleared = False
-        #     self.measuring = True
-        #     while self.measuring and not cache_cleared:
-        #         t = [time.time()]
-        #         intensity = (self.spec.intensities(
-        #             self.correct_dark_counts,
-        #             self.correct_nonlinearity) / self.average_measurements)
-        #         t.append(time.time())
-        #         mm = self._integrationtime / 1000
-        #         cache_cleared = (mm * 0.9 < np.diff(t)[0] < mm * 1.1)
-        #         # Cannot measure less than 30 ms time difference
-        #         if mm * 1000 < 30:
-        #             cache_cleared = True
-        #         logging.info('Cache cleared? {}'.format(cache_cleared))
         with(QMutexLocker(self.mutex)):
             self.measuring = True
             t = []
@@ -142,10 +122,10 @@ class QSpectrometer(QObject):
                                                     self.correct_nonlinearity))
                 t.append(time.time())
                 n += 1
-            if any(self.dark):
-                intensity = intensity - self.dark
-            if self.transmission and all(self.lamp):
-                intensity = intensity/self.lamp
+            # if any(self.dark):
+            #     intensity = intensity - self.dark
+            # if self.transmission and all(self.lamp):
+            #     intensity = intensity/self.lamp
 
         self.measuring = False
         logging.info('Spectrometer Done')
@@ -158,8 +138,8 @@ class QSpectrometer(QObject):
 
     @pyqtSlot()
     def measure_dark(self):
-        """Performs a mutex-locked dark measurement.
-        The result will be substracted from the reported intensities.
+        """ Performs a mutex-locked dark measurement.
+        The result will be stored and emitted.
         """
         with(QMutexLocker(self.mutex)):
             self.dark, t = self.measure()
@@ -186,3 +166,4 @@ class QSpectrometer(QObject):
 
     def clear_lamp(self):
         self.lamp = np.zeros(len(self.spec.wavelengths()))
+

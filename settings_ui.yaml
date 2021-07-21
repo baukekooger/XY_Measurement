@@ -27,22 +27,21 @@ excitation_emission:
     spinBox_y_num: 0
 transmission:
   widget_file_transmission:
-    lineEdit_directory: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY
-    lineEdit_sample: Newsample
-    plainTextEdit_comments: 'This is still a test '
+    comboBox_substrate: 0
+    lineEdit_directory: ''
+    lineEdit_sample: ''
+    plainTextEdit_comments: ''
   widget_spectrometer_transmission:
-    spinBox_averageing_alignment: 3
-    spinBox_averageing_experiment: 3
-    spinBox_integration_time_alignment: 500
-    spinBox_integration_time_experiment: 500
+    spinBox_averageing_alignment: 1
+    spinBox_averageing_experiment: 1
+    spinBox_integration_time_alignment: 1000
+    spinBox_integration_time_experiment: 30
   widget_xystage_transmission:
     checkBox_homed_x: true
     checkBox_homed_y: true
     doubleSpinBox_x: 0.0
-    doubleSpinBox_x_start: 1.0
-    doubleSpinBox_x_stop: 30.0
     doubleSpinBox_y: 0.0
-    doubleSpinBox_y_start: 2.0
-    doubleSpinBox_y_stop: 50.0
-    spinBox_x_num: 2
-    spinBox_y_num: 2
+    spinBox_x_num: 1
+    spinBox_y_num: 1
+    spinBox_y_num_2: 0
+    spinBox_y_num_3: 0
