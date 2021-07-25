@@ -11,7 +11,7 @@ class QXYStage(QObject):
     stage_settled = pyqtSignal()
     homing_status = pyqtSignal(bool, bool)
 
-    def __init__(self, xstage_serial=45962470, ystage_serial=45951910, polltime=0.1, timeout=30, parent=None):
+    def __init__(self, xstage_serial=45951910, ystage_serial=45962470, polltime=0.1, timeout=30, parent=None):
         super().__init__(parent=parent)
         self.mutex = QMutex(QMutex.Recursive)
         self.measuring = False
@@ -24,7 +24,7 @@ class QXYStage(QObject):
         self.ymin = 0
         # XYStage status
         # small stages: xstageserial=67844568, ystageserial=67844567
-        # big stages: xstageserial=45962470, ystageserial=45951910):
+        # big stages: xstageserial=45951910, ystageserial=45962470):
         self.xstage_serial = xstage_serial
         self.ystage_serial = ystage_serial
         self.xstage = None

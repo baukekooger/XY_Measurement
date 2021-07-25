@@ -120,8 +120,8 @@ class StateMachine(QObject):
             self.xmax = 100
             self.ymax = 100
         else:
-            self.xstage_serial = 45962470
-            self.ystage_serial = 45951910
+            self.xstage_serial = 45951910
+            self.ystage_serial = 45962470
             self.xmax = 100
             self.ymax = 100
 
@@ -154,16 +154,23 @@ class StateMachine(QObject):
         path_settings = Path.home() / 'PycharmProjects/XY_New/settings_ui.yaml'
         with path_settings.open() as f:
             settings = yaml_safe_load(f)
+        substratenum = settings[self.experiment][f'widget_file_{self.experiment}']['comboBox_substrate']
+        substrate = self.config['substrates'][substratenum]
         xysettings = settings[self.experiment][f'widget_xystage_{self.experiment}']
-        substrate = settings['self.experiment'][f'widget_file_{self.experiment}']['comboBox_substrate']
-        x_start = self.config['substrates'][substrate]['xstart']
-        x_stop = self.config['substrates'][substrate]['xstop']
         x_num = xysettings['spinBox_x_num']
-        x = np.linspace(x_start, x_stop, num=x_num)
-        y_start = self.config['substrates'][substrate]['ystart']
-        y_stop = self.config['substrates'][substrate]['ystop']
+        x_off_left = xysettings['spinBox_x_off_left']
+        x_off_right = xysettings['spinBox_x_off_right']
+        x_start = substrate['x_start']
+        width_sample = substrate['whse']
+        width_sample_usable = substrate['ws']
+        x = self._define_positions(x_num, x_off_left, x_off_right, x_start, width_sample, width_sample_usable)
         y_num = xysettings['spinBox_y_num']
-        y = np.linspace(y_start, y_stop, num=y_num)
+        y_off_bottom = xysettings['spinBox_y_off_bottom']
+        y_off_top = xysettings['spinBox_y_off_top']
+        y_start = substrate['y_start']
+        height_sample = substrate['hhse']
+        height_sample_usable = substrate['hs']
+        y = self._define_positions(y_num, y_off_bottom, y_off_top, y_start, height_sample, height_sample_usable)
         self.measurement_parameters = {}
         self._add_measurement_parameter('x', x)
         self._add_measurement_parameter('y', y)
@@ -188,6 +195,16 @@ class StateMachine(QObject):
             parameter = np.tile(parameter, length)
         self.measurement_parameters[name] = parameter
         return parameter
+
+    def _define_positions(self, num, off1, off2, start, sse, ss):
+        # sse is sample size including edge of sample hodler, ss is visible part only
+        bw = 3.5
+        off1_mm = (ss - bw) * off1 / (100 + off2)
+        off2_mm = (ss - bw) * off2 / (100 + off1)
+        positions = [(sse + off1_mm - off2_mm) / 2 + start]
+        positions = np.linspace((sse - ss + bw) / 2 + off1_mm + start,
+                                sse - (sse - ss + bw) / 2 - off2_mm + start, num) if num > 1 else positions
+        return positions
 
     def _connect_all(self):
         for inst in self.instruments.keys():
@@ -335,8 +352,6 @@ class StateMachine(QObject):
         logging.info('Reading out measurement data...')
         self.processedspectrum = self.instruments['spectrometer'].last_intensity
         self.spectrometertimes = self.instruments['spectrometer'].last_times
-
-
 
     def _print_ready(self):
         print('movement is ready')

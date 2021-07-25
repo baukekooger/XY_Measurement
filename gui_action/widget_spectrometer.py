@@ -23,6 +23,16 @@ class SpectrometerWidget(QtWidgets.QWidget):
         self.ui.pushButton_lamp.clicked.connect(self.handle_lampspectrum)
         self.ui.pushButton_transmission.clicked.connect(self.handle_transmission)
 
+    def disconnect_signals_slots(self):
+        self.spectrometer.measurement_parameters.disconnect()
+        self.ui.spinBox_integration_time_alignment.editingFinished.disconnect()
+        self.ui.spinBox_averageing_alignment.editingFinished.disconnect()
+        self.ui.pushButton_dark.clicked.disconnect()
+        self.ui.pushButton_reset.clicked.disconnect()
+        self.ui.pushButton_lamp.clicked.disconnect()
+        self.ui.pushButton_transmission.clicked.disconnect()
+        self.handle_reset()
+
     @pyqtSlot(int, int)
     def update_parameters(self, integrationtime, average_measurements):
         self.ui.label_integration_time_alignment_value.setText(f'{integrationtime} ms')
@@ -33,8 +43,7 @@ class SpectrometerWidget(QtWidgets.QWidget):
             self.spectrometer.measure_dark()
             self.ui.pushButton_dark.setChecked(True)
         else:
-            self.spectrometer.clear_dark()
-            self.ui.pushButton_dark.setChecked(False)
+            self.handle_reset()
 
     def handle_lampspectrum(self):
         if not any(self.spectrometer.dark):
@@ -46,7 +55,6 @@ class SpectrometerWidget(QtWidgets.QWidget):
         elif self.spectrometer.transmission:
             self.spectrometer.transmission = False
             self.ui.pushButton_transmission.setChecked(False)
-            self.transmission_set.emit(False)
             self.spectrometer.clear_lamp()
             self.ui.pushButton_lamp.setChecked(False)
         else:
@@ -67,7 +75,6 @@ class SpectrometerWidget(QtWidgets.QWidget):
     def handle_reset(self):
         self.spectrometer.transmission = False
         self.ui.pushButton_transmission.setChecked(False)
-        self.transmission_set.emit(False)
         self.spectrometer.clear_lamp()
         self.ui.pushButton_lamp.setChecked(False)
         self.spectrometer.clear_dark()

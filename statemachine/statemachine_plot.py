@@ -9,7 +9,7 @@ pathconfig = Path.cwd().parent / 'config_main.yaml'
 
 
 class PlotStateMachine:
-    """ Use an instance of this class with the show_statemachine method to conveniently plot the
+    """ Use an instance of this class with the show_statemachine method to plot the
         statechart for the statemachine. It is possible to run through the states because of the
         dummy callbacks specified here."""
 

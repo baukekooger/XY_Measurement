@@ -62,10 +62,12 @@ instrument_pages: {
 # Position settings for the different substrates
 substrates: {
     0: {
-        xstart: 0,
-        xstop: 10,
-        ystart: 0,
-        ystop: 10
+        xstart: 14,  # left upper corner position x
+        ystart: 15,  # left upper corner position y
+        whse: 51,    # width holder sample edge
+        hhse: 51,    # height holder sample edge
+        ws: 47,      # width sample usable
+        hs: 47,      # height sample usable
     },
     1: {
         xstart: 0,

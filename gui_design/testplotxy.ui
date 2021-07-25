@@ -41,6 +41,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="pushButton_plot">
+       <property name="text">
+        <string>Test Plot</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <layout class="QHBoxLayout" name="horizontalLayout_2">
        <item>
         <widget class="QLabel" name="label">

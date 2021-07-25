@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>349</width>
-    <height>165</height>
+    <width>475</width>
+    <height>292</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -98,7 +98,7 @@
                 </property>
                 <property name="minimumSize">
                  <size>
-                  <width>113</width>
+                  <width>100</width>
                   <height>0</height>
                  </size>
                 </property>
@@ -109,6 +109,12 @@
               </item>
               <item>
                <widget class="QSpinBox" name="spinBox_x_num">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
                 <property name="minimumSize">
                  <size>
                   <width>60</width>
@@ -143,7 +149,7 @@
                 </property>
                 <property name="minimumSize">
                  <size>
-                  <width>113</width>
+                  <width>100</width>
                   <height>0</height>
                  </size>
                 </property>
@@ -179,7 +185,7 @@
                <enum>QLayout::SetDefaultConstraint</enum>
               </property>
               <item>
-               <widget class="QLabel" name="label_x_offset">
+               <widget class="QLabel" name="label_x_off_left">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -188,17 +194,59 @@
                 </property>
                 <property name="minimumSize">
                  <size>
-                  <width>113</width>
+                  <width>100</width>
                   <height>0</height>
                  </size>
                 </property>
                 <property name="text">
-                 <string>x offset (-100 .. 100)</string>
+                 <string>x off left (0-100)</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QSpinBox" name="spinBox_y_num_2">
+               <widget class="QSpinBox" name="spinBox_x_off_left">
+                <property name="minimumSize">
+                 <size>
+                  <width>60</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="minimum">
+                 <number>-100</number>
+                </property>
+                <property name="maximum">
+                 <number>100</number>
+                </property>
+                <property name="value">
+                 <number>0</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_3">
+              <item>
+               <widget class="QLabel" name="label_x_off_right">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>100</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>x off right (0-100)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="spinBox_x_off_right">
                 <property name="minimumSize">
                  <size>
                   <width>60</width>
@@ -227,7 +275,7 @@
                <enum>QLayout::SetDefaultConstraint</enum>
               </property>
               <item>
-               <widget class="QLabel" name="label_y_num_4">
+               <widget class="QLabel" name="label_y_off_bottom">
                 <property name="sizePolicy">
                  <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
                   <horstretch>0</horstretch>
@@ -236,17 +284,59 @@
                 </property>
                 <property name="minimumSize">
                  <size>
-                  <width>113</width>
+                  <width>100</width>
                   <height>0</height>
                  </size>
                 </property>
                 <property name="text">
-                 <string>y offset (-100 .. 100) </string>
+                 <string>y off bottom (0-100)</string>
                 </property>
                </widget>
               </item>
               <item>
-               <widget class="QSpinBox" name="spinBox_y_num_3">
+               <widget class="QSpinBox" name="spinBox_y_off_bottom">
+                <property name="minimumSize">
+                 <size>
+                  <width>60</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="minimum">
+                 <number>-100</number>
+                </property>
+                <property name="maximum">
+                 <number>100</number>
+                </property>
+                <property name="value">
+                 <number>0</number>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout">
+              <item>
+               <widget class="QLabel" name="label_y_off_top">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>100</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>y off top (0-100)</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="spinBox_y_off_top">
                 <property name="minimumSize">
                  <size>
                   <width>60</width>

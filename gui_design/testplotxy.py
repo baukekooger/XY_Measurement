@@ -30,6 +30,9 @@ class Ui_Form(object):
         self.pushButton_move = QtWidgets.QPushButton(Form)
         self.pushButton_move.setObjectName("pushButton_move")
         self.verticalLayout.addWidget(self.pushButton_move)
+        self.pushButton_plot = QtWidgets.QPushButton(Form)
+        self.pushButton_plot.setObjectName("pushButton_plot")
+        self.verticalLayout.addWidget(self.pushButton_plot)
         self.horizontalLayout_2 = QtWidgets.QHBoxLayout()
         self.horizontalLayout_2.setObjectName("horizontalLayout_2")
         self.label = QtWidgets.QLabel(Form)
@@ -68,6 +71,7 @@ class Ui_Form(object):
         Form.setWindowTitle(_translate("Form", "Form"))
         self.pushButton_home.setText(_translate("Form", "Home "))
         self.pushButton_move.setText(_translate("Form", "Move"))
+        self.pushButton_plot.setText(_translate("Form", "Test Plot"))
         self.label.setText(_translate("Form", "x"))
         self.label_2.setText(_translate("Form", "y"))
 

@@ -18,7 +18,7 @@ class QSpectrometer(QObject):
     measurement_done = pyqtSignal()
     measurement_parameters = pyqtSignal(int, int)
 
-    def __init__(self, integrationtime=100, average_measurements=1, polltime=0.01, timeout=30, parent=None):
+    def __init__(self, integrationtime=500, average_measurements=1, polltime=0.01, timeout=30, parent=None):
         super().__init__(parent=parent)
         self.mutex = QMutex(QMutex.Recursive)
         self.measuring = False
