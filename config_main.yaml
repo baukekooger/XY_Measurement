@@ -17,12 +17,14 @@ widgets : {
     'transmission': {
         'widget_file_transmission': '',
         'widget_xystage_transmission': 'xystage',
+        'widget_xystageplot_transmission': 'xystage',
         'widget_spectrometer_transmission': 'spectrometer',
         'widget_spectrometerplot_transmission': 'spectrometer'
     },
     'excitation_emission': {
         'widget_file_excitation_emission': '',
         'widget_xystage_excitation_emission': 'xystage',
+        'widget_xystageplot_excitation_emission' : 'xystage',
         'widget_spectrometer_excitation_emission': 'spectrometer',
         'widget_spectrometerplot_excitation_emission': 'spectrometer',
         'widget_powermeter_excitation_emission': 'powermeter',
@@ -33,6 +35,7 @@ widgets : {
     'decay': {
         'widget_file_decay': '',
         'widget_xystage_decay': 'xystage',
+        'widget_xystageplot_decay': 'xystage',
         'widget_digitizer_decay': 'digitizer',
         'widget_digitizerplot_decay': 'digitizer',
         'widget_laser_decay': 'laser',
@@ -56,4 +59,27 @@ instrument_pages: {
         'enable_start': True
     }
 }
+# Position settings for the different substrates
+substrates: {
+    0: {
+        x_start: 14,  # left upper corner position x
+        y_start: 15,  # left upper corner position y
+        whse: 51,    # width holder sample edge
+        hhse: 51,    # height holder sample edge
+        ws: 47,      # width sample usable
+        hs: 47,      # height sample usable
+    },
+    1: {
+        xstart: 0,
+        xstop: 10,
+        ystart: 0,
+        ystop: 10
+    },
+    2: {
+        xstart: 0,
+        xstop: 10,
+        ystart: 0,
+        ystop: 10
+    }
 
+}

@@ -8,6 +8,8 @@ class LaserWidget(QtWidgets.QWidget):
         self.ui = Ui_Form()
         self.ui.setupUi(self)
 
+    def connect_signals_slots(self):
+        pass
 
 if __name__ == '__main__':
     import sys

@@ -59,20 +59,20 @@ class StateMachine(QObject):
     """
 
     signalstatechange = pyqtSignal(str)     # signal that emits the state
-    progress = pyqtSignal(float)            # signal emitting the progress of the measurement
-    ect = pyqtSignal(float)                 # another signal
+    progress = pyqtSignal(int)            # signal emitting the progress of the measurement
+    ect = pyqtSignal(int)                 # another signal
     connecting_done = pyqtSignal()
     signal_return_setexperiment = pyqtSignal()
     state = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super().__init__()
-        pathstateconfig = Path.home() / 'Repositories/XY_New/experiments/config_statemachine.yaml'
+        pathstateconfig = Path.home() / 'PycharmProjects/XY_New/statemachine/config_statemachine.yaml'
         with pathstateconfig.open() as f:
             self.stateconfig = yaml_safe_load(f)
         self.stateconfig['model'] = self
         self.machine = Machine(**self.stateconfig)
-        pathconfig = Path.home() / 'Repositories/XY_New/config_main.yaml'
+        pathconfig = Path.home() / 'PycharmProjects/XY_New/config_main.yaml'
         with pathconfig.open() as f:
             self.config = yaml_safe_load(f)
         self.experiment = None
@@ -93,7 +93,7 @@ class StateMachine(QObject):
         self.startingtime = time.time()
 
     def _init_poll(self):
-        self.polltime = 0.1
+        self.polltime = 0.2
         self.heartbeat = QTimer()
         self.heartbeat.setInterval(int(self.polltime * 1000))
         self.heartbeat.timeout.connect(self._measure_instruments)
@@ -120,8 +120,8 @@ class StateMachine(QObject):
             self.xmax = 100
             self.ymax = 100
         else:
-            self.xstage_serial = 45962470
-            self.ystage_serial = 45951910
+            self.xstage_serial = 45951910
+            self.ystage_serial = 45962470
             self.xmax = 100
             self.ymax = 100
 
@@ -151,18 +151,26 @@ class StateMachine(QObject):
         self.instruments['spectrometer'].measurement_done.connect(self.process_data)
 
     def _parse_config(self):
-        path_settings = Path.home() / 'Repositories/XY_New/settings_ui.yaml'
+        path_settings = Path.home() / 'PycharmProjects/XY_New/settings_ui.yaml'
         with path_settings.open() as f:
             settings = yaml_safe_load(f)
+        substratenum = settings[self.experiment][f'widget_file_{self.experiment}']['comboBox_substrate']
+        substrate = self.config['substrates'][substratenum]
         xysettings = settings[self.experiment][f'widget_xystage_{self.experiment}']
-        x_start = xysettings['doubleSpinBox_x_start']
-        x_stop = xysettings['doubleSpinBox_x_stop']
         x_num = xysettings['spinBox_x_num']
-        x = np.linspace(x_start, x_stop, num=x_num)
-        y_start = xysettings['doubleSpinBox_y_start']
-        y_stop = xysettings['doubleSpinBox_y_stop']
+        x_off_left = xysettings['spinBox_x_off_left']
+        x_off_right = xysettings['spinBox_x_off_right']
+        x_start = substrate['x_start']
+        width_sample = substrate['whse']
+        width_sample_usable = substrate['ws']
+        x = self._define_positions(x_num, x_off_left, x_off_right, x_start, width_sample, width_sample_usable)
         y_num = xysettings['spinBox_y_num']
-        y = np.linspace(y_start, y_stop, num=y_num)
+        y_off_bottom = xysettings['spinBox_y_off_bottom']
+        y_off_top = xysettings['spinBox_y_off_top']
+        y_start = substrate['y_start']
+        height_sample = substrate['hhse']
+        height_sample_usable = substrate['hs']
+        y = self._define_positions(y_num, y_off_bottom, y_off_top, y_start, height_sample, height_sample_usable)
         self.measurement_parameters = {}
         self._add_measurement_parameter('x', x)
         self._add_measurement_parameter('y', y)
@@ -187,6 +195,16 @@ class StateMachine(QObject):
             parameter = np.tile(parameter, length)
         self.measurement_parameters[name] = parameter
         return parameter
+
+    def _define_positions(self, num, off1, off2, start, sse, ss):
+        # sse is sample size including edge of sample hodler, ss is visible part only
+        bw = 3.5
+        off1_mm = (ss - bw) * off1 / (100 + off2)
+        off2_mm = (ss - bw) * off2 / (100 + off1)
+        positions = [(sse + off1_mm - off2_mm) / 2 + start]
+        positions = np.linspace((sse - ss + bw) / 2 + off1_mm + start,
+                                sse - (sse - ss + bw) / 2 - off2_mm + start, num) if num > 1 else positions
+        return positions
 
     def _connect_all(self):
         for inst in self.instruments.keys():
@@ -226,7 +244,7 @@ class StateMachine(QObject):
         Copies config file to storage directory.
         """
         # Load directory
-        pathconfig = Path.home() / 'Repositories/XY_New/settings_ui.yaml'
+        pathconfig = Path.home() / 'PycharmProjects/XY_New/settings_ui.yaml'
         with pathconfig.open('r') as f:
             settings = yaml_safe_load(f)
         storage_dir = settings[self.experiment][f'widget_file_{self.experiment}']['lineEdit_directory']
@@ -242,6 +260,9 @@ class StateMachine(QObject):
             yaml_dump(settings, outfile)
         # Open a new datafile
         self.dataset = Dataset(f'{fname}.hdf5', 'w', format='NETCDF4')
+        positionsettings = self.dataset.createGroup(f'{self.experiment}/settings/xystage')
+        positionsettings.xnum = len(np.unique(self.measurement_parameters['x'][2:]))
+        positionsettings.ynum = len(np.unique(self.measurement_parameters['y'][2:]))
         spectrometersettings = self.dataset.createGroup(f'{self.experiment}/settings/spectrometer')
         spectrometersettings.integrationtime = self.instruments['spectrometer'].integrationtime
         spectrometersettings.average_measurements = self.instruments['spectrometer'].average_measurements
@@ -254,16 +275,16 @@ class StateMachine(QObject):
 
     @timed
     def _write_file(self):
-        x = self.measurement_parameters['x'][self.measurement_index]
-        y = self.measurement_parameters['y'][self.measurement_index]
-        x_inx = list(np.unique(self.measurement_parameters['x'])).index(x)
-        y_inx = list(np.unique(self.measurement_parameters['y'])).index(y)
         if self.measurement_index == 0:
             datagroup = self.dataset.createGroup(f'{self.experiment}/dark')
         elif self.measurement_index == 1:
             datagroup = self.dataset.createGroup(f'{self.experiment}/lamp')
         else:
-            datagroup = self.dataset.createGroup(f'{self.experiment}/x{x_inx-1}y{y_inx-1}')
+            x = self.measurement_parameters['x'][self.measurement_index]
+            y = self.measurement_parameters['y'][self.measurement_index]
+            x_inx = list(np.unique(self.measurement_parameters['x'][2:])).index(x)
+            y_iny = list(np.unique(self.measurement_parameters['y'][2:])).index(y)
+            datagroup = self.dataset.createGroup(f'{self.experiment}/x{x_inx+1}y{y_iny+1}')
         try:
             xy_pos = datagroup['position']
             em_wl = datagroup['emission']
@@ -306,9 +327,22 @@ class StateMachine(QObject):
         self.measurement_index += 1
         self.calculate_progress()
 
+    def _prepare_measurement(self):
+        try:
+            global tstartmove
+            tstartmove = time.time()
+            x = self.measurement_parameters['x'][self.measurement_index]
+            y = self.measurement_parameters['y'][self.measurement_index]
+            self.heartbeat_xystage.start()
+            self.instruments['xystage'].move(x, y)
+            # logging.info('Movement took {} s to complete'.format(time.time() - t))
+        except IndexError:
+            raise IndexError
+
     @timed
     def _measure(self):
         self.heartbeat_xystage.stop()
+        self.measurement_duration += time.time() - tstartmove
         # Measure with spectrometer
         logging.info('Measuring...')
         with wait_for_signal(self.instruments['spectrometer'].measurement_complete):
@@ -318,16 +352,6 @@ class StateMachine(QObject):
         logging.info('Reading out measurement data...')
         self.processedspectrum = self.instruments['spectrometer'].last_intensity
         self.spectrometertimes = self.instruments['spectrometer'].last_times
-
-    def _prepare_measurement(self):
-        try:
-            x = self.measurement_parameters['x'][self.measurement_index]
-            y = self.measurement_parameters['y'][self.measurement_index]
-            self.heartbeat_xystage.start()
-            self.instruments['xystage'].move(x, y)
-            # logging.info('Movement took {} s to complete'.format(time.time() - t))
-        except IndexError:
-            raise IndexError
 
     def _print_ready(self):
         print('movement is ready')
@@ -345,12 +369,12 @@ class StateMachine(QObject):
             ect (float): Estimated completion time as UNIX timestamp
         """
         progress = self.measurement_index / len(self.measurement_parameters['x'])
-        ect = (time.time() + self.measurement_duration /
+        ect = (self.measurement_duration /
                self.measurement_index *
                (len(self.measurement_parameters['x']) - self.measurement_index)
                )
-        self.progress.emit(progress * 100)
-        self.ect.emit(ect)
+        self.ect.emit(int(ect))
+        self.progress.emit(int(progress * 100))
         logging.info('Progress: {} %'.format(progress * 100))
         logging.info('Completed at: {}'.format(time.ctime(ect)))
         if progress == 1:

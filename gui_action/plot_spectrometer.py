@@ -13,12 +13,7 @@ class SpectrometerPlotWidget(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.figure = None
-        self.canvas = None
         self.spectrometer = QSpectrometer()
-        self.set_transmissionaxes = False
-
-    def connect_signals_slots(self):
         self.figure = plt.figure()
         layout = QtWidgets.QVBoxLayout()
         layout.setContentsMargins(0, 0, 0, 0)
@@ -27,7 +22,12 @@ class SpectrometerPlotWidget(QtWidgets.QWidget):
         # self.toolbar = NavigationToolbar(self.canvas, self)
         # layout.addWidget(self.toolbar)
         self.setLayout(layout)
+
+    def connect_signals_slots(self):
         self.spectrometer.measurement_complete.connect(self.plot)
+
+    def disconnect_signals_slots(self):
+        self.spectrometer.measurement_complete.disconnect()
 
     @pyqtSlot(np.ndarray, list)
     def plot(self, intensities, times):
@@ -35,9 +35,15 @@ class SpectrometerPlotWidget(QtWidgets.QWidget):
         ax = self.figure.add_subplot(111)
         ax.set_ylabel('counts')
         ax.set_xlabel('wavelength [nm]')
-        if self.set_transmissionaxes:
+        if self.spectrometer.transmission:
+            transmission = (intensities - self.spectrometer.dark)/(self.spectrometer.lamp - self.spectrometer.dark)
+            ax.plot(self.spectrometer.wavelengths, transmission, '-')
             ax.set_ylim([-0.2, 1.2])
-        ax.plot(self.spectrometer.wavelengths, intensities, '-')
+        elif any(self.spectrometer.dark):
+            minusdark = intensities - self.spectrometer.dark
+            ax.plot(self.spectrometer.wavelengths, minusdark, '-')
+        else:
+            ax.plot(self.spectrometer.wavelengths, intensities, '-')
         ax.set_title(f'measurement completed in {times[-1]-times[0]:.2f} seconds')
         self.figure.tight_layout()
         self.canvas.draw()

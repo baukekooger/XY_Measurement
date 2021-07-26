@@ -25,6 +25,12 @@ class XYStageWidget(QtWidgets.QWidget):
         self.ui.doubleSpinBox_x.setMaximum(self.xystage.xmax)
         self.ui.doubleSpinBox_y.setMaximum(self.xystage.ymax)
 
+    def disconnect_signals_slots(self):
+        self.xystage.homing_status.disconnect()
+        self.ui.doubleSpinBox_x.editingFinished.disconnect()
+        self.ui.doubleSpinBox_y.editingFinished.disconnect()
+        self.ui.pushButton_home_motors.clicked.disconnect()
+
     def _handle_move_x(self):
         if not self.xystage.xhomed:
             QtWidgets.QMessageBox.information(self, 'homing warning', 'x stage not homed, wait for stages to home')

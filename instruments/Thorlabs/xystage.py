@@ -11,7 +11,7 @@ class QXYStage(QObject):
     stage_settled = pyqtSignal()
     homing_status = pyqtSignal(bool, bool)
 
-    def __init__(self, xstage_serial=45962470, ystage_serial=45951910, polltime=0.1, timeout=30, parent=None):
+    def __init__(self, xstage_serial=45951910, ystage_serial=45962470, polltime=0.1, timeout=30, parent=None):
         super().__init__(parent=parent)
         self.mutex = QMutex(QMutex.Recursive)
         self.measuring = False
@@ -24,7 +24,7 @@ class QXYStage(QObject):
         self.ymin = 0
         # XYStage status
         # small stages: xstageserial=67844568, ystageserial=67844567
-        # big stages: xstageserial=45962470, ystageserial=45951910):
+        # big stages: xstageserial=45951910, ystageserial=45962470):
         self.xstage_serial = xstage_serial
         self.ystage_serial = ystage_serial
         self.xstage = None
@@ -126,10 +126,7 @@ class QXYStage(QObject):
     @pyqtSlot()
     @pyqtSlot(float, float)
     def measure(self, *args):
-        """
-        Emits:
-            measurement_complete (float, float): x-position, y-position
-        """
+        # Emits positions and homing status
         with(QMutexLocker(self.mutex)):
             x = self.x
             y = self.y
@@ -139,6 +136,16 @@ class QXYStage(QObject):
         self.homing_status.emit(self.xhomed, self.yhomed)
 
         return x, y
+
+    @pyqtSlot()
+    def measure_homing(self, *args):
+        # Emits homing status only
+        with(QMutexLocker(self.mutex)):
+            self.xhomed = self.xstage.has_homing_been_completed
+            self.yhomed = self.ystage.has_homing_been_completed
+        self.homing_status.emit(self.xhomed, self.yhomed)
+
+        return self.xhomed, self.yhomed
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()

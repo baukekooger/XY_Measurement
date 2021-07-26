@@ -18,6 +18,9 @@ class DigitizerPlotWidget(QtWidgets.QWidget):
         self.setLayout(layout)
         self.plot()
 
+    def connect_signals_slots(self):
+        pass
+
     def plot(self):
         data = [random.random() for i in range(10)]
         self.figure.clear()

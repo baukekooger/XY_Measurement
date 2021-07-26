@@ -9,6 +9,9 @@ class ShutterControlWidget(QtWidgets.QWidget):
         self.ui.setupUi(self)
 
 
+    def connect_signals_slots(self):
+        pass
+
 if __name__ == '__main__':
     import sys
     app = QtWidgets.QApplication(sys.argv)

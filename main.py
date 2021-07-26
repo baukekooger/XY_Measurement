@@ -2,9 +2,9 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import QTimer, QThread, pyqtSlot
 from gui_design.main import Ui_MainWindow
 from yaml import safe_load as yaml_safe_load, dump
-from experiments.statemachine import StateMachine
-
+from statemachine.statemachine import StateMachine
 import time
+import datetime
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -25,7 +25,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.statemachineThread.start()
         self.statemachine.start()
         self.experiment = None
+        self.connect_signals()
 
+    def connect_signals(self):
         self.ui.pushButton_transmission.clicked.connect(lambda state, page=0: self.choose_experiment(page))
         self.ui.pushButton_excitation_emission.clicked.connect(lambda state, page=1: self.choose_experiment(page))
         self.ui.pushButton_decay.clicked.connect(lambda state, page=2: self.choose_experiment(page))
@@ -34,7 +36,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.pushButton_start_experiment.setEnabled(False)
         self.ui.pushButton_alignment_experiment.clicked.connect(self.alignment_experiment)
         self.statemachine.signal_return_setexperiment.connect(self.reset_setexperiment)
-        self.ui.widget_spectrometer_transmission.transmission_set.connect(self.set_spectrometeraxes)
+        self.statemachine.ect.connect(self.update_completion_time)
+        self.statemachine.progress.connect(self.update_progress)
 
     def choose_experiment(self, page):
         self.experiment = self.config['experiments'][page]
@@ -43,8 +46,10 @@ class MainWindow(QtWidgets.QMainWindow):
         self.move_to_threads()
         self.start_threads()
         self.add_instruments_to_guis()
+        self.connect_position_layout_plot()
         self.fill_ui()
         self.statemachine.align()
+        self.alignment_experiment_gui()
         self.ui.stackedWidget.setCurrentIndex(1)
         self.ui.stackedWidget_experiment.setCurrentIndex(page)
 
@@ -74,6 +79,13 @@ class MainWindow(QtWidgets.QMainWindow):
                 setattr(widget_set, inst, self.statemachine.instruments[inst])
                 widget_set.connect_signals_slots()
 
+    def disconnect_signals_gui(self):
+        # disconnects the signals from the guis so they don't get doubly connected when rechoosing experiment
+        for widget, inst in self.config['widgets'][self.experiment].items():
+            if 'file' not in widget:
+                widget_set = getattr(self.ui, widget)
+                widget_set.disconnect_signals_slots()
+
     def quit_all_threads(self):
         self.statemachineThread.quit()
         for _, thread in self.threads.items():
@@ -84,13 +96,15 @@ class MainWindow(QtWidgets.QMainWindow):
     def return_home(self):
         # add something that quits all threads from the experiment such that a new experiment can be done
         self.store_ui()
-        self.alignment_experiment_gui()
+        # self.alignment_experiment_gui()
         self.statemachine.return_home()
+        QTimer.singleShot(300, self.disconnect_signals_gui)
         self.ui.stackedWidget.setCurrentIndex(0)
 
     def alignment_experiment(self):
         # finalize the current statemachine and load the new statemachine.
         self.statemachine.align_experiment()
+        self.handle_position_layout_plot()
         self.alignment_experiment_gui()
 
     def alignment_experiment_gui(self):
@@ -128,6 +142,9 @@ class MainWindow(QtWidgets.QMainWindow):
                     elif isinstance(widget_value, QtWidgets.QLineEdit):
                         widgethandle = getattr(widget.ui, key)
                         settings[self.experiment][widget_inst][key] = widgethandle.text()
+                    elif isinstance(widget_value, QtWidgets.QComboBox):
+                        widgethandle = getattr(widget.ui, key)
+                        settings[self.experiment][widget_inst][key] = widgethandle.currentIndex()
                     elif isinstance(widget_value, (QtWidgets.QPlainTextEdit, QtWidgets.QTextEdit)):
                         widgethandle = getattr(widget.ui, key)
                         settings[self.experiment][widget_inst][key] = widgethandle.toPlainText()
@@ -148,11 +165,13 @@ class MainWindow(QtWidgets.QMainWindow):
                     subwidgethandle = getattr(widget_handle.ui, subwidgetkey)
                     if isinstance(subwidgethandle, (QtWidgets.QSpinBox, QtWidgets.QDoubleSpinBox)):
                         subwidgethandle.setValue(value)
-                    if isinstance(subwidgethandle, QtWidgets.QLineEdit):
+                    elif isinstance(subwidgethandle, QtWidgets.QLineEdit):
                         subwidgethandle.setText(value)
-                    if isinstance(subwidgethandle, (QtWidgets.QPlainTextEdit, QtWidgets.QTextEdit)):
+                    elif isinstance(subwidgethandle, QtWidgets.QComboBox):
+                        subwidgethandle.setCurrentIndex(value)
+                    elif isinstance(subwidgethandle, (QtWidgets.QPlainTextEdit, QtWidgets.QTextEdit)):
                         subwidgethandle.setPlainText(value)
-                    if isinstance(subwidgethandle, QtWidgets.QCheckBox):
+                    elif isinstance(subwidgethandle, QtWidgets.QCheckBox):
                         subwidgethandle.setChecked(value)
         except AttributeError as e:
             print(f"Can't load UI, UI configuration has been modified. {e}")
@@ -161,9 +180,30 @@ class MainWindow(QtWidgets.QMainWindow):
     def set_spectrometeraxes(self, set_transmissionaxes):
         self.ui.widget_spectrometerplot_transmission.set_transmissionaxes = set_transmissionaxes
 
+    def connect_position_layout_plot(self):
+        widget = getattr(self.ui, f'widget_xystage_{self.experiment}')
+        widget.ui.spinBox_x_num.editingFinished.connect(self.handle_position_layout_plot)
+        widget.ui.spinBox_y_num.editingFinished.connect(self.handle_position_layout_plot)
+        widget.ui.spinBox_x_off_left.editingFinished.connect(self.handle_position_layout_plot)
+        widget.ui.spinBox_x_off_right.editingFinished.connect(self.handle_position_layout_plot)
+        widget.ui.spinBox_y_off_bottom.editingFinished.connect(self.handle_position_layout_plot)
+        widget.ui.spinBox_y_off_top.editingFinished.connect(self.handle_position_layout_plot)
+
+    def handle_position_layout_plot(self):
+        widget = getattr(self.ui, f'widget_xystage_{self.experiment}')
+        xnum = widget.ui.spinBox_x_num.value()
+        ynum = widget.ui.spinBox_y_num.value()
+        x_off_left = widget.ui.spinBox_x_off_left.value()
+        x_off_right = widget.ui.spinBox_x_off_right.value()
+        y_off_bottom = widget.ui.spinBox_y_off_bottom.value()
+        y_off_top = widget.ui.spinBox_y_off_top.value()
+        widgetplot = getattr(self.ui, f'widget_xystageplot_{self.experiment}')
+        widgetplot.plot_layout(xnum, ynum, x_off_left, x_off_right, y_off_bottom, y_off_top)
+
     def start_experiment(self):
-        # disable buttons and shit
-        self.statemachine.instruments['xystage'].measure()
+        # check if motors are homed, issue warning otherwise.
+        # then store ui settings and disable buttons that should not be pressed when experiment is run.
+        self.statemachine.instruments['xystage'].measure_homing()
         if not all([self.statemachine.instruments['xystage'].xhomed, self.statemachine.instruments['xystage'].xhomed]):
             QtWidgets.QMessageBox.information(self, 'homing warning', 'not all stages homed, wait for home to complete')
             self.statemachine.instruments['xystage'].home()
@@ -173,6 +213,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ui.pushButton_alignment_experiment.setDisabled(True)
             self.ui.pushButton_start_experiment.disconnect()
             self.ui.pushButton_start_experiment.clicked.connect(self.abort_experiment)
+            widget_spectrometer = getattr(self.ui, f'widget_spectrometer_{self.experiment}')
+            widget_spectrometer.handle_reset()
             self.statemachine.run_experiment()
 
     def abort_experiment(self):
@@ -207,6 +249,31 @@ class MainWindow(QtWidgets.QMainWindow):
         self.quit_all_threads()
         print('done closing')
         event.accept()
+
+    @pyqtSlot(int)
+    def update_progress(self, progress):
+        self.ui.progressBar.setValue(progress)
+        if progress == 100:
+            self.show_complete()
+
+    def show_complete(self):
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+
+        msg.setText("Measurement Complete")
+        msg.setInformativeText("This is additional information")
+        msg.setWindowTitle("Completion")
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg.buttonClicked.connect(self.reset_progress)
+        msg.exec_()
+
+    def reset_progress(self):
+        self.ui.progressBar.setValue(0)
+        self.ui.label_completion_time.setText(f'Estimated completion time {datetime.timedelta(seconds=0)}')
+
+    @pyqtSlot(int)
+    def update_completion_time(self, ect):
+        self.ui.label_completion_time.setText(f'Estimated completion time {datetime.timedelta(seconds=ect)}')
 
 
 if __name__ == '__main__':
