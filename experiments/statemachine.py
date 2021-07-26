@@ -67,12 +67,12 @@ class StateMachine(QObject):
 
     def __init__(self, parent=None):
         super().__init__()
-        pathstateconfig = Path.home() / 'PycharmProjects/XY_New/experiments/config_statemachine.yaml'
+        pathstateconfig = Path.home() / 'Repositories/XY_New/experiments/config_statemachine.yaml'
         with pathstateconfig.open() as f:
             self.stateconfig = yaml_safe_load(f)
         self.stateconfig['model'] = self
         self.machine = Machine(**self.stateconfig)
-        pathconfig = Path.home() / 'PycharmProjects/XY_New/config_main.yaml'
+        pathconfig = Path.home() / 'Repositories/XY_New/config_main.yaml'
         with pathconfig.open() as f:
             self.config = yaml_safe_load(f)
         self.experiment = None
@@ -151,7 +151,7 @@ class StateMachine(QObject):
         self.instruments['spectrometer'].measurement_done.connect(self.process_data)
 
     def _parse_config(self):
-        path_settings = Path.home() / 'PycharmProjects/XY_New/settings_ui.yaml'
+        path_settings = Path.home() / 'Repositories/XY_New/settings_ui.yaml'
         with path_settings.open() as f:
             settings = yaml_safe_load(f)
         xysettings = settings[self.experiment][f'widget_xystage_{self.experiment}']
@@ -226,7 +226,7 @@ class StateMachine(QObject):
         Copies config file to storage directory.
         """
         # Load directory
-        pathconfig = Path.home() / 'PycharmProjects/XY_New/settings_ui.yaml'
+        pathconfig = Path.home() / 'Repositories/XY_New/settings_ui.yaml'
         with pathconfig.open('r') as f:
             settings = yaml_safe_load(f)
         storage_dir = settings[self.experiment][f'widget_file_{self.experiment}']['lineEdit_directory']

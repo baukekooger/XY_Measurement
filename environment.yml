@@ -1,4 +1,4 @@
-name: pyxy_updated
+name: XYSetup
 channels:
   - conda-forge
   - defaults
