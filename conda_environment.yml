@@ -4,7 +4,7 @@ channels:
   - defaults
 dependencies:
   - backcall=0.2.0=pyhd3eb1b0_0
-  - ca-certificates=2021.5.25=haa95532_1
+  - ca-certificates=2021.7.5=haa95532_1
   - certifi=2021.5.30=py39haa95532_0
   - cftime=1.5.0=py39h5d4886f_0
   - colorama=0.4.4=pyhd3eb1b0_0
@@ -13,6 +13,7 @@ dependencies:
   - decorator=5.0.9=pyhd3eb1b0_0
   - freetype=2.10.4=hd328e21_0
   - future=0.18.2=py39hcbf5309_3
+  - geos=3.8.0=h33f27b4_0
   - graphviz=2.38=hfd603c8_2
   - hdf4=4.2.13=h712560f_2
   - hdf5=1.10.6=nompi_h5268f04_1114
@@ -85,6 +86,7 @@ dependencies:
   - pip:
     - beautifulsoup4==4.9.3
     - chardet==4.0.0
+    - descartes==1.1.0
     - docopt==0.6.2
     - idna==2.10
     - jinja2==3.0.1
@@ -95,6 +97,7 @@ dependencies:
     - pyvisa==1.11.3
     - pyyaml==5.4.1
     - requests==2.25.1
+    - shapely==1.7.1
     - soupsieve==2.2.1
     - transitions==0.8.8
     - typing-extensions==3.10.0.0

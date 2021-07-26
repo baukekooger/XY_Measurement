@@ -49,6 +49,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.connect_position_layout_plot()
         self.fill_ui()
         self.statemachine.align()
+        self.alignment_experiment_gui()
         self.ui.stackedWidget.setCurrentIndex(1)
         self.ui.stackedWidget_experiment.setCurrentIndex(page)
 
@@ -95,7 +96,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def return_home(self):
         # add something that quits all threads from the experiment such that a new experiment can be done
         self.store_ui()
-        self.alignment_experiment_gui()
+        # self.alignment_experiment_gui()
         self.statemachine.return_home()
         QTimer.singleShot(300, self.disconnect_signals_gui)
         self.ui.stackedWidget.setCurrentIndex(0)
@@ -202,7 +203,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def start_experiment(self):
         # check if motors are homed, issue warning otherwise.
         # then store ui settings and disable buttons that should not be pressed when experiment is run.
-        self.statemachine.instruments['xystage'].measure()
+        self.statemachine.instruments['xystage'].measure_homing()
         if not all([self.statemachine.instruments['xystage'].xhomed, self.statemachine.instruments['xystage'].xhomed]):
             QtWidgets.QMessageBox.information(self, 'homing warning', 'not all stages homed, wait for home to complete')
             self.statemachine.instruments['xystage'].home()
@@ -212,6 +213,8 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ui.pushButton_alignment_experiment.setDisabled(True)
             self.ui.pushButton_start_experiment.disconnect()
             self.ui.pushButton_start_experiment.clicked.connect(self.abort_experiment)
+            widget_spectrometer = getattr(self.ui, f'widget_spectrometer_{self.experiment}')
+            widget_spectrometer.handle_reset()
             self.statemachine.run_experiment()
 
     def abort_experiment(self):
@@ -247,13 +250,30 @@ class MainWindow(QtWidgets.QMainWindow):
         print('done closing')
         event.accept()
 
-    @pyqtSlot(float)
+    @pyqtSlot(int)
     def update_progress(self, progress):
         self.ui.progressBar.setValue(progress)
+        if progress == 100:
+            self.show_complete()
 
-    @pyqtSlot(float)
+    def show_complete(self):
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Information)
+
+        msg.setText("Measurement Complete")
+        msg.setInformativeText("This is additional information")
+        msg.setWindowTitle("Completion")
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msg.buttonClicked.connect(self.reset_progress)
+        msg.exec_()
+
+    def reset_progress(self):
+        self.ui.progressBar.setValue(0)
+        self.ui.label_completion_time.setText(f'Estimated completion time {datetime.timedelta(seconds=0)}')
+
+    @pyqtSlot(int)
     def update_completion_time(self, ect):
-        self.ui.label_completion_time.setText(f'Estimated completion time {datetime.timedelta(seconds=ect):.0f}')
+        self.ui.label_completion_time.setText(f'Estimated completion time {datetime.timedelta(seconds=ect)}')
 
 
 if __name__ == '__main__':

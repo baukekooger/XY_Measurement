@@ -497,8 +497,8 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>133</width>
-                  <height>508</height>
+                  <width>98</width>
+                  <height>114</height>
                  </rect>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_10">
@@ -592,7 +592,7 @@
              </size>
             </property>
             <property name="text">
-             <string>Estimated completion time: 25 min 30 s </string>
+             <string>Estimated completion time: 00:00:00</string>
             </property>
            </widget>
           </item>

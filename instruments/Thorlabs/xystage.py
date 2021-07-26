@@ -126,10 +126,7 @@ class QXYStage(QObject):
     @pyqtSlot()
     @pyqtSlot(float, float)
     def measure(self, *args):
-        """
-        Emits:
-            measurement_complete (float, float): x-position, y-position
-        """
+        # Emits positions and homing status
         with(QMutexLocker(self.mutex)):
             x = self.x
             y = self.y
@@ -139,6 +136,16 @@ class QXYStage(QObject):
         self.homing_status.emit(self.xhomed, self.yhomed)
 
         return x, y
+
+    @pyqtSlot()
+    def measure_homing(self, *args):
+        # Emits homing status only
+        with(QMutexLocker(self.mutex)):
+            self.xhomed = self.xstage.has_homing_been_completed
+            self.yhomed = self.ystage.has_homing_been_completed
+        self.homing_status.emit(self.xhomed, self.yhomed)
+
+        return self.xhomed, self.yhomed
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()

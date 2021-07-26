@@ -59,15 +59,15 @@ class StateMachine(QObject):
     """
 
     signalstatechange = pyqtSignal(str)     # signal that emits the state
-    progress = pyqtSignal(float)            # signal emitting the progress of the measurement
-    ect = pyqtSignal(float)                 # another signal
+    progress = pyqtSignal(int)            # signal emitting the progress of the measurement
+    ect = pyqtSignal(int)                 # another signal
     connecting_done = pyqtSignal()
     signal_return_setexperiment = pyqtSignal()
     state = pyqtSignal(str)
 
     def __init__(self, parent=None):
         super().__init__()
-        pathstateconfig = Path.home() / 'PycharmProjects/XY_New/experiments/config_statemachine.yaml'
+        pathstateconfig = Path.home() / 'PycharmProjects/XY_New/statemachine/config_statemachine.yaml'
         with pathstateconfig.open() as f:
             self.stateconfig = yaml_safe_load(f)
         self.stateconfig['model'] = self
@@ -373,8 +373,8 @@ class StateMachine(QObject):
                self.measurement_index *
                (len(self.measurement_parameters['x']) - self.measurement_index)
                )
-        self.progress.emit(progress * 100)
-        self.ect.emit(ect)
+        self.ect.emit(int(ect))
+        self.progress.emit(int(progress * 100))
         logging.info('Progress: {} %'.format(progress * 100))
         logging.info('Completed at: {}'.format(time.ctime(ect)))
         if progress == 1:

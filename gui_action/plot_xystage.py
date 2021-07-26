@@ -64,7 +64,7 @@ class XYStagePlotWidget(QtWidgets.QWidget):
             (x - dfhx - (whse - ws) / 2, y - dfhy - hhse + (hhse - hs) / 2)
         ])
 
-        lightsource = gmt.Point(12, 11.2).buffer(1.75)
+        lightsource = gmt.Point(10, 12).buffer(1.75)
 
         ax.add_patch(descartes.PolygonPatch(holder, fc='k', ec='k'))
         ax.add_patch(descartes.PolygonPatch(sample_edge, fc='dimgrey'))
