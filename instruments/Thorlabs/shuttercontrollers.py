@@ -1,122 +1,95 @@
 import serial
 import serial.tools.list_ports
 import logging
-from enum import IntEnum
+from PyQt5.QtCore import QObject, QMutexLocker, QMutex, pyqtSignal, pyqtSlot
+logging.basicConfig(level=logging.INFO)
 
 
-# Constants
-class Mode(IntEnum):
-    MANUAL = 1
-    AUTO = 2
-    SINGLE = 3
-    REPEAT = 4
-    EXTERNAL_GATE = 5
-
-
-class SC10(serial.Serial):
-    """ 
-        Serial-control class for the Thorlabs SC10 shutter
+class QShutterControl(QObject):
+    """ VISA-control class for the Thorlabs SC10 shutter as a QObject
     """
-    def __init__(self, port=None, timeout=0.1):
-        super().__init__()
+    shutter_status = pyqtSignal(bool)
 
-        # Serial __init__ methods
-        self.baudrate = 9600
+    def __init__(self, parent=None, port=None, timeout=0.1, polltime=0.1):
+        super().__init__(parent=parent)
+        self.sc = None  # serial handle to the actual shuttercontroller
+        # Shuttercontrol status
+        self.connected = False
+        self.prompt = '> '
         self.timeout = timeout
-        self.parity = serial.PARITY_NONE
+        self.polltime = polltime
         self.port = port
 
-        self.prompt = '> '
-        self.connect(port)
+    def connect(self, name=None):
+        if not name:
+            name = self.get_port('THORLABS SC10')
+        self.sc = serial.Serial(name, 9600, parity=serial.PARITY_NONE, timeout=0.1)
+        self.connected = True
 
-    @property
-    def connected(self):
-        return self.is_open
-
-    @property
-    def model(self):
-        """
-            Returns the model number and firmware revision
-        """
-        identifier = self._query_value('id')
-        return identifier[1]
-
-    @property
-    def enabled(self):
-        return int(self._query_value('ens')[-2]) == 1
-
-    @property
-    def mode(self):
-        return Mode(int(self._query_value('mode')[-2]))
-
-    @mode.setter
-    def mode(self, value):
-        self._write_value('mode', value=value)
-        
-    def connect(self, port=None):
-        """ 
-            Connects to Thorlabs Shuttercontroller SC10 
-        """
-        # Connect to port. If port is None, iterate over all available COM ports.
-        if not port:
-            ports = list(serial.tools.list_ports.comports())
-            for p in ports:
-                if p.description == 'n/a':
-                    continue
-                try:
-                    self.port = p.device
-                    self.open()
-                    if 'SC10' not in self.model:
-                        self.disconnect()
-                        self.port = None
-                    else:
-                        break
-                except serial.SerialException:
-                    logging.debug('Cannot connect to Serial Device on port: {}'.format(self.port))
-                except ConnectionError as e:
-                    logging.debug('{}: {}'.format(p.device, e))
-        else:
-            try:
-                self.port = port
-                self.open()
-            except serial.SerialException:
-                raise ConnectionError('Cannot connect to SC10 on port: {}'.format(self.port))
-            
     def disconnect(self):
-        """ 
-            Disconnects the Thorlabs Shuttercontroller SC10 
-        """
-        self.close()
+        if not self.connected:
+            return
+        self.sc.close()
+        self.connected = False
 
     def enable(self):
-        """ 
-            Opens the shutter
-        """
-        if not self.enabled:
-            self._write_value('ens')
+        # Opens the shutter
+        if not int(self.query_value('ens')):
+            self.write_value('ens')
+
+    def measure(self):
+        # returns true is shutter is enabled
+        if self.query_value('ens') == 1:
+            self.shutter_status.emit(True)
+        else:
+            self.shutter_status.emit(False)
 
     def disable(self):
-        """ 
-            Closes the shutter
+        # Closes the shutter
+        if int(self.query_value('ens')):
+            self.write_value('ens')
+
+
+    def get_port(self, modelname):
+        """Retrieves the first port the selected modelname is connected to.
+        Code adapted from https://stackoverflow.com/questions/12090503/listing-available-com-ports-with-python
+        and https://stackoverflow.com/questions/16811807/how-to-find-all-serial-devices-com .
+
+        Args:
+            modelname (str): name of the desired device
+
+        Returns:
+            str: COM port name the desired device is connected to
+
+        Raises:
+            NameError: if the desired device cannot be found
         """
-        if self.enabled:
-            self._write_value('ens')
-    
-    def _query_value(self, command):
-        self.write('{}?\r'.format(command).encode())
-        v = self.readline().decode().split('\r')
+        ports = [p.device for p in serial.tools.list_ports_windows.comports()]
+        for port in ports:
+            try:
+                s = serial.Serial(port, timeout=0.1)
+                s.write('{}?\r'.format('id').encode())
+                id = s.readline().decode().split('\r')[-2]
+                s.close()
+                if modelname in id:
+                    return port
+            except (OSError, serial.SerialException, IndexError):
+                pass
+        raise NameError('{} could not be found!'.format(modelname))
+
+    def query_value(self, command):
+        if not self.connected:
+            raise ConnectionError('Shuttercontrol not connected, please connect first')
+        self.sc.write('{}?\r'.format(command).encode())
+        v = self.sc.readline().decode().split('\r')
         if not v[-1] == self.prompt:
             raise ConnectionError('Shuttercontrol did not return correct prompt')
-        return v
-        
-    def _write_value(self, command, value=None):
+        return int(v[-2])
+
+    def write_value(self, command, value=None):
+        if not self.connected:
+            raise ConnectionError('Shuttercontrol not connected, please connect first')
         if not value:
-            self.write('{}\r'.format(command).encode())
+            self.sc.write('{}\r'.format(command).encode())
         else:
-            self.write('{}={}\r'.format(command, value).encode())
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.disconnect()
-
-    def __repr__(self):
-        return '<Thorlabs Shuttercontroller SC10 : {}>'.format(self.model)
+            self.sc.write('{}={}\r'.format(command, value).encode())

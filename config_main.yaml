@@ -8,7 +8,7 @@ experiments : {
 # Instruments needed for each experiment
 instruments : {
     'transmission': [ 'xystage', 'spectrometer' ],
-    'excitation_emission': [ 'xystage', 'spectrometer','laser','shuttercontrol','powermeter' ],
+    'excitation_emission': [ 'xystage', 'spectrometer','laser','shuttercontrol','powermeter'],
     'decay': [ 'xystage', 'digitizer','laser','shuttercontrol' ]
 }
 

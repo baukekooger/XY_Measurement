@@ -9,6 +9,9 @@ from yaml import dump as yaml_dump
 from instruments.OceanOptics.spectrometer import QSpectrometer
 from instruments.Thorlabs import apt
 from instruments.Thorlabs.xystage import QXYStage
+from instruments.Thorlabs.shuttercontrollers import QShutterControl
+from instruments.Thorlabs.powermeters import QPowermeter
+from instruments.Ekspla import QLaser
 from pathlib import Path
 from netCDF4 import Dataset
 
@@ -17,6 +20,9 @@ logging.basicConfig(level=logging.INFO)
 instrument_parser = {
     'xystage': QXYStage,
     'spectrometer': QSpectrometer,
+    'shuttercontrol': QShutterControl,
+    'powermeter': QPowermeter,
+    'laser': QLaser
 }
 
 
@@ -63,6 +69,7 @@ class StateMachine(QObject):
     ect = pyqtSignal(int)                 # another signal
     connecting_done = pyqtSignal()
     signal_return_setexperiment = pyqtSignal()
+    save_configuration = pyqtSignal()
     state = pyqtSignal(str)
 
     def __init__(self, parent=None):
@@ -88,6 +95,7 @@ class StateMachine(QObject):
         self.measurement_index = 0
         self.processedspectrum = None
         self.spectrometertimes = None
+        self.experimentdate = None
         self.is_done = False
         self.storage_dir = None
         self.startingtime = time.time()
@@ -143,14 +151,43 @@ class StateMachine(QObject):
                 self.instruments[inst].xmax = self.xmax
                 self.instruments[inst].ymax = self.ymax
         self.connect_all()
-        self._init_triggers()
+        self._connect_signals_instruments()
 
-    def _init_triggers(self):
+    def _connect_all(self):
+        for inst in self.instruments.keys():
+            if self.instruments[inst].connected:
+                logging.info(f'{inst} already connected')
+            else:
+                logging.info(f'connecting {inst}')
+                self.instruments[inst].connect()
+                self.instruments[inst].timeout = self.timeout
+
+    def disconnect_all(self):
+        for inst in self.instruments.keys():
+            logging.info(f'disconnecting {inst}')
+            self.instruments[inst].disconnect()
+
+    def _connect_signals_instruments(self):
         self.heartbeat_xystage.timeout.connect(self.instruments['xystage'].settled)
         self.instruments['xystage'].stage_settled.connect(self.measure)
         self.instruments['spectrometer'].measurement_done.connect(self.process_data)
 
     def _parse_config(self):
+        if self.experiment == 'transmission':
+            self._parse_config_transmission()
+        elif self.experiment == 'excitation_emission':
+            self._parse_config_excitation_emission()
+        elif self.experiment == 'decay':
+            self._parse_config_decay()
+
+        self.start_experiment()
+
+    def _parse_config_transmission(self):
+        self._parse_xypositions()
+        self._add_lamp_darkpositions()
+        self._parse_spectrometersettings()
+
+    def _parse_xypositions(self):
         path_settings = Path.home() / 'PycharmProjects/XY_New/settings_ui.yaml'
         with path_settings.open() as f:
             settings = yaml_safe_load(f)
@@ -174,11 +211,18 @@ class StateMachine(QObject):
         self.measurement_parameters = {}
         self._add_measurement_parameter('x', x)
         self._add_measurement_parameter('y', y)
+
+    def _add_lamp_darkpositions(self):
+        # adds positions for a lamp spectrum and a dark spectrum
         dark_lamp_x = np.array((20, 0))
         dark_lamp_y = np.array((80, 0))
         self.measurement_parameters['x'] = np.hstack((dark_lamp_x, self.measurement_parameters['x']))
-        self.measurement_parameters['y'] = np.hstack((dark_lamp_y, self.measurement_parameters['y'])) 
+        self.measurement_parameters['y'] = np.hstack((dark_lamp_y, self.measurement_parameters['y']))
 
+    def _parse_spectrometersettings(self):
+        path_settings = Path.home() / 'PycharmProjects/XY_New/settings_ui.yaml'
+        with path_settings.open() as f:
+            settings = yaml_safe_load(f)
         # spectrometer settings
         smsettings = settings[self.experiment][f'widget_spectrometer_{self.experiment}']
         self.instruments['spectrometer'].integrationtime = smsettings['spinBox_integration_time_experiment']
@@ -196,7 +240,8 @@ class StateMachine(QObject):
         self.measurement_parameters[name] = parameter
         return parameter
 
-    def _define_positions(self, num, off1, off2, start, sse, ss):
+    @staticmethod
+    def _define_positions(num, off1, off2, start, sse, ss):
         # sse is sample size including edge of sample hodler, ss is visible part only
         bw = 3.5
         off1_mm = (ss - bw) * off1 / (100 + off2)
@@ -205,19 +250,6 @@ class StateMachine(QObject):
         positions = np.linspace((sse - ss + bw) / 2 + off1_mm + start,
                                 sse - (sse - ss + bw) / 2 - off2_mm + start, num) if num > 1 else positions
         return positions
-
-    def _connect_all(self):
-        for inst in self.instruments.keys():
-            if self.instruments[inst].connected:
-                logging.info(f'{inst} already connected')
-            else:
-                logging.info(f'{inst} connecting')
-                self.instruments[inst].connect()
-                self.instruments[inst].timeout = self.timeout
-
-    def disconnect_all(self):
-        for inst in self.instruments.keys():
-            self.instruments[inst].disconnect()
 
     def _align(self):
         self.heartbeat.start()
@@ -230,20 +262,28 @@ class StateMachine(QObject):
             if not self.instruments[inst].measuring:
                 QTimer.singleShot(0, self.instruments[inst].measure)
 
-    def run_experiment(self):
-        self.init_experiment()
-        self.start_experiment()
+    def _open_file(self):
+        # pick open file process
+        if self.experiment == 'transmission':
+            self._open_file_transmission()
+        elif self.experiment == 'excitation_emission':
+            self._open_file_excitation_emission()
+        elif self.experiment == 'decay':
+            self._open_file_decay()
         try:
             self.prepare()
         except Exception as e:
             self.abort()
-            raise e
+        # new state
 
-    def _open_file(self):
-        """Creates a new file (netCDF4 (*.hdf5)) in the storage directory.
-        Copies config file to storage directory.
-        """
-        # Load directory
+    def _open_file_transmission(self):
+        self._load_create_file()
+        self._write_positionsettings()
+        self._write_spectrometersettings()
+        self._create_dimensions()
+
+    def _load_create_file(self):
+        # reads the storage directory and sample name from the settings, creates a file and directory
         pathconfig = Path.home() / 'PycharmProjects/XY_New/settings_ui.yaml'
         with pathconfig.open('r') as f:
             settings = yaml_safe_load(f)
@@ -251,40 +291,48 @@ class StateMachine(QObject):
         sample = settings[self.experiment][f'widget_file_{self.experiment}']['lineEdit_sample']
 
         self.startingtime = time.time()
-        fname = f'{storage_dir}/{time.strftime("%y%m%d%H%M", time.localtime(self.startingtime))}' \
-                f'_{sample}'
+        fname = f'{storage_dir}/_{sample}'
+        self.experimentdate = time.strftime("%y%m%d%H%M", time.localtime(self.startingtime))
+        # Open a new datafile and create an experiment folder
+        self.dataset = Dataset(f'{fname}.hdf5', 'w', format='NETCDF4')
+        self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}')
+
         # Store configuration file
         with pathconfig.open('r') as f:
             settings = yaml_safe_load(f)
         with open(f'{fname}.yml', 'w') as outfile:
             yaml_dump(settings, outfile)
-        # Open a new datafile
-        self.dataset = Dataset(f'{fname}.hdf5', 'w', format='NETCDF4')
-        positionsettings = self.dataset.createGroup(f'{self.experiment}/settings/xystage')
+
+    def _write_positionsettings(self):
+        positionsettings = self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}/settings/xystage')
         positionsettings.xnum = len(np.unique(self.measurement_parameters['x'][2:]))
         positionsettings.ynum = len(np.unique(self.measurement_parameters['y'][2:]))
-        spectrometersettings = self.dataset.createGroup(f'{self.experiment}/settings/spectrometer')
+
+    def _write_spectrometersettings(self):
+        spectrometersettings = self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}/settings/spectrometer')
         spectrometersettings.integrationtime = self.instruments['spectrometer'].integrationtime
         spectrometersettings.average_measurements = self.instruments['spectrometer'].average_measurements
-        self.dataset[f'{self.experiment}'].createDimension('xy_position', 2)
-        self.dataset[f'{self.experiment}'].createDimension('emission_wavelengths', len(self.instruments['spectrometer'].wavelengths))
-        self.dataset[f'{self.experiment}'].createDimension('spectrometer_intervals', self.instruments['spectrometer'].
-                                     average_measurements * 2)
-        self.dataset[f'{self.experiment}'].createDimension('excitation_wavelengths', 1)
-        # new state
+
+    def _create_dimensions(self):
+        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('xy_position', 2)
+        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('emission_wavelengths',
+                                                           len(self.instruments['spectrometer'].wavelengths))
+        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('spectrometer_intervals', self.instruments['spectrometer'].
+                                                           average_measurements * 2)
+        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('excitation_wavelengths', 1)
 
     @timed
     def _write_file(self):
         if self.measurement_index == 0:
-            datagroup = self.dataset.createGroup(f'{self.experiment}/dark')
+            datagroup = self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}/dark')
         elif self.measurement_index == 1:
-            datagroup = self.dataset.createGroup(f'{self.experiment}/lamp')
+            datagroup = self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}/lamp')
         else:
             x = self.measurement_parameters['x'][self.measurement_index]
             y = self.measurement_parameters['y'][self.measurement_index]
             x_inx = list(np.unique(self.measurement_parameters['x'][2:])).index(x)
             y_iny = list(np.unique(self.measurement_parameters['y'][2:])).index(y)
-            datagroup = self.dataset.createGroup(f'{self.experiment}/x{x_inx+1}y{y_iny+1}')
+            datagroup = self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}/x{x_inx+1}y{y_iny+1}')
         try:
             xy_pos = datagroup['position']
             em_wl = datagroup['emission']
@@ -382,12 +430,6 @@ class StateMachine(QObject):
             self.measurement_complete()
         else:
             self.prepare()
-
-    def _load_configuration(self):
-        pass
-
-    def _save_configuration(self):
-        pass
 
     def _return_setexperiment(self):
         self.signal_return_setexperiment.emit()

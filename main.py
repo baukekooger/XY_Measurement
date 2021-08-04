@@ -48,6 +48,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.add_instruments_to_guis()
         self.connect_position_layout_plot()
         self.fill_ui()
+        self.reset_append()
         self.statemachine.align()
         self.alignment_experiment_gui()
         self.ui.stackedWidget.setCurrentIndex(1)
@@ -69,7 +70,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def start_threads(self):
         for _, thread in self.threads.items():
-            thread.start()
+            if not thread.isRunning():
+                thread.start()
 
     def add_instruments_to_guis(self):
         # adds the threaded instruments from the statemachine to the relevant widgets
@@ -109,9 +111,10 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def alignment_experiment_gui(self):
         # sets the correct instrument widget page and adjusts size policy to
-        # the new page
+        # the new page based on the current state of the statemachine.
         stateconfig = self.config['instrument_pages'][self.statemachine.state]
         for inst in self.config['widgets'][self.experiment].keys():
+            # changes only the instrument input widgets as they are all stacked widgets
             if not any([words in inst for words in ['plot', 'file']]):
                 widget_set = getattr(self.ui, inst)
                 widget_set.ui.stackedWidget.setCurrentIndex(stateconfig['page'])
@@ -155,7 +158,7 @@ class MainWindow(QtWidgets.QMainWindow):
             dump(settings, f)
 
     def fill_ui(self):
-        # fills the user interface with the last values known for that experiment.
+        # fills the user interface with the last values known for that experiment
         with open('settings_ui.yaml') as f:
             settings = yaml_safe_load(f)
         try:
@@ -175,6 +178,10 @@ class MainWindow(QtWidgets.QMainWindow):
                         subwidgethandle.setChecked(value)
         except AttributeError as e:
             print(f"Can't load UI, UI configuration has been modified. {e}")
+
+    def reset_append(self):
+        filewidget = getattr(self.ui, f'widget_file_{self.experiment}')
+        filewidget.reset()
 
     @pyqtSlot(bool)
     def set_spectrometeraxes(self, set_transmissionaxes):
@@ -211,11 +218,13 @@ class MainWindow(QtWidgets.QMainWindow):
             self.store_ui()
             self.ui.pushButton_start_experiment.setText('Stop')
             self.ui.pushButton_alignment_experiment.setDisabled(True)
+            self.ui.stackedWidget_experiment.setDisabled(True)
             self.ui.pushButton_start_experiment.disconnect()
             self.ui.pushButton_start_experiment.clicked.connect(self.abort_experiment)
             widget_spectrometer = getattr(self.ui, f'widget_spectrometer_{self.experiment}')
             widget_spectrometer.handle_reset()
-            self.statemachine.run_experiment()
+
+            self.statemachine.init_experiment()
 
     def abort_experiment(self):
         self.ui.stackedWidget_experiment.setDisabled(True)

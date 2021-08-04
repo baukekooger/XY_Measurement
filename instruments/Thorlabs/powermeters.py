@@ -1,58 +1,65 @@
 import csv
 import time
-
 import numpy as np
-import visa
+import pyvisa as visa
 import logging
+from PyQt5.QtCore import QObject, QMutexLocker, QMutex, pyqtSignal, pyqtSlot
+logging.basicConfig(level=logging.INFO)
 
 
 def list_available_devices():
-    return visa.ResourceManager().list_resources(query='?*P0013932::INSTR')
+    return visa.ResourceManager().list_resources()
 
 
-class PM100D:
+class QPowermeter(QObject):
     """
-    Thorlabs PM100D Powermeter python interface
-
-    Note that the _minimal_ value for the integration time is around 10 ms
-    As 1 measurement takes ~1/3 ms. This will yield 300 averages.
-
-    Directly controls the PM100D Powermeter through a VISA interface
+    Python interface for the Thorlabs PM100A powermeter as a Qobject
     """
-    def __init__(self, name='USB0::0x1313::0x8078::P0013932::INSTR', average_time=500, integration_time=30,
-                 timeout=1, sensitivity_correction=None):
-        self.handle = visa.ResourceManager().open_resource(name)  # visa handle to the actual powermeter
-        # Set spectrometer to power mode
-        self.handle.write('conf:pow')
-        self.average_time = average_time
+
+    measurement_complete = pyqtSignal(float)
+    measurement_parameters = pyqtSignal(int, int)
+
+    def __init__(self, name='USB0::0x1313::0x8079::P1002333::INSTR', integration_time=30,
+                 timeout=5000, sensitivity_correction=None, parent=None):
+        super().__init__(parent=parent)
+        self.mutex = QMutex(QMutex.Recursive)
+        self.name = name
+        self.pm = None
+        self.connected = False
         self._integration_time = integration_time
-        self.integration_time = integration_time
         self._timeout = timeout
-        self.timeout = timeout
         self.sensitivity_correction = self.set_sensitivity_correction(sensitivity_correction)
-
         self.measuring = False
+
+    def connect(self):
+        self.pm = visa.ResourceManager().open_resource(self.name)
+        self.connected = True
+        self.integration_time = self._integration_time
+        self.timeout = self._timeout
+        # Set spectrometer to power mode
+        self.pm.write('conf:pow')
 
     @property
     def timeout(self):
-        """Timeout [s] of the powermeter """
+        """Timeout [ms] of the powermeter """
         return self._timeout
 
     @timeout.setter
     def timeout(self, value):
         self._timeout = value
-        if self.handle:
-            self.handle.timeout = value * 1000
+        if self.pm:
+            self.pm.timeout = value
 
     @property
     def wavelength(self):
-        """ Current wavelength the powermeter is scanning on """
-        wavelength = self.query_value("sense:corr:wav?")
+        """ Current wavelength the powermeter is scanning on [nm]"""
+        wavelength = self.pm.query_ascii_values("sense:corr:wav?")[0]
         return wavelength
 
     @wavelength.setter
     def wavelength(self, value):
-        self.write_value("sense:corr:wav", value)
+        self.pm.write(f'sense:corr:wav {value}')
+        self.emit_parameters()
 
     @property
     def integration_time(self):
@@ -61,39 +68,43 @@ class PM100D:
 
     @integration_time.setter
     def integration_time(self, value):
+        # sets integration time and adjusts timeout accordingly
+        if value >= self.timeout - 100:
+            self.timeout = value + 5000
         self._integration_time = value
         # One measurement takes ~ 1/3 ms
         averages = round(self._integration_time * 3)
-        self.write_value('sense:average:count', averages)
+        self.pm.write(f'sense:average:count {int(averages)}')
+        self.emit_parameters()
 
     def measure(self):
-        """Measures incident power over the specified averaging time, with
-        separate measurements stored for each integration time.
-
-        Returns:
-            dict: Dictionary as {'interval':   [list of times],
-                                 'value':   [list of powers [W/s] ] }
-        """
-        if self.measuring:
-            logging.warning('Measurement in progress, please wait.')
-            return -1
+        # performs mutex locked measurement
         self.measuring = True
-        self.handle.write('*CLS')  # Clear event queue
-        measurement = {'times': [], 'power': []}
-        start = time.time()
-        while self.measuring:
-            measurement['times'].extend([time.time()])
-            measurement['power'].append(self.query_value("read?"))
-            measurement['times'][-1].append(time.time())
-            last = time.time()
-            if (last - start) * 1000 >= self.average_time:
-                self.measuring = False
-        if self.sensitivity_correction:
-            power = np.array(measurement['power'])
-            correction = np.interp(self.wavelength, self.sensitivity_correction['wavelength'],
-                                   self.sensitivity_correction['intensity'])
-            measurement['power'] = list(power / correction)
-        return measurement
+        with(QMutexLocker(self.mutex)):
+            self.pm.write('*CLS')
+            power = self.pm.query_ascii_values('read?')[0]
+            self.measurement_complete.emit(power)
+        self.measuring = False
+        return power
+
+    def zero(self):
+        self.measuring = True
+        with(QMutexLocker(self.mutex)):
+            self.pm.write('sens:corr:coll:zero:init')
+        self.measuring = False
+
+    def reset(self):
+        # returns unit to default condition
+        self.measuring = True
+        with(QMutexLocker(self.mutex)):
+            self.pm.write('*RST')
+            self.pm.write('*CLS')
+        self.measuring = False
+
+    def emit_parameters(self):
+        wavelength = int(self.wavelength)
+        integration_time = int(self.integration_time)
+        self.measurement_parameters.emit(wavelength, integration_time)
 
     def set_sensitivity_correction(self, file):
         """
@@ -121,26 +132,12 @@ class PM100D:
         self.sensitivity_correction = sensitivity_correction
         return sensitivity_correction
 
-    def query_value(self, command):
-        if not self.connected:
-            raise ConnectionError('Powermeter not connected, please connect first')
-        v = None
-        v = self.handle.query_ascii_values(command)[0]
-        return v
-
-    def write_value(self, command, value):
-        if type(value) is int:
-            self.handle.write(command + ' %d' % value)
-        if type(value) is float:
-            self.handle.write(command + ' %.2f' % value)
-        else:
-            self.handle.write(command + ' %s' % value)
-
-    def close(self):
-        self.handle.close()
+    def disconnect(self):
+        self.pm.close()
+        self.connected = False
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
+        self.disconnect()
 
     def __repr__(self):
-        return self.handle.read('IDN?')
+        return self.pm.query('*IDN?')

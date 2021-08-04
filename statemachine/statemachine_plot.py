@@ -25,7 +25,7 @@ class PlotStateMachine:
     def show_statemachine(self, **kwargs):
         # use kwarg show_roi = True to show statechart for current state only
         stream = io.BytesIO()
-        self.get_graph(**kwargs).draw(stream, prog='dot', format='png')
+        self.machine.get_graph(**kwargs).draw(stream, prog='dot', format='png')
         image = Image.open(stream)
         image.show()
 

@@ -11,59 +11,54 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(285, 74)
+        Form.resize(213, 127)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(Form.sizePolicy().hasHeightForWidth())
         Form.setSizePolicy(sizePolicy)
-        self.gridLayout_2 = QtWidgets.QGridLayout(Form)
-        self.gridLayout_2.setObjectName("gridLayout_2")
-        self.stackedWidget = QtWidgets.QStackedWidget(Form)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
-        sizePolicy.setHorizontalStretch(0)
-        sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.stackedWidget.sizePolicy().hasHeightForWidth())
-        self.stackedWidget.setSizePolicy(sizePolicy)
-        self.stackedWidget.setObjectName("stackedWidget")
-        self.page_experiment = QtWidgets.QWidget()
-        self.page_experiment.setObjectName("page_experiment")
-        self.gridLayout = QtWidgets.QGridLayout(self.page_experiment)
-        self.gridLayout.setContentsMargins(0, 0, 0, 0)
-        self.gridLayout.setSpacing(0)
+        self.gridLayout = QtWidgets.QGridLayout(Form)
         self.gridLayout.setObjectName("gridLayout")
-        self.stackedWidget.addWidget(self.page_experiment)
-        self.page_alignment = QtWidgets.QWidget()
-        self.page_alignment.setObjectName("page_alignment")
-        self.gridLayout_5 = QtWidgets.QGridLayout(self.page_alignment)
-        self.gridLayout_5.setContentsMargins(0, 0, 0, 0)
-        self.gridLayout_5.setSpacing(0)
-        self.gridLayout_5.setObjectName("gridLayout_5")
-        self.groupBox_2 = QtWidgets.QGroupBox(self.page_alignment)
+        self.groupBox_2 = QtWidgets.QGroupBox(Form)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.groupBox_2.sizePolicy().hasHeightForWidth())
         self.groupBox_2.setSizePolicy(sizePolicy)
         self.groupBox_2.setObjectName("groupBox_2")
-        self.gridLayout_4 = QtWidgets.QGridLayout(self.groupBox_2)
-        self.gridLayout_4.setObjectName("gridLayout_4")
-        self.pushButton_2 = QtWidgets.QPushButton(self.groupBox_2)
-        self.pushButton_2.setObjectName("pushButton_2")
-        self.gridLayout_4.addWidget(self.pushButton_2, 0, 0, 1, 1)
-        self.gridLayout_5.addWidget(self.groupBox_2, 0, 0, 1, 1)
-        self.stackedWidget.addWidget(self.page_alignment)
-        self.gridLayout_2.addWidget(self.stackedWidget, 0, 0, 1, 1)
+        self.gridLayout_2 = QtWidgets.QGridLayout(self.groupBox_2)
+        self.gridLayout_2.setObjectName("gridLayout_2")
+        self.pushButton_shutter = QtWidgets.QPushButton(self.groupBox_2)
+        self.pushButton_shutter.setObjectName("pushButton_shutter")
+        self.gridLayout_2.addWidget(self.pushButton_shutter, 0, 0, 1, 1)
+        self.checkBox = QtWidgets.QCheckBox(self.groupBox_2)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.checkBox.sizePolicy().hasHeightForWidth())
+        self.checkBox.setSizePolicy(sizePolicy)
+        self.checkBox.setStyleSheet("QCheckBox::indicator:checked\n"
+"{\n"
+"background-color: rgb(0, 198, 6)\n"
+"}\n"
+"\n"
+"QCheckBox::indicator:unchecked\n"
+"{\n"
+"background-color: rgb(202, 0, 3);\n"
+"}")
+        self.checkBox.setText("")
+        self.checkBox.setObjectName("checkBox")
+        self.gridLayout_2.addWidget(self.checkBox, 0, 1, 1, 1)
+        self.gridLayout.addWidget(self.groupBox_2, 0, 0, 1, 1)
 
         self.retranslateUi(Form)
-        self.stackedWidget.setCurrentIndex(1)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def retranslateUi(self, Form):
         _translate = QtCore.QCoreApplication.translate
         Form.setWindowTitle(_translate("Form", "Form"))
         self.groupBox_2.setTitle(_translate("Form", "Shutter"))
-        self.pushButton_2.setText(_translate("Form", "Shutter Open/Close"))
+        self.pushButton_shutter.setText(_translate("Form", "Shutter Open/Close"))
 
 
 if __name__ == "__main__":

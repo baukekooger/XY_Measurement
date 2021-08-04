@@ -9,7 +9,7 @@ states: [
         {'name': 'defineExperiment', 'on_enter': '_define_experiment'},
         {'name': 'connecting', 'on_enter': '_connect_all'},
         {'name': 'align', 'on_enter': '_align', 'on_exit': '_stop_align'},
-        {'name': 'setExperiment', 'on_enter': '_load_configuration', 'on_exit': '_save_configuration'},
+        {'name': 'setExperiment'},
         {'name': 'experiment', 'children': [{'name': 'openFile', 'on_enter': ['_reset_experiment', '_open_file']},
                                             {'name': 'prepareMeasurement', 'on_enter': '_prepare_measurement'},
                                             {'name': 'measuring', 'on_enter': '_measure'},
