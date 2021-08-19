@@ -112,6 +112,8 @@ class QSpectrometer(QObject):
         """
         with(QMutexLocker(self.mutex)):
             self.measuring = True
+            # perform request a measurement to clear the buffer, then measure and time
+            self.spec.intensities()
             t = []
             intensity = np.zeros(len(self.spec.wavelengths()))
             n = 1
@@ -133,7 +135,7 @@ class QSpectrometer(QObject):
         self.last_times = t
         self.measurement_complete.emit(intensity, t)
         self.measurement_done.emit()
-        self.measurement_parameters.emit(self.integrationtime, self.average_measurements)
+        self.measurement_parameters.emit(int(self.integrationtime), int(self.average_measurements))
         return intensity, t
 
     @pyqtSlot()

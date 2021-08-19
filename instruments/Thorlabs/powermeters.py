@@ -13,9 +13,8 @@ def list_available_devices():
 
 class QPowermeter(QObject):
     """
-    Python interface for the Thorlabs PM100A powermeter as a Qobject
+    Python interface for the Thorlabs PM100A powermeter as a QObject
     """
-
     measurement_complete = pyqtSignal(float)
     measurement_parameters = pyqtSignal(int, int)
 

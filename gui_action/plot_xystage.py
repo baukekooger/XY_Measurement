@@ -8,8 +8,11 @@ from instruments.Thorlabs.xystage import QXYStage
 import shapely.geometry as gmt
 import descartes
 import numpy as np
+from pathlib import Path
+from yaml import safe_load as yaml_safe_load
 import random
 import time
+
 logging.basicConfig(level=logging.INFO)
 
 
@@ -25,6 +28,11 @@ class XYStagePlotWidget(QtWidgets.QWidget):
         self.canvas = FigureCanvas(self.figure)
         self.layout.addWidget(self.canvas)
         self.setLayout(self.layout)
+        self.experiment = None
+        self.substrate = None
+        pathconfig = Path(__file__).parent.parent / 'config_main.yaml'
+        with pathconfig.open() as f:
+            self.config = yaml_safe_load(f)
 
     def connect_signals_slots(self):
         self.xystage.measurement_complete.connect(self.plot_position)
@@ -41,12 +49,12 @@ class XYStagePlotWidget(QtWidgets.QWidget):
         ax = self.figure.add_subplot(111)
         who = 200  # width holder outline
         hho = 100  # height holder outline
-        whse = 51  # width holder sample edge
-        hhse = 51  # height holder sample edge
-        ws = 47  # width sample
-        hs = 47  # height sample
-        dfhx = 6.8  # distance from holder x
-        dfhy = 4.7  # distance from holder y
+        whse = self.config['substrates'][self.substrate]['whse']  # width holder sample edge
+        hhse = self.config['substrates'][self.substrate]['hhse']  # height holder sample edge
+        ws = self.config['substrates'][self.substrate]['ws']  # width sample
+        hs = self.config['substrates'][self.substrate]['hs']  # height sample
+        dfhx = self.config['substrates'][self.substrate]['dfhx']  # distance from holder x
+        dfhy = self.config['substrates'][self.substrate]['dfhy']  # distance from holder y
 
         holes_tapped_x = [12.5, 12.5, 37.5, 37.5, 62.5, 62.5, 62.5, 62.5, 87.5, 87.5, 87.5, 87.5]
         holes_tapped_y = [62.5, 87.5, 62.5, 87.5, 12.5, 37.5, 62.5, 87.5, 12.5, 37.5, 62.5, 87.5]
@@ -64,7 +72,9 @@ class XYStagePlotWidget(QtWidgets.QWidget):
             (x - dfhx - (whse - ws) / 2, y - dfhy - hhse + (hhse - hs) / 2)
         ])
 
-        lightsource = gmt.Point(10, 12).buffer(1.75)
+        lightsource_x = self.config['substrates'][self.substrate][f'lightsource_x_{self.experiment}']
+        lightsource_y = self.config['substrates'][self.substrate][f'lightsource_y_{self.experiment}']
+        lightsource = gmt.Point(lightsource_x, lightsource_y).buffer(1.75)
 
         ax.add_patch(descartes.PolygonPatch(holder, fc='k', ec='k'))
         ax.add_patch(descartes.PolygonPatch(sample_edge, fc='dimgrey'))
@@ -107,14 +117,17 @@ class XYStagePlotWidget(QtWidgets.QWidget):
         ax.set_xlabel('x [mm]')
         ax.set_ylabel('y [mm]')
         self.figure.tight_layout()
-        ax.set(xlim=(90, -50), ylim=(-50, 90))
+        if self.experiment == 'transmission':
+            ax.set(xlim=(90, -50), ylim=(-50, 90))
+        else:
+            ax.set(xlim=(90, -50), ylim=(-50, 170))
         self.canvas.draw()
 
     def plot_layout(self, xnum, ynum, xoffleft, xoffright, yoffbottom, yofftop):
-        whse = 51   # width holder sample edge
-        hhse = 51   # height holder sample edge
-        ws = 47     # width sample
-        hs = 47     # height sample
+        whse = self.config['substrates'][self.substrate]['whse']  # width holder sample edge
+        hhse = self.config['substrates'][self.substrate]['hhse']  # height holder sample edge
+        ws = self.config['substrates'][self.substrate]['ws']  # width sample
+        hs = self.config['substrates'][self.substrate]['hs']  # height sample
         bw = 3.5    # width of the beam of light
         self.figure.clear()
         ax = self.figure.add_subplot(111)

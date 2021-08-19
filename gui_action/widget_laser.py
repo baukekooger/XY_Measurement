@@ -34,6 +34,7 @@ class LaserWidget(QtWidgets.QWidget):
     def disconnect_signals_slots(self):
         self.laser.measurement_complete.disconnect()
 
+
     @pyqtSlot(float, str, float, bool, bool)
     def update_status(self, wavelength, energylevel, power, stable, output):
         self.ui.label_wavelength_indicator.setText(f'{wavelength:.0f} nm')

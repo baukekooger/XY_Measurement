@@ -19,6 +19,7 @@ class PowerMeterPlotWidget(QtWidgets.QWidget):
         self.canvas = FigureCanvas(self.figure)
         # self.toolbar = NavigationToolbar(self.canvas, self)
         layout = QtWidgets.QVBoxLayout()
+        layout.setContentsMargins(0, 0, 0, 0)
         # layout.addWidget(self.toolbar)
         layout.addWidget(self.canvas)
         self.setLayout(layout)
@@ -52,7 +53,13 @@ class PowerMeterPlotWidget(QtWidgets.QWidget):
 
         self.figure.clear()
         ax = self.figure.add_subplot(111)
-        if power > 1:
+        if power > 5:
+            # plots overload warning and clears the log
+            ax.text(0.5, 0.5, 'Sensor out of range (OL)!', dict(ha='center', va='center', fontsize=15))
+            self.log = np.zeros(1)
+            self.lasttime = time.time()
+            self.time = np.zeros(1)
+        elif power > 1:
             ax.plot(self.time, self.log, '-')
             ax.set_ylabel('power [W]')
             ax.yaxis.set_major_formatter(FormatStrFormatter('%.2f'))

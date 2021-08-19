@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>225</width>
-    <height>135</height>
+    <width>304</width>
+    <height>172</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -51,7 +51,7 @@
        <item row="0" column="0">
         <widget class="QGroupBox" name="groupBox_laser">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+          <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -72,6 +72,12 @@
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>60</width>
+                  <height>0</height>
+                 </size>
+                </property>
                 <property name="text">
                  <string>start (nm)</string>
                 </property>
@@ -86,7 +92,7 @@
                  </size>
                 </property>
                 <property name="minimum">
-                 <number>375</number>
+                 <number>200</number>
                 </property>
                 <property name="maximum">
                  <number>2300</number>
@@ -105,6 +111,12 @@
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>60</width>
+                  <height>0</height>
+                 </size>
+                </property>
                 <property name="text">
                  <string>stop (nm) </string>
                 </property>
@@ -119,7 +131,7 @@
                  </size>
                 </property>
                 <property name="minimum">
-                 <number>190</number>
+                 <number>200</number>
                 </property>
                 <property name="maximum">
                  <number>2300</number>
@@ -140,6 +152,12 @@
                   <horstretch>0</horstretch>
                   <verstretch>0</verstretch>
                  </sizepolicy>
+                </property>
+                <property name="minimumSize">
+                 <size>
+                  <width>60</width>
+                  <height>0</height>
+                 </size>
                 </property>
                 <property name="text">
                  <string>step (nm) </string>
@@ -163,6 +181,43 @@
                </widget>
               </item>
              </layout>
+            </item>
+           </layout>
+          </item>
+          <item row="1" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_7">
+            <item>
+             <widget class="QLabel" name="label">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>60</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>energy level</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="comboBox_energy_level_experiment">
+              <item>
+               <property name="text">
+                <string>Max</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>Adjust</string>
+               </property>
+              </item>
+             </widget>
             </item>
            </layout>
           </item>
@@ -313,7 +368,7 @@ background-color: rgb(0, 198, 6)
             <item>
              <widget class="QSpinBox" name="spinBox_wavelength_alignment">
               <property name="minimum">
-               <number>190</number>
+               <number>200</number>
               </property>
               <property name="maximum">
                <number>2300</number>

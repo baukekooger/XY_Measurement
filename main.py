@@ -46,6 +46,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.move_to_threads()
         self.start_threads()
         self.add_instruments_to_guis()
+        self.connect_signals_gui()
         self.connect_position_layout_plot()
         self.fill_ui()
         self.reset_append()
@@ -79,14 +80,17 @@ class MainWindow(QtWidgets.QMainWindow):
             if 'file' not in widget:
                 widget_set = getattr(self.ui, widget)
                 setattr(widget_set, inst, self.statemachine.instruments[inst])
-                widget_set.connect_signals_slots()
+
+    def connect_signals_gui(self):
+        for widget, inst in self.config['widgets'][self.experiment].items():
+            widget_set = getattr(self.ui, widget)
+            widget_set.connect_signals_slots()
 
     def disconnect_signals_gui(self):
         # disconnects the signals from the guis so they don't get doubly connected when rechoosing experiment
         for widget, inst in self.config['widgets'][self.experiment].items():
-            if 'file' not in widget:
-                widget_set = getattr(self.ui, widget)
-                widget_set.disconnect_signals_slots()
+            widget_set = getattr(self.ui, widget)
+            widget_set.disconnect_signals_slots()
 
     def quit_all_threads(self):
         self.statemachineThread.quit()
@@ -188,13 +192,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.widget_spectrometerplot_transmission.set_transmissionaxes = set_transmissionaxes
 
     def connect_position_layout_plot(self):
+        # signals from xy stage widget
         widget = getattr(self.ui, f'widget_xystage_{self.experiment}')
-        widget.ui.spinBox_x_num.editingFinished.connect(self.handle_position_layout_plot)
-        widget.ui.spinBox_y_num.editingFinished.connect(self.handle_position_layout_plot)
-        widget.ui.spinBox_x_off_left.editingFinished.connect(self.handle_position_layout_plot)
-        widget.ui.spinBox_x_off_right.editingFinished.connect(self.handle_position_layout_plot)
-        widget.ui.spinBox_y_off_bottom.editingFinished.connect(self.handle_position_layout_plot)
-        widget.ui.spinBox_y_off_top.editingFinished.connect(self.handle_position_layout_plot)
+        widget.ui.spinBox_x_num.valueChanged.connect(self.handle_position_layout_plot)
+        widget.ui.spinBox_y_num.valueChanged.connect(self.handle_position_layout_plot)
+        widget.ui.spinBox_x_off_left.valueChanged.connect(self.handle_position_layout_plot)
+        widget.ui.spinBox_x_off_right.valueChanged.connect(self.handle_position_layout_plot)
+        widget.ui.spinBox_y_off_bottom.valueChanged.connect(self.handle_position_layout_plot)
+        widget.ui.spinBox_y_off_top.valueChanged.connect(self.handle_position_layout_plot)
+        # signal from file widget (substrate change)
+        widgetfile = getattr(self.ui, f'widget_file_{self.experiment}')
+        widgetfile.ui.comboBox_substrate.currentIndexChanged.connect(self.handle_substrate_layout)
+        self.init_layout_plot()
 
     def handle_position_layout_plot(self):
         widget = getattr(self.ui, f'widget_xystage_{self.experiment}')
@@ -206,6 +215,21 @@ class MainWindow(QtWidgets.QMainWindow):
         y_off_top = widget.ui.spinBox_y_off_top.value()
         widgetplot = getattr(self.ui, f'widget_xystageplot_{self.experiment}')
         widgetplot.plot_layout(xnum, ynum, x_off_left, x_off_right, y_off_bottom, y_off_top)
+
+    def init_layout_plot(self):
+        # sets the substrate and experiment attribute of the layout plot after choosing a measurement
+        widgetplot = getattr(self.ui, f'widget_xystageplot_{self.experiment}')
+        widgetplot.experiment = self.experiment
+        widgetfile = getattr(self.ui, f'widget_file_{self.experiment}')
+        substrate = widgetfile.ui.comboBox_substrate.currentIndex()
+        widgetplot.substrate = substrate
+
+    @pyqtSlot(int)
+    def handle_substrate_layout(self, substrate):
+        widgetplot = getattr(self.ui, f'widget_xystageplot_{self.experiment}')
+        widgetplot.substrate = substrate
+        if self.statemachine.state == 'setExperiment':
+            self.handle_position_layout_plot()
 
     def start_experiment(self):
         # check if motors are homed, issue warning otherwise.
@@ -231,6 +255,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.pushButton_start_experiment.setDisabled(True)
         self.ui.pushButton_alignment_experiment.setDisabled(True)
         self.ui.pushButton_return.setDisabled(True)
+        self.reset_progress()
         self.statemachine.abort()
 
     def reset_setexperiment(self):
@@ -270,7 +295,7 @@ class MainWindow(QtWidgets.QMainWindow):
         msg.setIcon(QtWidgets.QMessageBox.Information)
 
         msg.setText("Measurement Complete")
-        msg.setInformativeText("This is additional information")
+        msg.setInformativeText("Press ok to continue")
         msg.setWindowTitle("Completion")
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msg.buttonClicked.connect(self.reset_progress)

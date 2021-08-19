@@ -103,13 +103,13 @@ class Ui_Form(object):
         self.checkBox_append_file = QtWidgets.QCheckBox(self.groupBox)
         self.checkBox_append_file.setObjectName("checkBox_append_file")
         self.horizontalLayout_6.addWidget(self.checkBox_append_file)
-        self.lineEdit_appendfile = QtWidgets.QLineEdit(self.groupBox)
-        self.lineEdit_appendfile.setReadOnly(False)
-        self.lineEdit_appendfile.setObjectName("lineEdit_appendfile")
-        self.horizontalLayout_6.addWidget(self.lineEdit_appendfile)
-        self.toolButton_appendfile = QtWidgets.QToolButton(self.groupBox)
-        self.toolButton_appendfile.setObjectName("toolButton_appendfile")
-        self.horizontalLayout_6.addWidget(self.toolButton_appendfile)
+        self.lineEdit_append_file = QtWidgets.QLineEdit(self.groupBox)
+        self.lineEdit_append_file.setReadOnly(False)
+        self.lineEdit_append_file.setObjectName("lineEdit_append_file")
+        self.horizontalLayout_6.addWidget(self.lineEdit_append_file)
+        self.toolButton_append_file = QtWidgets.QToolButton(self.groupBox)
+        self.toolButton_append_file.setObjectName("toolButton_append_file")
+        self.horizontalLayout_6.addWidget(self.toolButton_append_file)
         self.gridLayout.addLayout(self.horizontalLayout_6, 4, 0, 1, 1)
         self.gridLayout_2.addWidget(self.groupBox, 0, 0, 1, 1)
 
@@ -130,7 +130,7 @@ class Ui_Form(object):
         self.label_3.setText(_translate("Form", "storage dir"))
         self.toolButton_directory.setText(_translate("Form", "..."))
         self.checkBox_append_file.setText(_translate("Form", "append file"))
-        self.toolButton_appendfile.setText(_translate("Form", "..."))
+        self.toolButton_append_file.setText(_translate("Form", "..."))
 
 
 if __name__ == "__main__":

@@ -194,14 +194,14 @@
          </widget>
         </item>
         <item>
-         <widget class="QLineEdit" name="lineEdit_appendfile">
+         <widget class="QLineEdit" name="lineEdit_append_file">
           <property name="readOnly">
            <bool>false</bool>
           </property>
          </widget>
         </item>
         <item>
-         <widget class="QToolButton" name="toolButton_appendfile">
+         <widget class="QToolButton" name="toolButton_append_file">
           <property name="text">
            <string>...</string>
           </property>

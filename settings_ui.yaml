@@ -1,51 +1,88 @@
-excitation_emission:
-  widget_file_excitation_emission:
+decay:
+  widget_file_decay:
+    checkBox_append_file: false
+    comboBox_substrate: 0
+    lineEdit_append_file: ''
     lineEdit_directory: ''
     lineEdit_sample: ''
     plainTextEdit_comments: ''
+  widget_laser_decay:
+    checkBox_stable: true
+    spinBox_wavelength_alignment: 375
+    spinBox_wavelength_start: 375
+    spinBox_wavelength_step: 1
+    spinBox_wavelength_stop: 375
+  widget_shuttercontrol_decay:
+    checkBox: false
+  widget_xystage_decay:
+    checkBox_homed_x: false
+    checkBox_homed_y: false
+    doubleSpinBox_x: 100.0
+    doubleSpinBox_y: 100.0
+    spinBox_x_num: 1
+    spinBox_x_off_left: 0
+    spinBox_x_off_right: 0
+    spinBox_y_num: 1
+    spinBox_y_off_bottom: 0
+    spinBox_y_off_top: 0
+excitation_emission:
+  widget_file_excitation_emission:
+    checkBox_append_file: true
+    comboBox_substrate: 0
+    lineEdit_append_file: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY/Testtesttrans.hdf5
+    lineEdit_directory: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY
+    lineEdit_sample: Realtest_vis
+    plainTextEdit_comments: Harde dingen jeweet
   widget_laser_excitation_emission:
-    doubleSpinBox_wavelength_start: 0.0
-    doubleSpinBox_wavelength_step: 0.0
-    doubleSpinBox_wavelength_stop: 0.0
-    spinBox: 0
+    checkBox_stable: true
+    comboBox_energy_level_experiment: 0
+    spinBox_wavelength_alignment: 450
+    spinBox_wavelength_start: 450
+    spinBox_wavelength_step: 25
+    spinBox_wavelength_stop: 500
   widget_powermeter_excitation_emission:
-    doubleSpinBox_integrationtime: 0.0
-  widget_shuttercontrol_excitation_emission: {}
+    spinBox_integration_time_alignment: 1
+    spinBox_integration_time_experiment: 50
+    spinBox_wavelength_alignment: 200
+  widget_shuttercontrol_excitation_emission:
+    checkBox: true
   widget_spectrometer_excitation_emission:
-    doubleSpinBox_averageing_alignment: 0.0
-    doubleSpinBox_averageing_experiment: 0.0
-    doubleSpinBox_integration_time_alignment: 0.0
-    doubleSpinBox_integration_time_experiment: 0.0
+    spinBox_averageing_alignment: 1
+    spinBox_averageing_experiment: 1
+    spinBox_integration_time_alignment: 1000
+    spinBox_integration_time_experiment: 1000
   widget_xystage_excitation_emission:
-    doubleSpinBox_x: 0.0
-    doubleSpinBox_x_start: 0.0
-    doubleSpinBox_x_stop: 0.0
-    doubleSpinBox_y: 0.0
-    doubleSpinBox_y_start: 0.0
-    doubleSpinBox_y_stop: 0.0
-    spinBox_x_num: 0
-    spinBox_y_num: 0
+    checkBox_homed_x: true
+    checkBox_homed_y: true
+    doubleSpinBox_x: 85.0
+    doubleSpinBox_y: 100.0
+    spinBox_x_num: 3
+    spinBox_x_off_left: 20
+    spinBox_x_off_right: 20
+    spinBox_y_num: 3
+    spinBox_y_off_bottom: 20
+    spinBox_y_off_top: 20
 transmission:
   widget_file_transmission:
     checkBox_append_file: false
     comboBox_substrate: 0
-    lineEdit_appendfile: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY/2106281727_Newsample.hdf5
+    lineEdit_append_file: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY/Realtest_vis.hdf5
     lineEdit_directory: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY
-    lineEdit_sample: BK666
-    plainTextEdit_comments: 'The number of the beast '
+    lineEdit_sample: Testtesttrans
+    plainTextEdit_comments: Transmission test for funzors
   widget_spectrometer_transmission:
     spinBox_averageing_alignment: 1
     spinBox_averageing_experiment: 1
-    spinBox_integration_time_alignment: 400
-    spinBox_integration_time_experiment: 1000
+    spinBox_integration_time_alignment: 1000
+    spinBox_integration_time_experiment: 2000
   widget_xystage_transmission:
-    checkBox_homed_x: true
-    checkBox_homed_y: true
-    doubleSpinBox_x: 30.0
-    doubleSpinBox_y: 30.0
+    checkBox_homed_x: false
+    checkBox_homed_y: false
+    doubleSpinBox_x: 0.0
+    doubleSpinBox_y: 0.0
     spinBox_x_num: 3
-    spinBox_x_off_left: 5
-    spinBox_x_off_right: 9
+    spinBox_x_off_left: 20
+    spinBox_x_off_right: 20
     spinBox_y_num: 3
-    spinBox_y_off_bottom: 5
-    spinBox_y_off_top: 5
+    spinBox_y_off_bottom: 20
+    spinBox_y_off_top: 20

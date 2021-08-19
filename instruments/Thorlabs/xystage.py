@@ -79,6 +79,11 @@ class QXYStage(QObject):
         apt.reconnect()
         self.connected = False
 
+    def stop_motors(self):
+        # stops motors slowly such they don't loose their homing
+        self.xstage.stop_profiled()
+        self.ystage.stop_profiled()
+
     def reconnect(self):
         self.connected = False
         while not self.connected:

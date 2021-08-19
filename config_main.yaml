@@ -9,7 +9,7 @@ experiments : {
 instruments : {
     'transmission': [ 'xystage', 'spectrometer' ],
     'excitation_emission': [ 'xystage', 'spectrometer','laser','shuttercontrol','powermeter'],
-    'decay': [ 'xystage', 'digitizer','laser','shuttercontrol' ]
+    'decay': [ 'xystage','laser','shuttercontrol' ]
 }
 
 # Lists all the widgets per experiment
@@ -36,8 +36,8 @@ widgets : {
         'widget_file_decay': '',
         'widget_xystage_decay': 'xystage',
         'widget_xystageplot_decay': 'xystage',
-        'widget_digitizer_decay': 'digitizer',
-        'widget_digitizerplot_decay': 'digitizer',
+#        'widget_digitizer_decay': 'digitizer',
+#        'widget_digitizerplot_decay': 'digitizer',
         'widget_laser_decay': 'laser',
         'widget_shuttercontrol_decay': 'shuttercontrol'
     }
@@ -61,25 +61,72 @@ instrument_pages: {
 }
 # Position settings for the different substrates
 substrates: {
+    # borofloat 50X50
     0: {
-        x_start: 14,  # left upper corner position x
-        y_start: 15,  # left upper corner position y
-        whse: 51,    # width holder sample edge
-        hhse: 51,    # height holder sample edge
-        ws: 47,      # width sample usable
-        hs: 47,      # height sample usable
+        x_start_transmission: 14,               # left upper corner position x (same for all experiments)
+        x_start_excitation_emission: 14,        # left upper corner position y transmission measurements
+        x_start_decay: 14,                      # left upper corner position y transmission measurements
+        y_start_transmission: 15,               # left upper corner position y transmission measurements
+        y_start_excitation_emission: 103,     # left upper corner position y EE measurements
+        y_start_decay: 103,                   # left upper corner position y decay measurements
+        whse: 51,                               # width holder sample edge
+        hhse: 51,                               # height holder sample edge
+        ws: 47,                                 # width sample usable
+        hs: 47,                                 # height sample usable
+        dfhx: 6.8,                              # distance from start of sample to side holder x
+        dfhy: 4.7,                              # distance from start of sample to side holder y
+        lightsource_x_transmission: 9,          # lightsource x position transmission
+        lightsource_x_excitation_emission: 9,   # lightsource x position excitation emission
+        lightsource_x_decay: 9,                 # lightsource x position excitation emission
+        lightsource_y_transmission: 14,         # lightsource y position transmission
+        lightsource_y_excitation_emission: 99,  # lightsource y position excitation emission
+        lightsource_y_decay: 99                 # lightsource y position decay
     },
     1: {
-        xstart: 0,
-        xstop: 10,
-        ystart: 0,
-        ystop: 10
+        x_start_transmission: 14,               # left upper corner position x (same for all experiments)
+        x_start_excitation_emission: 14,        # left upper corner position y transmission measurements
+        x_start_decay: 14,                      # left upper corner position y transmission measurements
+        y_start_transmission: 15,               # left upper corner position y transmission measurements
+        y_start_excitation_emission: 103,       # left upper corner position y EE measurements
+        y_start_decay: 103,                     # left upper corner position y decay measurements
+        whse: 44,                               # width holder sample edge
+        hhse: 44,                               # height holder sample edge
+        ws: 42,                                 # width sample usable
+        hs: 42,                                 # height sample usable
+        dfhx: 6.8,                              # distance from start of sample to side holder x
+        dfhy: 4.7,                              # distance from start of sample to side holder y
+        lightsource_x_transmission: 9,          # lightsource x position transmission
+        lightsource_x_excitation_emission: 9,   # lightsource x position excitation emission
+        lightsource_x_decay: 9,                 # lightsource x position excitation emission
+        lightsource_y_transmission: 14,         # lightsource y position transmission
+        lightsource_y_excitation_emission: 99,  # lightsource y position excitation emission
+        lightsource_y_decay: 99                 # lightsource y position decay
     },
     2: {
-        xstart: 0,
-        xstop: 10,
-        ystart: 0,
-        ystop: 10
+        x_start_transmission: 14,               # left upper corner position x (same for all experiments)
+        x_start_excitation_emission: 14,        # left upper corner position y transmission measurements
+        x_start_decay: 14,                      # left upper corner position y transmission measurements
+        y_start_transmission: 15,               # left upper corner position y transmission measurements
+        y_start_excitation_emission: 102.5,     # left upper corner position y EE measurements
+        y_start_decay: 102.5,                   # left upper corner position y decay measurements
+        whse: 25,                               # width holder sample edge
+        hhse: 25,                               # height holder sample edge
+        ws: 22,                                 # width sample usable
+        hs: 22,                                 # height sample usable
+        dfhx: 6.8,                              # distance from start of sample to side holder x
+        dfhy: 4.7,                              # distance from start of sample to side holder y
+        lightsource_x_transmission: 9,          # lightsource x position transmission
+        lightsource_x_excitation_emission: 9,   # lightsource x position excitation emission
+        lightsource_x_decay: 9,                 # lightsource x position excitation emission
+        lightsource_y_transmission: 14,         # lightsource y position transmission
+        lightsource_y_excitation_emission: 99,  # lightsource y position excitation emission
+        lightsource_y_decay: 99                 # lightsource y position decay
     }
 
+}
+
+# Laser dictionary for parsing energylevel setting
+laser: {
+           0: 'Max',
+           1: 'Adjust'
 }

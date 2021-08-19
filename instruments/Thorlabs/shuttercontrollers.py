@@ -19,6 +19,7 @@ class QShutterControl(QObject):
         self.timeout = timeout
         self.polltime = polltime
         self.port = port
+        self.measuring = False
 
     def connect(self, name=None):
         if not name:
@@ -38,17 +39,18 @@ class QShutterControl(QObject):
             self.write_value('ens')
 
     def measure(self):
+        self.measuring = True
         # returns true is shutter is enabled
         if self.query_value('ens') == 1:
             self.shutter_status.emit(True)
         else:
             self.shutter_status.emit(False)
+        self.measuring = False
 
     def disable(self):
         # Closes the shutter
         if int(self.query_value('ens')):
             self.write_value('ens')
-
 
     def get_port(self, modelname):
         """Retrieves the first port the selected modelname is connected to.
