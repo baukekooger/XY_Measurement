@@ -9,7 +9,7 @@ experiments : {
 instruments : {
     'transmission': [ 'xystage', 'spectrometer' ],
     'excitation_emission': [ 'xystage', 'spectrometer','laser','shuttercontrol','powermeter'],
-    'decay': [ 'xystage','laser','shuttercontrol' ]
+    'decay': [ 'xystage','laser','shuttercontrol', 'ditigitzer']
 }
 
 # Lists all the widgets per experiment
@@ -36,8 +36,8 @@ widgets : {
         'widget_file_decay': '',
         'widget_xystage_decay': 'xystage',
         'widget_xystageplot_decay': 'xystage',
-#        'widget_digitizer_decay': 'digitizer',
-#        'widget_digitizerplot_decay': 'digitizer',
+        'widget_digitizer_decay': 'digitizer',
+        'widget_digitizerplot_decay': 'digitizer',
         'widget_laser_decay': 'laser',
         'widget_shuttercontrol_decay': 'shuttercontrol'
     }

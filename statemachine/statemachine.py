@@ -12,6 +12,7 @@ from instruments.Thorlabs.xystage import QXYStage
 from instruments.Thorlabs.shuttercontrollers import QShutterControl
 from instruments.Thorlabs.powermeters import QPowermeter
 from instruments.Ekspla import QLaser
+from instruments.CAEN.Qdigitizer import QDigitizer
 from pathlib import Path
 from netCDF4 import Dataset
 
@@ -22,7 +23,8 @@ instrument_parser = {
     'spectrometer': QSpectrometer,
     'shuttercontrol': QShutterControl,
     'powermeter': QPowermeter,
-    'laser': QLaser
+    'laser': QLaser,
+    'digitzer': QDigitizer
 }
 
 
@@ -57,13 +59,13 @@ class StateMachine(QObject):
     and should be accessed through this class' states
     """
 
-    signalstatechange = pyqtSignal(str)     # signal that emits the state
-    progress = pyqtSignal(int)            # signal emitting the progress of the measurement
-    ect = pyqtSignal(int)                 # another signal
-    connecting_done = pyqtSignal()
-    signal_return_setexperiment = pyqtSignal()
-    save_configuration = pyqtSignal()
-    state = pyqtSignal(str)
+    signalstatechange = pyqtSignal(str)         # signal that emits the state
+    progress = pyqtSignal(int)                  # signal emitting the progress of the measurement
+    ect = pyqtSignal(int)                       # estimated completion time
+    connecting_done = pyqtSignal()              # done connecting to all instruments
+    signal_return_setexperiment = pyqtSignal()  # signal for returning gui to set experiment state
+    save_configuration = pyqtSignal()           # signal to start saving the current instrument config
+    state = pyqtSignal(str)                     # signal emitting current statemachine state
 
     def __init__(self, parent=None):
         super().__init__()

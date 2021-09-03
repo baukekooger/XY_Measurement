@@ -1,16 +1,22 @@
 import time
+from PyQt5.QtCore import QObject, QMutex, pyqtSlot, pyqtSignal
 from ctypes import c_char, byref, windll, pointer
 from ctypes import c_uint32 as c_uint
 from ctypes import c_int32 as c_int
 import os
 import logging
-import numpy
-from . import definitions
-from .definitions import AcqMode, IOLevel, TriggerMode, TriggerPolarity
+import numpy as np
+# from . import definitions
+import instruments.CAEN.definitions as definitions
+from instruments.CAEN.definitions import AcqMode, IOLevel, TriggerMode, TriggerPolarity
+from pathlib import Path
+import logging
+logging.basicConfig(level=logging.INFO)
 
 # Add location of digitizer library to path
-# os.environ['PATH'] = os.path.dirname(__file__) + os.pathsep + 'lib' + os.pathsep + 'x86_64' ';' + os.environ['PATH']
-_lib = windll.LoadLibrary('CAENDigitizer.dll')
+os.environ['PATH'] = os.path.dirname(__file__) + os.pathsep + 'lib' + os.pathsep + 'x86_64' ';' + os.environ['PATH']
+pathdigilib = Path(__file__).parent / 'lib/x86_64/CAENDigitizer.dll'
+_lib = windll.LoadLibrary(str(pathdigilib))
 
 
 def list_available_devices():
@@ -57,12 +63,13 @@ class DigitizerHandle:
 
 
 class Digitizer(DigitizerHandle):
+
     def __init__(self, digitizer_handle: DigitizerHandle):
-        super().__init__(digitizer_handle.usb_index, digitizer_handle.model, digitizer_handle.serial)
+        DigitizerHandle.__init__(self, digitizer_handle.usb_index, digitizer_handle.model, digitizer_handle.serial)
+        QObject.__init__(self)
         self._handle = c_uint(0)
-        self.connect()
-        self.board_info = self._hardware_info()
-        self.buffer = pointer(c_char())
+        self.board_info = None
+        self.buffer = None
 
     @property
     def buffer_size(self):
@@ -432,7 +439,7 @@ class Digitizer(DigitizerHandle):
         buffer_size = self.buffer_size
         self.max_num_events = max([128, buffer_size // record_length])
 
-    def connect(self):
+    def connect_device(self):
         handle_error(_lib.CAEN_DGTZ_OpenDigitizer(definitions.ConnectionType.USB.value,
                                                   self.usb_index, 0, 0, byref(self._handle)))
         # Global reset
@@ -440,6 +447,9 @@ class Digitizer(DigitizerHandle):
         handle_error(_lib.CAEN_DGTZ_WriteRegister(self._handle, 0xEF24, c_uint(0)))
         # Memory reset
         handle_error(_lib.CAEN_DGTZ_WriteRegister(self._handle, 0xEF28, c_uint(0)))
+
+        self.board_info = self._hardware_info()
+        self.buffer = pointer(c_char())
 
     def close(self):
         handle_error(_lib.CAEN_DGTZ_Reset(self._handle))
@@ -452,6 +462,7 @@ class Digitizer(DigitizerHandle):
             raise definitions.Error(error_code)
         return board_info
 
+    @pyqtSlot()
     def prepare_for_measurement(self):
         buffer_size = c_uint(0)
         # Allocate buffer for measurement
@@ -459,7 +470,8 @@ class Digitizer(DigitizerHandle):
         # Start measurement
         handle_error(_lib.CAEN_DGTZ_SWStartAcquisition(self._handle))
 
-    def measure(self, readmode=definitions.ReadMode.SLAVE_TERMINATED_READOUT_MBLT):
+    @pyqtSlot()
+    def read_data(self, readmode=definitions.ReadMode.SLAVE_TERMINATED_READOUT_MBLT):
         """
         Tell the digitizer to start measuring "now"
 
@@ -477,7 +489,7 @@ class Digitizer(DigitizerHandle):
 
         buffer = self.buffer
         buffer_size = c_uint(0)
-        number_of_events = c_uint(0)
+        number_of_events = c_uint(4)
         event = pointer(definitions.UINT16_EVENT())
         record_length = self.record_length
         active_channels = self.active_channels
@@ -492,7 +504,7 @@ class Digitizer(DigitizerHandle):
             handle_error(response)
         handle_error(_lib.CAEN_DGTZ_GetNumEvents(self._handle, buffer, buffer_size, byref(number_of_events)))
         # Decode encoded data from buffer
-        results = numpy.full((self.number_of_channels, number_of_events.value, record_length), numpy.nan)
+        results = np.full((self.number_of_channels, number_of_events.value, record_length), np.nan)
         for i in range(number_of_events.value):
             event_information = definitions.EventInfo()
             event_pointer = pointer(c_char())
@@ -509,6 +521,7 @@ class Digitizer(DigitizerHandle):
         self.finish_measurement()
         return results
 
+    @pyqtSlot()
     def finish_measurement(self):
         # Free buffer for next measurement
         handle_error(_lib.CAEN_DGTZ_SWStopAcquisition(self._handle))
@@ -522,3 +535,4 @@ class Digitizer(DigitizerHandle):
 
     def __repr__(self):
         return '<Digitizer {}:{}>'.format(self.model, self.serial)
+

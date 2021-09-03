@@ -27,7 +27,7 @@ decay:
     spinBox_y_off_top: 0
 excitation_emission:
   widget_file_excitation_emission:
-    checkBox_append_file: true
+    checkBox_append_file: false
     comboBox_substrate: 0
     lineEdit_append_file: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY/Testtesttrans.hdf5
     lineEdit_directory: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY
@@ -36,10 +36,10 @@ excitation_emission:
   widget_laser_excitation_emission:
     checkBox_stable: true
     comboBox_energy_level_experiment: 0
-    spinBox_wavelength_alignment: 450
-    spinBox_wavelength_start: 450
+    spinBox_wavelength_alignment: 375
+    spinBox_wavelength_start: 240
     spinBox_wavelength_step: 25
-    spinBox_wavelength_stop: 500
+    spinBox_wavelength_stop: 375
   widget_powermeter_excitation_emission:
     spinBox_integration_time_alignment: 1
     spinBox_integration_time_experiment: 50
@@ -47,15 +47,15 @@ excitation_emission:
   widget_shuttercontrol_excitation_emission:
     checkBox: true
   widget_spectrometer_excitation_emission:
-    spinBox_averageing_alignment: 1
-    spinBox_averageing_experiment: 1
-    spinBox_integration_time_alignment: 1000
-    spinBox_integration_time_experiment: 1000
+    spinBox_averageing_alignment: 10
+    spinBox_averageing_experiment: 10
+    spinBox_integration_time_alignment: 300
+    spinBox_integration_time_experiment: 300
   widget_xystage_excitation_emission:
     checkBox_homed_x: true
     checkBox_homed_y: true
-    doubleSpinBox_x: 85.0
-    doubleSpinBox_y: 100.0
+    doubleSpinBox_x: 20.0
+    doubleSpinBox_y: 109.0
     spinBox_x_num: 3
     spinBox_x_off_left: 20
     spinBox_x_off_right: 20

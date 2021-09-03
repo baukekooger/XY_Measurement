@@ -17,6 +17,7 @@ class QSpectrometer(QObject):
     measurement_complete = pyqtSignal(np.ndarray, list)
     measurement_done = pyqtSignal()
     measurement_parameters = pyqtSignal(int, int)
+    cache_cleared = pyqtSignal()
 
     def __init__(self, integrationtime=500, average_measurements=1, polltime=0.01, timeout=30, parent=None):
         super().__init__(parent=parent)
@@ -114,7 +115,11 @@ class QSpectrometer(QObject):
             self.measuring = True
             # perform request a measurement to clear the buffer, then measure and time
             self.spec.intensities()
+            self.cache_cleared.emit()
+            logging.info('cache cleared')
             t = []
+            t1 = time.time()
+            print(f'spectro started at {t1}')
             intensity = np.zeros(len(self.spec.wavelengths()))
             n = 1
             while self.measuring and n <= self.average_measurements:
@@ -128,7 +133,8 @@ class QSpectrometer(QObject):
             #     intensity = intensity - self.dark
             # if self.transmission and all(self.lamp):
             #     intensity = intensity/self.lamp
-
+        t2 = time.time()
+        print(f'spectrometer took {t2-t1:.3f} seconds')
         self.measuring = False
         logging.info('Spectrometer Done')
         self.last_intensity = intensity
@@ -166,6 +172,6 @@ class QSpectrometer(QObject):
         self.last_times = t
         return self.dark, t
 
+    @pyqtSlot()
     def clear_lamp(self):
         self.lamp = np.zeros(len(self.spec.wavelengths()))
-
