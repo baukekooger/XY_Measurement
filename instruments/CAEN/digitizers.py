@@ -64,9 +64,8 @@ class DigitizerHandle:
 
 class Digitizer(DigitizerHandle):
 
-    def __init__(self, digitizer_handle: DigitizerHandle):
-        DigitizerHandle.__init__(self, digitizer_handle.usb_index, digitizer_handle.model, digitizer_handle.serial)
-        QObject.__init__(self)
+    def __init__(self):
+        DigitizerHandle.__init__(self, None, None, None)
         self._handle = c_uint(0)
         self.board_info = None
         self.buffer = None
@@ -440,6 +439,10 @@ class Digitizer(DigitizerHandle):
         self.max_num_events = max([128, buffer_size // record_length])
 
     def connect_device(self):
+
+        handle = list_available_devices()[0]
+        DigitizerHandle.__init__(self, handle.usb_index, handle.model, handle.serial)
+
         handle_error(_lib.CAEN_DGTZ_OpenDigitizer(definitions.ConnectionType.USB.value,
                                                   self.usb_index, 0, 0, byref(self._handle)))
         # Global reset

@@ -6,9 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>286</width>
-    <height>191</height>
+    <width>503</width>
+    <height>329</height>
    </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
   </property>
   <property name="windowTitle">
    <string>Form</string>
@@ -77,16 +83,16 @@
                </size>
               </property>
               <property name="text">
-               <string>Channel</string>
+               <string>Channel(s)</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QComboBox" name="comboBox_channel_experiment">
-              <property name="minimumSize">
+             <widget class="QListWidget" name="listWidget">
+              <property name="maximumSize">
                <size>
-                <width>40</width>
-                <height>0</height>
+                <width>16777215</width>
+                <height>35</height>
                </size>
               </property>
               <item>
@@ -291,6 +297,25 @@
              </widget>
             </item>
             <item>
+             <widget class="QPushButton" name="pushButton_samples_alignment">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>75</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Set</string>
+              </property>
+             </widget>
+            </item>
+            <item>
              <widget class="QLabel" name="label_samples_indicator">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
@@ -300,7 +325,7 @@
               </property>
               <property name="minimumSize">
                <size>
-                <width>40</width>
+                <width>60</width>
                 <height>0</height>
                </size>
               </property>
@@ -331,23 +356,32 @@
                </size>
               </property>
               <property name="text">
-               <string>Channel</string>
+               <string>Channel (s)</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QComboBox" name="comboBox_channel_alignment">
+             <widget class="QListWidget" name="listWidget_channel_alignment">
               <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+               <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
                 <horstretch>0</horstretch>
                 <verstretch>0</verstretch>
                </sizepolicy>
               </property>
               <property name="minimumSize">
                <size>
-                <width>40</width>
+                <width>0</width>
                 <height>0</height>
                </size>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>1677215</width>
+                <height>35</height>
+               </size>
+              </property>
+              <property name="selectionMode">
+               <enum>QAbstractItemView::ExtendedSelection</enum>
               </property>
               <item>
                <property name="text">
@@ -359,6 +393,35 @@
                 <string>1</string>
                </property>
               </item>
+              <item>
+               <property name="text">
+                <string>2</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>3</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="pushButton_channel_alignment">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>75</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Set</string>
+              </property>
              </widget>
             </item>
             <item>
@@ -371,12 +434,12 @@
               </property>
               <property name="minimumSize">
                <size>
-                <width>40</width>
+                <width>60</width>
                 <height>0</height>
                </size>
               </property>
               <property name="text">
-               <string>0</string>
+               <string>1, 2, 3, 4</string>
               </property>
               <property name="alignment">
                <set>Qt::AlignCenter</set>
@@ -435,7 +498,7 @@
               </property>
               <property name="minimumSize">
                <size>
-                <width>40</width>
+                <width>60</width>
                 <height>0</height>
                </size>
               </property>

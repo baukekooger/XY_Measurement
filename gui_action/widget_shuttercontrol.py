@@ -36,12 +36,13 @@ class ShutterControlWidget(QtWidgets.QWidget):
             self.shutterstatus = False
             self.ui.checkBox.setChecked(False)
 
+    @pyqtSlot()
     def handle_shutter_open_close(self):
         self.shuttercontrol.measure()
         if self.shutterstatus:
-            self.shuttercontrol.disable()
+            QTimer.singleShot(0, self.shuttercontrol.disable)
         else:
-            self.shuttercontrol.enable()
+            QTimer.singleShot(0, self.shuttercontrol.enable)
 
 
 if __name__ == '__main__':

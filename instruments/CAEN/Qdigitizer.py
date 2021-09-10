@@ -14,8 +14,8 @@ class QDigitizer(CAENlib.Digitizer, QObject):
     measurement_complete_multiple = pyqtSignal(np.ndarray)
     digitizer_parameters = pyqtSignal(list, int, int)
 
-    def __init__(self, digitizer_handle=CAENlib.list_available_devices()[0]):
-        CAENlib.Digitizer.__init__(self, digitizer_handle)
+    def __init__(self):
+        CAENlib.Digitizer.__init__(self)
         QObject.__init__(self)
         self.mutex = QMutex()
         self.connected = False
@@ -35,6 +35,7 @@ class QDigitizer(CAENlib.Digitizer, QObject):
         self.connect_device()
         self.connected = True
         self.init_device()
+        self.check_settings()
 
     @pyqtSlot()
     def disconnect(self):
@@ -73,9 +74,9 @@ class QDigitizer(CAENlib.Digitizer, QObject):
         return data
 
     @pyqtSlot(list)
-    def set_active_channel_single(self, channel):
-        channel = [int(channel)]
-        self.active_channels = channel
+    def set_active_channels(self, channels):
+        self.active_channels = channels
+        self.check_settings()
 
     @pyqtSlot(int)
     def set_offset_channel_single(self, offset):
@@ -83,14 +84,17 @@ class QDigitizer(CAENlib.Digitizer, QObject):
         offset = int(offset)
         channel = list(self.active_channels)[0]
         self.set_dc_offset(channel, offset)
+        self.check_settings()
 
     @pyqtSlot(int)
     def set_samples(self, samples):
         self.record_length = samples
+        self.check_settings()
 
     @pyqtSlot(int)
     def set_post_trigger_size(self, size):
         self.post_trigger_size = size
+        self.check_settings()
 
     @pyqtSlot()
     def check_settings(self):

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'test_blitting.ui'
+# Form implementation generated from reading ui file 'ui_blitting.ui'
 #
 # Created by: PyQt5 UI code generator 5.9.2
 #
@@ -11,19 +11,19 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_MainWindow(object):
     def setupUi(self, MainWindow):
         MainWindow.setObjectName("MainWindow")
-        MainWindow.resize(600, 524)
+        MainWindow.resize(495, 524)
         self.centralwidget = QtWidgets.QWidget(MainWindow)
         self.centralwidget.setObjectName("centralwidget")
         self.gridLayout_2 = QtWidgets.QGridLayout(self.centralwidget)
         self.gridLayout_2.setObjectName("gridLayout_2")
-        self.widget = BlittingWidget(self.centralwidget)
+        self.widget_blit = BlittingWidget(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Expanding)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
-        sizePolicy.setHeightForWidth(self.widget.sizePolicy().hasHeightForWidth())
-        self.widget.setSizePolicy(sizePolicy)
-        self.widget.setObjectName("widget")
-        self.gridLayout_2.addWidget(self.widget, 0, 0, 1, 1)
+        sizePolicy.setHeightForWidth(self.widget_blit.sizePolicy().hasHeightForWidth())
+        self.widget_blit.setSizePolicy(sizePolicy)
+        self.widget_blit.setObjectName("widget_blit")
+        self.gridLayout_2.addWidget(self.widget_blit, 0, 0, 1, 1)
         self.frame = QtWidgets.QFrame(self.centralwidget)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
@@ -56,15 +56,20 @@ class Ui_MainWindow(object):
         self.horizontalLayout = QtWidgets.QHBoxLayout()
         self.horizontalLayout.setObjectName("horizontalLayout")
         self.label_3 = QtWidgets.QLabel(self.frame)
-        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Fixed, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.label_3.sizePolicy().hasHeightForWidth())
         self.label_3.setSizePolicy(sizePolicy)
-        self.label_3.setMinimumSize(QtCore.QSize(107, 0))
+        self.label_3.setMinimumSize(QtCore.QSize(75, 0))
         self.label_3.setObjectName("label_3")
         self.horizontalLayout.addWidget(self.label_3)
         self.doubleSpinBox_amplitude = QtWidgets.QDoubleSpinBox(self.frame)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.doubleSpinBox_amplitude.sizePolicy().hasHeightForWidth())
+        self.doubleSpinBox_amplitude.setSizePolicy(sizePolicy)
         self.doubleSpinBox_amplitude.setMinimum(1.0)
         self.doubleSpinBox_amplitude.setMaximum(100.0)
         self.doubleSpinBox_amplitude.setObjectName("doubleSpinBox_amplitude")
@@ -81,6 +86,11 @@ class Ui_MainWindow(object):
         self.label_4.setObjectName("label_4")
         self.horizontalLayout_2.addWidget(self.label_4)
         self.spinBox_repetition = QtWidgets.QSpinBox(self.frame)
+        sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Expanding, QtWidgets.QSizePolicy.Fixed)
+        sizePolicy.setHorizontalStretch(0)
+        sizePolicy.setVerticalStretch(0)
+        sizePolicy.setHeightForWidth(self.spinBox_repetition.sizePolicy().hasHeightForWidth())
+        self.spinBox_repetition.setSizePolicy(sizePolicy)
         self.spinBox_repetition.setMinimum(1)
         self.spinBox_repetition.setMaximum(200)
         self.spinBox_repetition.setObjectName("spinBox_repetition")
@@ -88,12 +98,10 @@ class Ui_MainWindow(object):
         self.gridLayout.addLayout(self.horizontalLayout_2, 3, 0, 1, 1)
         self.gridLayout_2.addWidget(self.frame, 0, 1, 1, 1)
         self.frame.raise_()
-        self.widget.raise_()
-        self.doubleSpinBox_amplitude.raise_()
-        self.label_3.raise_()
+        self.widget_blit.raise_()
         MainWindow.setCentralWidget(self.centralwidget)
         self.menubar = QtWidgets.QMenuBar(MainWindow)
-        self.menubar.setGeometry(QtCore.QRect(0, 0, 600, 21))
+        self.menubar.setGeometry(QtCore.QRect(0, 0, 495, 21))
         self.menubar.setObjectName("menubar")
         MainWindow.setMenuBar(self.menubar)
         self.statusbar = QtWidgets.QStatusBar(MainWindow)
@@ -111,7 +119,7 @@ class Ui_MainWindow(object):
         self.label_3.setText(_translate("MainWindow", "Amplitude"))
         self.label_4.setText(_translate("MainWindow", "Repetition Rate"))
 
-from tests.blitting.plot_blitting import BlittingWidget
+from plot_blitting import BlittingWidget
 
 if __name__ == "__main__":
     import sys

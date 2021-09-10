@@ -75,6 +75,9 @@ class PowerMeterPlotWidget(QtWidgets.QWidget):
         self.figure.tight_layout()
         self.canvas.draw()
 
+    def fit_plots(self):
+        pass
+
     def clear(self):
         self.figure.clear()
         self.canvas.draw()

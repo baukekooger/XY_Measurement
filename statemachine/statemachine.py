@@ -24,7 +24,7 @@ instrument_parser = {
     'shuttercontrol': QShutterControl,
     'powermeter': QPowermeter,
     'laser': QLaser,
-    'digitzer': QDigitizer
+    'digitizer': QDigitizer
 }
 
 
@@ -261,7 +261,7 @@ class StateMachine(QObject):
     def _add_dark_measurement(self):
         # adds location to take a dark spectrum
         dark_lamp_x = np.array(20)
-        dark_lamp_y = np.array(80)
+        dark_lamp_y = np.array(75)
         self.measurement_parameters['x'] = np.hstack((dark_lamp_x, self.measurement_parameters['x']))
         self.measurement_parameters['y'] = np.hstack((dark_lamp_y, self.measurement_parameters['y']))
         if 'wl' in self.measurement_parameters.keys():

@@ -16,6 +16,8 @@ class QSpectrometer(QObject):
     """
     measurement_complete = pyqtSignal(np.ndarray, list)
     measurement_done = pyqtSignal()
+    measurement_dark_complete = pyqtSignal()
+    measurement_lamp_complete = pyqtSignal()
     measurement_parameters = pyqtSignal(int, int)
     cache_cleared = pyqtSignal()
 
@@ -154,6 +156,7 @@ class QSpectrometer(QObject):
         self.measurement_complete.emit(self.dark, t)
         self.last_intensity = self.dark
         self.last_times = t
+        self.measurement_dark_complete.emit()
         return self.dark, t
 
     @pyqtSlot()
@@ -168,8 +171,10 @@ class QSpectrometer(QObject):
         with(QMutexLocker(self.mutex)):
             self.lamp, t = self.measure()
         self.measurement_complete.emit(self.lamp, t)
+
         self.last_intensity = self.lamp
         self.last_times = t
+        self.measurement_lamp_complete.emit()
         return self.dark, t
 
     @pyqtSlot()

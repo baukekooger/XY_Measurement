@@ -35,19 +35,15 @@ class XYStageWidget(QtWidgets.QWidget):
         if not self.xystage.xhomed:
             QtWidgets.QMessageBox.information(self, 'homing warning', 'x stage not homed, wait for stages to home')
             self._handle_home()
-            self.ui.doubleSpinBox_x.clear()
         else:
             self.xystage.x = self.ui.doubleSpinBox_x.value()
-            self.ui.doubleSpinBox_x.clear()
 
     def _handle_move_y(self):
         if not self.xystage.yhomed:
             QtWidgets.QMessageBox.information(self, 'homing warning', 'y stage not homed, wait for stages to home')
             self._handle_home()
-            self.ui.doubleSpinBox_y.clear()
         else:
             self.xystage.y = self.ui.doubleSpinBox_y.value()
-            self.ui.doubleSpinBox_y.clear()
 
     def _handle_home(self):
         self.xystage.home()

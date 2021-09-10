@@ -10,10 +10,11 @@ class QShutterControl(QObject):
     """
     shutter_status = pyqtSignal(bool)
 
-    def __init__(self, parent=None, port=None, timeout=0.1, polltime=0.1):
+    def __init__(self, parent=None, port=None, timeout=10, polltime=0.1):
         super().__init__(parent=parent)
         self.sc = None  # serial handle to the actual shuttercontroller
         # Shuttercontrol status
+        self.mutex = QMutex(QMutex.Recursive)
         self.connected = False
         self.prompt = '> '
         self.timeout = timeout
@@ -35,22 +36,25 @@ class QShutterControl(QObject):
 
     def enable(self):
         # Opens the shutter
-        if not int(self.query_value('ens')):
-            self.write_value('ens')
+        with(QMutexLocker(self.mutex)):
+            if not int(self.query_value('ens')):
+                self.write_value('ens')
 
     def measure(self):
         self.measuring = True
-        # returns true is shutter is enabled
-        if self.query_value('ens') == 1:
-            self.shutter_status.emit(True)
-        else:
-            self.shutter_status.emit(False)
-        self.measuring = False
+        with(QMutexLocker(self.mutex)):
+            # returns true is shutter is enabled
+            if self.query_value('ens') == 1:
+                self.shutter_status.emit(True)
+            else:
+                self.shutter_status.emit(False)
+            self.measuring = False
 
     def disable(self):
         # Closes the shutter
-        if int(self.query_value('ens')):
-            self.write_value('ens')
+        with(QMutexLocker(self.mutex)):
+            if int(self.query_value('ens')):
+                self.write_value('ens')
 
     def get_port(self, modelname):
         """Retrieves the first port the selected modelname is connected to.

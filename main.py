@@ -85,12 +85,15 @@ class MainWindow(QtWidgets.QMainWindow):
         for widget, inst in self.config['widgets'][self.experiment].items():
             widget_set = getattr(self.ui, widget)
             widget_set.connect_signals_slots()
+            if 'plot' in widget:
+                self.ui.pushButton_fit_plots_to_screen.clicked.connect(widget_set.fit_plots)
 
     def disconnect_signals_gui(self):
         # disconnects the signals from the guis so they don't get doubly connected when rechoosing experiment
         for widget, inst in self.config['widgets'][self.experiment].items():
             widget_set = getattr(self.ui, widget)
             widget_set.disconnect_signals_slots()
+        self.ui.pushButton_fit_plots_to_screen.clicked.disconnect()
 
     def quit_all_threads(self):
         self.statemachineThread.quit()
