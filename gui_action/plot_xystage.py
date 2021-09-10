@@ -33,7 +33,7 @@ class XYStagePlotWidget(QtWidgets.QWidget):
         self.layout.addWidget(self.zoombutton)
         self.setLayout(self.layout)
         self.experiment = 'transmission'
-        self.substrate = 0
+        self.substrate = '50X50 mm (Borofloat)'
         self.zoom = False
         self.bm = None
         self.holder_patch = None
@@ -59,7 +59,7 @@ class XYStagePlotWidget(QtWidgets.QWidget):
     def plot_position(self, x, y):
         if not self.zoombutton.isVisible():
             self.zoombutton.setVisible(True)
-        if self.substrate == 2:
+        if self.substrate == '22X22 mm (Quartz small)':
             # adds extra distance for small holder
             x = x + 25
         if not self.bm:

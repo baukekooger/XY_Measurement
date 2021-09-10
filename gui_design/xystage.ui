@@ -595,13 +595,6 @@ background-color: rgb(202, 0, 3);
               </property>
              </widget>
             </item>
-            <item>
-             <widget class="QPushButton" name="pushButton_zoom_view">
-              <property name="text">
-               <string>zoom view</string>
-              </property>
-             </widget>
-            </item>
            </layout>
           </item>
          </layout>

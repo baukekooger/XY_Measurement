@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(249, 218)
+        Form.resize(268, 218)
         self.gridLayout_2 = QtWidgets.QGridLayout(Form)
         self.gridLayout_2.setObjectName("gridLayout_2")
         self.groupBox = QtWidgets.QGroupBox(Form)
@@ -124,9 +124,9 @@ class Ui_Form(object):
         self.label_2.setText(_translate("Form", "comments"))
         self.label.setText(_translate("Form", "sample"))
         self.label_substrate.setText(_translate("Form", "substrate"))
-        self.comboBox_substrate.setItemText(0, _translate("Form", "50X50 (Borofloat) "))
-        self.comboBox_substrate.setItemText(1, _translate("Form", "44X44 (Quartz) "))
-        self.comboBox_substrate.setItemText(2, _translate("Form", "22X22 (Quartz small) "))
+        self.comboBox_substrate.setItemText(0, _translate("Form", "50X50 mm (Borofloat)"))
+        self.comboBox_substrate.setItemText(1, _translate("Form", "44X44 mm (Quartz)"))
+        self.comboBox_substrate.setItemText(2, _translate("Form", "22X22 mm (Quartz small)"))
         self.label_3.setText(_translate("Form", "storage dir"))
         self.toolButton_directory.setText(_translate("Form", "..."))
         self.checkBox_append_file.setText(_translate("Form", "append file"))

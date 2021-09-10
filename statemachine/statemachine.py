@@ -92,6 +92,7 @@ class StateMachine(QObject):
         self.laserstable = True
         self.processedspectrum = None
         self.spectrometertimes = None
+        self.pulserecord = None
         self.experimentdate = None
         self.is_done = False
         self.storage_dir = None
@@ -169,6 +170,8 @@ class StateMachine(QObject):
         self.instruments['xystage'].stage_settled.connect(self.measure)
         if 'spectrometer' in self.instruments.keys():
             self.instruments['spectrometer'].measurement_done.connect(self.process_data)
+        elif 'digitizer' in self.instruments.keys():
+            self.instruments['digitizer'].measurement_done_multiple.connect(self.process_data)
 
     def _align(self):
         self.heartbeat.start()
@@ -217,24 +220,29 @@ class StateMachine(QObject):
         self._parse_powermetersettings()
         self._parse_lasersettings()
 
-    def _parse_xypositions(self):
+    def _parse_config_decay(self):
+        self._parse_xypositions()
+        self._parse_excitation_wavelengths()
+        self._parse_digitizersettings()
+        self._parse_lasersettings()
 
-        substratenum = self.settings_ui[self.experiment][f'widget_file_{self.experiment}']['comboBox_substrate']
-        substrate = self.config['substrates'][substratenum]
+    def _parse_xypositions(self):
+        substrate = self.settings_ui[self.experiment][f'widget_file_{self.experiment}']['comboBox_substrate']
+        subtratesettings = self.config['substrates'][substrate]
         xysettings = self.settings_ui[self.experiment][f'widget_xystage_{self.experiment}']
         x_num = xysettings['spinBox_x_num']
         x_off_left = xysettings['spinBox_x_off_left']
         x_off_right = xysettings['spinBox_x_off_right']
-        x_start = substrate[f'x_start_{self.experiment}']
-        width_sample = substrate['whse']
-        width_sample_usable = substrate['ws']
+        x_start = subtratesettings[f'x_start_{self.experiment}']
+        width_sample = subtratesettings['whse']
+        width_sample_usable = subtratesettings['ws']
         x = self._define_positions(x_num, x_off_left, x_off_right, x_start, width_sample, width_sample_usable)
         y_num = xysettings['spinBox_y_num']
         y_off_bottom = xysettings['spinBox_y_off_bottom']
         y_off_top = xysettings['spinBox_y_off_top']
-        y_start = substrate[f'y_start_{self.experiment}']
-        height_sample = substrate['hhse']
-        height_sample_usable = substrate['hs']
+        y_start = subtratesettings[f'y_start_{self.experiment}']
+        height_sample = subtratesettings['hhse']
+        height_sample_usable = subtratesettings['hs']
         y = self._define_positions(y_num, y_off_bottom, y_off_top, y_start, height_sample, height_sample_usable)
         self.measurement_parameters = {}
         self._add_measurement_parameter('x', x)
@@ -289,9 +297,21 @@ class StateMachine(QObject):
 
     def _parse_lasersettings(self):
         lasersettings = self.settings_ui[self.experiment][f'widget_laser_{self.experiment}']
-        laserparse = self.config['laser'][lasersettings['comboBox_energy_level_experiment']]
         self.instruments['laser'].output = True
-        self.instruments['laser'].energylevel = laserparse
+        self.instruments['laser'].energylevel = lasersettings['comboBox_energy_level_experiment']
+
+    def _parse_digitizersettings(self):
+        digitizersettings = self.settings_ui[self.experiment][f'widget_digitizer_{self.experiment}']
+        self.instruments['digitizer'].active_channels = digitizersettings['listWidget_channels_experiment']
+        samples = digitizersettings['comboBox_samples_experiment']
+        if samples == '4000':
+            samplesint = 0
+        elif samples == '8000':
+            samplesint = 1
+        self.instruments['digitizer'].set_samples(samplesint)
+        self.instruments['digitizer'].set_post_trigger_size(
+            digitizersettings['spinBox_post_trigger_size_experiment'])
+        self.instruments['digitizer'].number_of_pulses = digitizersettings['spinBox_number_pulses_experiment']
 
     @staticmethod
     def _define_positions(num, off1, off2, start, sse, ss):
@@ -326,7 +346,7 @@ class StateMachine(QObject):
         self._load_create_file()
         self._write_positionsettings()
         self._write_spectrometersettings()
-        self._create_dimensions()
+        self._create_dimensions_transmission()
 
     def _open_file_excitation_emission(self):
         self._load_create_file()
@@ -334,7 +354,14 @@ class StateMachine(QObject):
         self._write_lasersettings()
         self._write_powermetersettings()
         self._write_spectrometersettings()
-        self._create_dimensions()
+        self._create_dimensions_excitation_emission()
+
+    def _open_file_decay(self):
+        self._load_create_file()
+        self._write_positionsettings()
+        self._write_lasersettings()
+        self._write_digitizersettings()
+        self._create_dimensions_decay()
 
     def _load_create_file(self):
         # reads the storage directory and sample name from the settings, creates a file and directory
@@ -359,12 +386,6 @@ class StateMachine(QObject):
         # include comment on experiment
         experiment.comment = comment
 
-        # Store configuration file
-        # with pathconfig.open('r') as f:
-        #     settings = yaml_safe_load(f)
-        # with open(f'{fname}.yml', 'w') as outfile:
-        #     yaml_dump(settings, outfile)
-
     def _write_positionsettings(self):
         positionsettings = self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}/settings/xystage')
         # exclude positions of dark and lamp spectra where applicable.
@@ -387,18 +408,44 @@ class StateMachine(QObject):
         pmsettings = self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}/settings/powermeter')
         pmsettings.integrationtime = self.instruments['powermeter'].integrationtime
 
-    def _create_dimensions(self):
-        if self.experiment in ['transmission', 'excitation_emission']:
-            self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('xy_position', 2)
-            self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('emission_wavelengths',
-                                                               len(self.instruments['spectrometer'].wavelengths))
-            self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('spectrometer_intervals',
-                                                    self.instruments['spectrometer'].average_measurements * 2)
-            self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('single', 1)
-        if self.experiment == 'excitation_emission':
-            excitation_wavelenghts = len(np.unique(self.measurement_parameters['wl'][1:]))
-            self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('excitation_wavelengths',
-                                                                                     excitation_wavelenghts)
+    def _write_digitizersettings(self):
+        digitizersettings = self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}/settings/digitizer')
+        digitizersettings.active_channels = list(self.instruments['digitizer'].active_channels)
+        digitizersettings.samples = self.instruments['digitizer'].record_length
+        digitizersettings.post_trigger_size = self.instruments['digitizer'].post_trigger_size
+
+    def _create_dimensions_transmission(self):
+        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('xy_position', 2)
+        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('emission_wavelengths',
+                                                           len(self.instruments['spectrometer'].wavelengths))
+        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('spectrometer_intervals',
+                                                self.instruments['spectrometer'].average_measurements * 2)
+        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('single', 1)
+
+    def _create_dimensions_excitation_emission(self):
+        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('xy_position', 2)
+        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('emission_wavelengths',
+                                                           len(self.instruments['spectrometer'].wavelengths))
+        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('spectrometer_intervals',
+                                                self.instruments['spectrometer'].average_measurements * 2)
+        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('single', 1)
+        excitation_wavelenghts = len(np.unique(self.measurement_parameters['wl'][1:]))
+        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('excitation_wavelengths',
+                                                                                 excitation_wavelenghts)
+
+    def _create_dimensions_decay(self):
+        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('xy_position', 2)
+        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('single', 1)
+        excitation_wavelenghts = len(np.unique(self.measurement_parameters['wl'][1:]))
+        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('excitation_wavelengths',
+                                                                                 excitation_wavelenghts)
+        digitizersettings = self.settings_ui[self.experiment][f'widget_digitizer_{self.experiment}']
+        active_channels = len(digitizersettings['listWidget_channels_experiment'])
+        samples = int(digitizersettings['comboBox_samples_experiment'])
+        number_of_pulses = int(digitizersettings['spinBox_number_pulses_experiment'])
+        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('active_channels', active_channels)
+        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('samples', samples)
+        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('number_of_pulses', number_of_pulses)
 
     #endregion
 
@@ -420,6 +467,11 @@ class StateMachine(QObject):
         self._control_shutter()
         self._prepare_laser()
 
+    def _prepare_measurement_decay(self):
+        self._prepare_move_stage()
+        self._control_shutter()
+        self._prepare_laser()
+
     def _prepare_move_stage(self):
         try:
             global tstartmove
@@ -434,7 +486,7 @@ class StateMachine(QObject):
             raise IndexError
 
     def _control_shutter(self):
-        if self.measurement_index == 0:
+        if self.measurement_index == 0 and self.experiment == 'excitation_emission':
             self.instruments['shuttercontrol'].disable()
         else:
             self.instruments['shuttercontrol'].enable()
@@ -474,6 +526,14 @@ class StateMachine(QObject):
         # wait one integration time to make sure measurement is fully done on sample
         self._measure_spectrometer()
 
+    def _measure_decay(self):
+        self.heartbeat_xystage.stop()
+        while not self.laserstable:
+            time.sleep(0.1)
+        self.measurement_duration += time.time() - tstartmove
+        # wait one integration time to make sure measurement is fully done on sample
+        self._measure_digitizer()
+
     def _measure_spectrometer(self):
         # Measure with spectrometer
         logging.info('Measuring...')
@@ -484,6 +544,12 @@ class StateMachine(QObject):
         logging.info('Reading out measurement data...')
         self.processedspectrum = self.instruments['spectrometer'].last_intensity
         self.spectrometertimes = self.instruments['spectrometer'].last_times
+
+    def _measure_digitizer(self):
+        logging.info('Starting digitizer...')
+        self.pulserecord = self.instruments['digitizer'].measure_multiple()
+        print(self.pulserecord)
+        logging.info('Digitizer complete.')
 
     #endregion
 
@@ -518,7 +584,7 @@ class StateMachine(QObject):
             x_inx, y_iny = self._variable_index()
             datagroup = self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}/x{x_inx + 1}y{y_iny + 1}')
 
-        xy_pos, em_wl, spectrum, spectrum_t = self._create_variables(datagroup)
+        xy_pos, em_wl, spectrum, spectrum_t = self._create_variables_transmission(datagroup)
 
         xy_pos[:] = self._write_position()
         em_wl[:] = self.instruments['spectrometer'].wavelengths
@@ -546,7 +612,7 @@ class StateMachine(QObject):
             ex_wl = datagroup['excitation']
             power = datagroup['power']
         except IndexError:
-            xy_pos, em_wl, spectrum, spectrum_t, ex_wl, power = self._create_variables(datagroup)
+            xy_pos, em_wl, spectrum, spectrum_t, ex_wl, power = self._create_variables_excitation_emission(datagroup)
 
         if self.measurement_index == 0:
             em_wl[:] = self.instruments['spectrometer'].wavelengths
@@ -563,13 +629,31 @@ class StateMachine(QObject):
             ex_wl[wl_in_wl] = self.instruments['laser'].wavelength
             power[wl_in_wl] = self.instruments['powermeter'].measure()
 
+    def _write_file_decay(self):
+        x_inx, y_iny, wl_in_wl = self._variable_index()
+        # check if folder with position index exists, otherwise create it
+        try:
+            datagroup = self.dataset[f'{self.experiment}_{self.experimentdate}/x{x_inx + 1}y{y_iny + 1}']
+        except IndexError:
+            datagroup = self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}/x{x_inx + 1}y{y_iny + 1}')
+        try:
+            xy_pos = datagroup['position']
+            ex_wl = datagroup['excitation']
+            pulses = datagroup['pulses']
+        except IndexError:
+            xy_pos, ex_wl, pulses = self._create_variables_decay(datagroup)
+
+        xy_pos[:] = self._write_position()
+        ex_wl[wl_in_wl] = self.instruments['laser'].wavelength
+        pulses[wl_in_wl] = self.pulserecord
+
     def _variable_index(self):
         # creates an index for the variables for the folder name per measurement position and for indexing the
         # spectra per excitation wavelength
         x = self.measurement_parameters['x'][self.measurement_index]
         y = self.measurement_parameters['y'][self.measurement_index]
         # exclude positions of dark and lamp spectra where applicable.
-        paramdict = {'transmission': 2, 'excitation_emission': 1, 'decay': 1}
+        paramdict = {'transmission': 2, 'excitation_emission': 1, 'decay': 0}
         x_inx = list(np.unique(self.measurement_parameters['x'][paramdict[self.experiment]:])).index(x)
         y_iny = list(np.unique(self.measurement_parameters['y'][paramdict[self.experiment]:])).index(y)
         if self.experiment in ['excitation_emission', 'decay']:
@@ -579,18 +663,23 @@ class StateMachine(QObject):
         else:
             return x_inx, y_iny
 
-    def _create_variables(self, datagroup):
+    def _create_variables_transmission(self, datagroup):
         xy_pos = datagroup.createVariable('position', 'f8', 'xy_position', fill_value=np.nan)
         xy_pos.units = 'mm'
         em_wl = datagroup.createVariable('emission', 'f8', 'emission_wavelengths', fill_value=np.nan)
         em_wl.units = 'nm'
-        if self.experiment == 'transmission':
-            spectrum = datagroup.createVariable('spectrum', 'f8', 'emission_wavelengths', fill_value=np.nan)
-            spectrum_t = datagroup.createVariable('spectrum_t', 'f8', 'spectrometer_intervals', fill_value=np.nan)
-            spectrum.units = 'a.u.'
-            spectrum_t.units = 's'
-            return xy_pos, em_wl, spectrum, spectrum_t
-        elif self.experiment == 'excitation_emission' and self.measurement_index == 0:
+        spectrum = datagroup.createVariable('spectrum', 'f8', 'emission_wavelengths', fill_value=np.nan)
+        spectrum_t = datagroup.createVariable('spectrum_t', 'f8', 'spectrometer_intervals', fill_value=np.nan)
+        spectrum.units = 'a.u.'
+        spectrum_t.units = 's'
+        return xy_pos, em_wl, spectrum, spectrum_t
+
+    def _create_variables_excitation_emission(self, datagroup):
+        xy_pos = datagroup.createVariable('position', 'f8', 'xy_position', fill_value=np.nan)
+        xy_pos.units = 'mm'
+        em_wl = datagroup.createVariable('emission', 'f8', 'emission_wavelengths', fill_value=np.nan)
+        em_wl.units = 'nm'
+        if self.measurement_index == 0:
             spectrum = datagroup.createVariable('spectrum', 'f8', 'emission_wavelengths', fill_value=np.nan)
             spectrum_t = datagroup.createVariable('spectrum_t', 'f8', 'spectrometer_intervals', fill_value=np.nan)
             ex_wl = datagroup.createVariable('excitation', 'f8', 'single', fill_value=np.nan)
@@ -600,7 +689,7 @@ class StateMachine(QObject):
             ex_wl.units = 'nm'
             power.units = 'W'
             return xy_pos, em_wl, spectrum, spectrum_t, ex_wl, power
-        elif self.experiment == 'excitation_emission':
+        else:
             spectrum = datagroup.createVariable('spectrum', 'f8', ('excitation_wavelengths',
                                                                    'emission_wavelengths'), fill_value=np.nan)
             spectrum_t = datagroup.createVariable('spectrum_t', 'f8', ('excitation_wavelengths',
@@ -612,6 +701,17 @@ class StateMachine(QObject):
             ex_wl.units = 'nm'
             power.units = 'W'
             return xy_pos, em_wl, spectrum, spectrum_t, ex_wl, power
+
+    def _create_variables_decay(self, datagroup):
+        xy_pos = datagroup.createVariable('position', 'f8', 'xy_position', fill_value=np.nan)
+        xy_pos.units = 'mm'
+        ex_wl = datagroup.createVariable('excitation', 'f8', 'excitation_wavelengths', fill_value=np.nan)
+        ex_wl.units = 'nm'
+        pulses = datagroup.createVariable('pulses', 'f8',
+                            ('excitation_wavelengths', 'active_channels', 'number_of_pulses', 'samples'),
+                                          fill_value=np.nan)
+        pulses.units = 'adc counts'
+        return xy_pos, ex_wl, pulses
 
     def _write_position(self):
         # ugly and probably unnescessary way of getting the position, need to check if this actually happens
@@ -669,12 +769,11 @@ class StateMachine(QObject):
         self.is_done = True
         self.continue_experiment()
         self.return_setexperiment()
-        pass
 
     def _measurement_completed(self):
         self.dataset.close()
         self.is_done = True
         self.continue_experiment()
         self.return_setexperiment()
-        pass
+
 

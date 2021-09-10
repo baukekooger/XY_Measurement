@@ -113,6 +113,7 @@ class MainWindow(QtWidgets.QMainWindow):
     def alignment_experiment(self):
         # finalize the current statemachine and load the new statemachine.
         self.statemachine.align_experiment()
+        self.store_ui()
         self.handle_position_layout_plot()
         self.alignment_experiment_gui()
 
@@ -154,13 +155,22 @@ class MainWindow(QtWidgets.QMainWindow):
                         settings[self.experiment][widget_inst][key] = widgethandle.text()
                     elif isinstance(widget_value, QtWidgets.QComboBox):
                         widgethandle = getattr(widget.ui, key)
-                        settings[self.experiment][widget_inst][key] = widgethandle.currentIndex()
+                        settings[self.experiment][widget_inst][key] = widgethandle.currentText()
                     elif isinstance(widget_value, (QtWidgets.QPlainTextEdit, QtWidgets.QTextEdit)):
                         widgethandle = getattr(widget.ui, key)
                         settings[self.experiment][widget_inst][key] = widgethandle.toPlainText()
                     elif isinstance(widget_value, QtWidgets.QCheckBox):
                         widgethandle = getattr(widget.ui, key)
                         settings[self.experiment][widget_inst][key] = widgethandle.isChecked()
+                    elif isinstance(widget_value, QtWidgets.QListWidget):
+                        widgethandle = getattr(widget.ui, key)
+                        items = widgethandle.selectedItems()
+                        if any(items):
+                            channels = [int(item.text()) for item in items]
+                        else:
+                            channels = []
+                        settings[self.experiment][widget_inst][key] = channels
+
         with open('settings_ui.yaml', 'w') as f:
             dump(settings, f)
 
@@ -178,7 +188,7 @@ class MainWindow(QtWidgets.QMainWindow):
                     elif isinstance(subwidgethandle, QtWidgets.QLineEdit):
                         subwidgethandle.setText(value)
                     elif isinstance(subwidgethandle, QtWidgets.QComboBox):
-                        subwidgethandle.setCurrentIndex(value)
+                        subwidgethandle.setCurrentText(value)
                     elif isinstance(subwidgethandle, (QtWidgets.QPlainTextEdit, QtWidgets.QTextEdit)):
                         subwidgethandle.setPlainText(value)
                     elif isinstance(subwidgethandle, QtWidgets.QCheckBox):
@@ -205,7 +215,7 @@ class MainWindow(QtWidgets.QMainWindow):
         widget.ui.spinBox_y_off_top.valueChanged.connect(self.handle_position_layout_plot)
         # signal from file widget (substrate change)
         widgetfile = getattr(self.ui, f'widget_file_{self.experiment}')
-        widgetfile.ui.comboBox_substrate.currentIndexChanged.connect(self.handle_substrate_layout)
+        widgetfile.ui.comboBox_substrate.currentTextChanged.connect(self.handle_substrate_layout)
         self.init_layout_plot()
 
     def handle_position_layout_plot(self):
@@ -224,17 +234,22 @@ class MainWindow(QtWidgets.QMainWindow):
         widgetplot = getattr(self.ui, f'widget_xystageplot_{self.experiment}')
         widgetplot.experiment = self.experiment
         widgetfile = getattr(self.ui, f'widget_file_{self.experiment}')
-        substrate = widgetfile.ui.comboBox_substrate.currentIndex()
+        substrate = widgetfile.ui.comboBox_substrate.currentText()
         widgetplot.substrate = substrate
 
-    @pyqtSlot(int)
+    @pyqtSlot(str)
     def handle_substrate_layout(self, substrate):
+        QtWidgets.QMessageBox.information(self, 'substrateholder changed', f'Changing substrateholder to '
+                                        f'{substrate}, please make sure the substrateholder is mounted correctly')
         widgetplot = getattr(self.ui, f'widget_xystageplot_{self.experiment}')
         widgetplot.substrate = substrate
         if self.statemachine.state == 'setExperiment':
             self.handle_position_layout_plot()
 
     def start_experiment(self):
+        # pop up with ask if the sampleholder is mounted in the correct position
+        if not self.messagebox_substratecheck():
+            return
         # check if motors are homed, issue warning otherwise.
         # then store ui settings and disable buttons that should not be pressed when experiment is run.
         self.statemachine.instruments['xystage'].measure_homing()
@@ -248,10 +263,26 @@ class MainWindow(QtWidgets.QMainWindow):
             self.ui.stackedWidget_experiment.setDisabled(True)
             self.ui.pushButton_start_experiment.disconnect()
             self.ui.pushButton_start_experiment.clicked.connect(self.abort_experiment)
-            widget_spectrometer = getattr(self.ui, f'widget_spectrometer_{self.experiment}')
-            widget_spectrometer.handle_reset()
-
+            if self.experiment in ['transmission', 'excitation_emission']:
+                widget_spectrometer = getattr(self.ui, f'widget_spectrometer_{self.experiment}')
+                widget_spectrometer.handle_reset()
             self.statemachine.init_experiment()
+
+    def messagebox_substratecheck(self):
+        widgetfile = getattr(self.ui, f'widget_file_{self.experiment}')
+        substratename = widgetfile.ui.comboBox_substrate.currentText()
+        msgbox = QtWidgets.QMessageBox(self)
+        msgbox.setIcon(QtWidgets.QMessageBox.Question)
+        msgbox.setText(f'Selected substrateholder for {substratename}. Is this the correct holder and is '
+                       f'the holder mounted in the right position?')
+        msgbox.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+        msgbox.setDefaultButton(QtWidgets.QMessageBox.No)
+        msgbox.setWindowTitle('check substrateholder')
+        answer = msgbox.exec_()
+        if answer == QtWidgets.QMessageBox.Yes:
+            return True
+        if answer == QtWidgets.QMessageBox.No:
+            return False
 
     def abort_experiment(self):
         self.ui.stackedWidget_experiment.setDisabled(True)

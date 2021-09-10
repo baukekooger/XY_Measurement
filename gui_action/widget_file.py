@@ -59,8 +59,6 @@ class FileWidget(QtWidgets.QWidget):
         self.ui.lineEdit_append_file.setText(filename[0])
 
 
-
-
 if __name__ == '__main__':
     import sys
     app = QtWidgets.QApplication(sys.argv)

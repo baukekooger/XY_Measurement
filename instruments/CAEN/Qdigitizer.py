@@ -12,7 +12,8 @@ class QDigitizer(CAENlib.Digitizer, QObject):
 
     measurement_complete = pyqtSignal(np.ndarray)
     measurement_complete_multiple = pyqtSignal(np.ndarray)
-    digitizer_parameters = pyqtSignal(list, int, int)
+    measurement_done_multiple = pyqtSignal()
+    digitizer_parameters = pyqtSignal(list, list, int, int)
 
     def __init__(self):
         CAENlib.Digitizer.__init__(self)
@@ -21,6 +22,7 @@ class QDigitizer(CAENlib.Digitizer, QObject):
         self.connected = False
         self.measuring = False
         self.timeout = None
+        self.number_of_pulses = 10
 
     def init_device(self):
         self.record_length = 0
@@ -35,7 +37,6 @@ class QDigitizer(CAENlib.Digitizer, QObject):
         self.connect_device()
         self.connected = True
         self.init_device()
-        self.check_settings()
 
     @pyqtSlot()
     def disconnect(self):
@@ -43,7 +44,11 @@ class QDigitizer(CAENlib.Digitizer, QObject):
         self.connected = False
 
     @pyqtSlot(int)
-    def measure_multiple(self, number_of_pulses):
+    def measure_multiple(self, *pulses):
+        if not pulses:
+            number_of_pulses = self.number_of_pulses
+        else:
+            number_of_pulses = pulses[0]
         self.measuring = True
         t1 = time.time()
         logging.info(f'digitizer started at {t1}')
@@ -55,6 +60,7 @@ class QDigitizer(CAENlib.Digitizer, QObject):
         t2 = time.time()
         logging.info(f'digitizer sampled {number_of_pulses} pulses in {t2-t1:.3f} seconds')
         self.measurement_complete_multiple.emit(data)
+        self.measurement_done_multiple.emit()
         self.measuring = False
         return data
 
@@ -98,7 +104,9 @@ class QDigitizer(CAENlib.Digitizer, QObject):
 
     @pyqtSlot()
     def check_settings(self):
+        available_channels = [str(channel) for channel in range(self.number_of_channels)]
         active_channels = list(self.active_channels)
         samples = int(self.record_length)
         post_trigger_size = int(self.post_trigger_size)
-        self.digitizer_parameters.emit(active_channels, samples, post_trigger_size)
+        self.digitizer_parameters.emit(available_channels, active_channels, samples, post_trigger_size)
+

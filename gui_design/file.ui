@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>249</width>
+    <width>268</width>
     <height>218</height>
    </rect>
   </property>
@@ -134,17 +134,17 @@
           </property>
           <item>
            <property name="text">
-            <string>50X50 (Borofloat) </string>
+            <string>50X50 mm (Borofloat)</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>44X44 (Quartz) </string>
+            <string>44X44 mm (Quartz)</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>22X22 (Quartz small) </string>
+            <string>22X22 mm (Quartz small)</string>
            </property>
           </item>
          </widget>

@@ -1,30 +1,43 @@
 decay:
+  widget_digitizer_decay:
+    comboBox_samples_alignment: '4000'
+    comboBox_samples_experiment: '4000'
+    listWidget_channels_alignment: []
+    listWidget_channels_experiment:
+    - 0
+    - 1
+    - 2
+    - 3
+    spinBox_number_pulses_experiment: 50
+    spinBox_post_trigger_size_alignment: 90
+    spinBox_post_trigger_size_experiment: 90
   widget_file_decay:
-    checkBox_append_file: false
-    comboBox_substrate: 0
-    lineEdit_append_file: ''
-    lineEdit_directory: ''
-    lineEdit_sample: ''
-    plainTextEdit_comments: ''
+    checkBox_append_file: true
+    comboBox_substrate: 50X50 mm (Borofloat)
+    lineEdit_append_file: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY/Decaytest.hdf5
+    lineEdit_directory: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY
+    lineEdit_sample: Decaytest
+    plainTextEdit_comments: No PMT or sample, just testing
   widget_laser_decay:
     checkBox_stable: true
-    spinBox_wavelength_alignment: 375
-    spinBox_wavelength_start: 375
+    comboBox_energy_level_experiment: Max
+    spinBox_wavelength_alignment: 220
+    spinBox_wavelength_start: 220
     spinBox_wavelength_step: 1
-    spinBox_wavelength_stop: 375
+    spinBox_wavelength_stop: 220
   widget_shuttercontrol_decay:
-    checkBox: false
+    checkBox: true
   widget_xystage_decay:
-    checkBox_homed_x: false
-    checkBox_homed_y: false
-    doubleSpinBox_x: 100.0
-    doubleSpinBox_y: 100.0
-    spinBox_x_num: 1
-    spinBox_x_off_left: 0
-    spinBox_x_off_right: 0
-    spinBox_y_num: 1
-    spinBox_y_off_bottom: 0
-    spinBox_y_off_top: 0
+    checkBox_homed_x: true
+    checkBox_homed_y: true
+    doubleSpinBox_x: 10.0
+    doubleSpinBox_y: 10.0
+    spinBox_x_num: 4
+    spinBox_x_off_left: 5
+    spinBox_x_off_right: 5
+    spinBox_y_num: 3
+    spinBox_y_off_bottom: 5
+    spinBox_y_off_top: 5
 excitation_emission:
   widget_file_excitation_emission:
     checkBox_append_file: false

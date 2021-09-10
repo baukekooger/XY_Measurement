@@ -62,7 +62,7 @@ instrument_pages: {
 # Position settings for the different substrates
 substrates: {
     # borofloat 50X50
-    0: {
+    50X50 mm (Borofloat): {
         x_start_transmission: 16.8,               # left upper corner position x (same for all experiments)
         x_start_excitation_emission: 16.8,        # left upper corner position y transmission measurements
         x_start_decay: 16.8,                      # left upper corner position y transmission measurements
@@ -82,7 +82,8 @@ substrates: {
         lightsource_y_excitation_emission: 85.5,    # lightsource y position excitation emission
         lightsource_y_decay: 85.5                 # lightsource y position decay
     },
-    1: {
+    44X44 mm (Quartz): {
+        name: 'Quartz 44 x 44 mm',
         x_start_transmission: 15,               # left upper corner position x (same for all experiments)
         x_start_excitation_emission: 15,        # left upper corner position y transmission measurements
         x_start_decay: 15,                      # left upper corner position y transmission measurements
@@ -102,23 +103,24 @@ substrates: {
         lightsource_y_excitation_emission: 85.5, # lightsource y position excitation emission
         lightsource_y_decay: 85.5                 # lightsource y position decay
     },
-    2: {
-        x_start_transmission: 37.5,               # left upper corner position x (same for all experiments)
-        x_start_excitation_emission: 37.5,        # left upper corner position y transmission measurements
-        x_start_decay: 37.5,                      # left upper corner position y transmission measurements
-        y_start_transmission: 3.5,               # left upper corner position y transmission measurements
-        y_start_excitation_emission: 89,     # left upper corner position y EE measurements
-        y_start_decay: 89,                   # left upper corner position y decay measurements
+    22X22 mm (Quartz small): {
+        name: 'Quartz 22 x 22 mm',
+        x_start_transmission: 37.5,             # left upper corner position x (same for all experiments)
+        x_start_excitation_emission: 37.5,      # left upper corner position y transmission measurements
+        x_start_decay: 37.5,                    # left upper corner position y transmission measurements
+        y_start_transmission: 3.5,              # left upper corner position y transmission measurements
+        y_start_excitation_emission: 89,        # left upper corner position y EE measurements
+        y_start_decay: 89,                      # left upper corner position y decay measurements
         whse: 26,                               # width holder sample edge
         hhse: 26,                               # height holder sample edge
         ws: 23,                                 # width sample usable
-        hs: 23,                                 # height sample usable
-        dfhx: 52.5,                              # distance from start of sample to side holder x
-        dfhy: 3.5,                              # distance from start of sample to side holder y
-        lightsource_x_transmission: 10,          # lightsource x position transmission
-        lightsource_x_excitation_emission: 10,   # lightsource x position excitation emission
-        lightsource_x_decay: 10,                 # lightsource x position excitation emission
-        lightsource_y_transmission: 0,         # lightsource y position transmission
+        hs: 23,                                   # height sample usable
+        dfhx: 52.5,                               # distance from start of sample to side holder x
+        dfhy: 3.5,                                # distance from start of sample to side holder y
+        lightsource_x_transmission: 10,           # lightsource x position transmission
+        lightsource_x_excitation_emission: 10,    # lightsource x position excitation emission
+        lightsource_x_decay: 10,                  # lightsource x position excitation emission
+        lightsource_y_transmission: 0,            # lightsource y position transmission
         lightsource_y_excitation_emission: 85.5,  # lightsource y position excitation emission
         lightsource_y_decay: 85.5                 # lightsource y position decay
     }

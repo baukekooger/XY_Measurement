@@ -22,6 +22,7 @@ class DigitizerPlotWidget(QtWidgets.QWidget):
         self.blitmanager = None
         self.lines = []
         self.active_channels = None
+        self.available_channels = None
         self.samples = None
         self.post_trigger_size = None
 
@@ -30,8 +31,9 @@ class DigitizerPlotWidget(QtWidgets.QWidget):
         self.digitizer.measurement_complete_multiple.connect(self.plot_multiple)
         self.digitizer.digitizer_parameters.connect(self.update_settings)
 
-    @pyqtSlot(list, int, int)
-    def update_settings(self, active_channels, samples, post_trigger_size):
+    @pyqtSlot(list, list, int, int)
+    def update_settings(self, available_channels, active_channels, samples, post_trigger_size):
+        self.available_channels = available_channels
         self.active_channels = active_channels
         self.samples = samples
         self.post_trigger_size = post_trigger_size
@@ -44,7 +46,7 @@ class DigitizerPlotWidget(QtWidgets.QWidget):
             self.init_blitmanager(data)
         else:
             # subtract mean and invert
-            data = (data.T - np.mean(data[0:50], axis=1)).T
+            data = -(data.T - np.mean(data[0:50], axis=1)).T
             for count, line in enumerate(self.lines, start=0):
                 line.set_ydata(data[count, :])
             self.blitmanager.update()
@@ -55,7 +57,7 @@ class DigitizerPlotWidget(QtWidgets.QWidget):
         if self.blitmanager:
             self.blitmanager = None
 
-        data = (data.T - np.mean(data[0:50], axis=1)).T
+        data = -(data.T - np.mean(data[0:50], axis=1)).T
 
         self.lines = self.ax.plot(data.T, animated=True)
         active_channels = list(self.digitizer.active_channels)

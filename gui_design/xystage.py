@@ -302,9 +302,6 @@ class Ui_Form(object):
         self.pushButton_home_motors = QtWidgets.QPushButton(self.groupBox_alignment)
         self.pushButton_home_motors.setObjectName("pushButton_home_motors")
         self.verticalLayout_2.addWidget(self.pushButton_home_motors)
-        self.pushButton = QtWidgets.QPushButton(self.groupBox_alignment)
-        self.pushButton.setObjectName("pushButton")
-        self.verticalLayout_2.addWidget(self.pushButton)
         self.gridLayout.addLayout(self.verticalLayout_2, 0, 0, 1, 1)
         self.gridLayout_4.addWidget(self.groupBox_alignment, 0, 0, 1, 1)
         self.stackedWidget.addWidget(self.page_alignment)
@@ -332,7 +329,6 @@ class Ui_Form(object):
         self.label_y_value.setText(_translate("Form", "100.00 mm"))
         self.checkBox_homed_y.setText(_translate("Form", "homed"))
         self.pushButton_home_motors.setText(_translate("Form", "home motors"))
-        self.pushButton.setText(_translate("Form", "zoom view"))
 
 
 if __name__ == "__main__":
