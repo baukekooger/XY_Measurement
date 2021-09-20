@@ -10,11 +10,12 @@ from instruments.OceanOptics.spectrometer import QSpectrometer
 from instruments.Thorlabs import apt
 from instruments.Thorlabs.xystage import QXYStage
 from instruments.Thorlabs.shuttercontrollers import QShutterControl
-from instruments.Thorlabs.powermeters import QPowermeter
+from instruments.Thorlabs.qpowermeter import QPowerMeter
 from instruments.Ekspla import QLaser
 from instruments.CAEN.Qdigitizer import QDigitizer
 from pathlib import Path
 from netCDF4 import Dataset
+import pandas as pd
 
 logging.basicConfig(level=logging.INFO)
 
@@ -22,7 +23,7 @@ instrument_parser = {
     'xystage': QXYStage,
     'spectrometer': QSpectrometer,
     'shuttercontrol': QShutterControl,
-    'powermeter': QPowermeter,
+    'powermeter': QPowerMeter,
     'laser': QLaser,
     'digitizer': QDigitizer
 }
@@ -66,6 +67,8 @@ class StateMachine(QObject):
     signal_return_setexperiment = pyqtSignal()  # signal for returning gui to set experiment state
     save_configuration = pyqtSignal()           # signal to start saving the current instrument config
     state = pyqtSignal(str)                     # signal emitting current statemachine state
+    calibration_half_signal = pyqtSignal()             # signal emitted halfway during beamsplitter calibration
+    calibration_complete_signal = pyqtSignal()         # emitted when beamsplitter calibration complete
 
     def __init__(self, parent=None):
         super().__init__()
@@ -96,6 +99,11 @@ class StateMachine(QObject):
         self.experimentdate = None
         self.is_done = False
         self.storage_dir = None
+        self.storage_dir_calibration = None
+        self.beamsplitter = None
+        self.beamsplitter_fname = None
+        self.beamsplitter_wavelengths = None
+        self.beamsplitter_integrationtime = None
         self.startingtime = time.time()
 
     def _init_poll(self):
@@ -189,6 +197,78 @@ class StateMachine(QObject):
             if not self.instruments[inst].measuring:
                 QTimer.singleShot(0, self.instruments[inst].measure)
 
+    def _start_calibration(self):
+        """" starts the calibration routine
+             moves the stage away, reads the calibration parameters and parses these to the instruments. Sets
+             the wavlengths attribute and filename attribute.
+        """
+        path_settings = Path(__file__).parent.parent / 'settings_ui.yaml'
+        with path_settings.open() as f:
+            self.settings_ui = yaml_safe_load(f)
+
+        lasersettings = self.settings_ui['excitation_emission']['widget_laser_excitation_emission']
+        wlstart = lasersettings['spinBox_wavelength_start']
+        wlstop = lasersettings['spinBox_wavelength_stop']
+        wlstep = lasersettings['spinBox_wavelength_step']
+        energylevel = lasersettings['comboBox_energy_level_experiment']
+        powermetersettings = self.settings_ui['excitation_emission']['widget_powermeter_excitation_emission']
+        integrationtime = powermetersettings['spinBox_integration_time_experiment']
+        self.beamsplitter_integrationtime = integrationtime
+
+        date = time.strftime("%y%m%d%H%M", time.localtime(self.startingtime))
+        wl = f'{wlstart}_{wlstep}_{wlstop}_nm'
+        self.beamsplitter_fname = f'{self.storage_dir_calibration}/{self.beamsplitter}_{wl}_{date}.csv'
+
+        # parse settings
+        logging.info('Parsing settings for calibration, turning off shutter')
+        self.instruments['xystage'].move(0, 0)
+        self.instruments['laser'].energylevel = energylevel
+        self.instruments['laser'].output = True
+        self.instruments['powermeter'].integration_time = integrationtime
+        self.instruments['shuttercontrol'].disable()
+        self.beamsplitter_wavelengths = np.arange(wlstart, wlstop + 0.5*wlstep, wlstep)
+        logging.info('waiting 3 seconds for powermeter to reach equilibrium temperature')
+        QTimer.singleShot(3000, self.measure_calibration)
+
+    def _continue_calibration(self):
+        """ continues calibration """
+        self.instruments['shuttercontrol'].disable()
+        logging.info('shutter closed, waiting 3 seconds for powermeter to reach equilibrium temperature')
+        QTimer.singleShot(3000, self.measure_calibration)
+
+    def measure_calibration(self):
+        logging.info('powermeter equilibrium reached, zero powermeter')
+        self.instruments['powermeter'].zero()
+        wavelengths = []
+        powers = []
+        integrationtimes = []
+        tstart = time.time()
+        self.instruments['shuttercontrol'].enable()
+        for wavelength in self.beamsplitter_wavelengths:
+            # set the new wavelength, wait until laser stable
+            self.instruments['laser'].wavelength = wavelength
+            while not self.instruments['laser'].is_stable():
+                time.sleep(0.1)
+            # measure the power
+            power = self.instruments['powermeter'].measure()
+            wavelengths.append(wavelength)
+            powers.append(power)
+            integrationtimes.append(self.beamsplitter_integrationtime)
+            tcurrent = time.time() - tstart
+            self._calculate_progress_calibration(wavelength, tcurrent)
+        try:
+            df = pd.read_csv(self.beamsplitter_fname)
+            df['Power Position 2 [W]'] = powers
+            df['Integration Time [s]'] = [integrationtime/1000 for integrationtime in integrationtimes]
+            df.to_csv(self.beamsplitter_fname, index=False)
+            self.calibration_complete()
+            self.calibration_complete_signal.emit()
+        except FileNotFoundError:
+            df = pd.DataFrame({'Wavelength [nm]': wavelengths, 'Power Position 1 [W]': powers})
+            df.to_csv(self.beamsplitter_fname, index=False)
+            # emit pop up screen signal, do that in main.
+            self.calibration_half_signal.emit()
+
     # region parse config
 
     def _parse_config(self):
@@ -208,8 +288,8 @@ class StateMachine(QObject):
 
     def _parse_config_transmission(self):
         self._parse_xypositions()
-        self._add_dark_measurement()
         self._add_lamp_measurement()
+        self._add_dark_measurement()
         self._parse_spectrometersettings()
 
     def _parse_config_excitation_emission(self):
@@ -354,6 +434,7 @@ class StateMachine(QObject):
         self._write_lasersettings()
         self._write_powermetersettings()
         self._write_spectrometersettings()
+        self._write_beamsplitter_calibration()
         self._create_dimensions_excitation_emission()
 
     def _open_file_decay(self):
@@ -368,84 +449,117 @@ class StateMachine(QObject):
         filesettings = self.settings_ui[self.experiment][f'widget_file_{self.experiment}']
         storage_dir = filesettings['lineEdit_directory']
         sample = filesettings['lineEdit_sample']
-        fname = f'{storage_dir}/{sample}'
-        append = filesettings['checkBox_append_file']
-        fname_append = str(filesettings['lineEdit_append_file'])
-        comment = filesettings['plainTextEdit_comments']
-
-        # check if append option was checked, append to selected file if so
-        if append:
-            self.dataset = Dataset(f'{fname_append}', 'a', format='NETCDF4')
-        else:
-            # open a new datafile
-            self.dataset = Dataset(f'{fname}.hdf5', 'w', format='NETCDF4')
-
         self.startingtime = time.time()
         self.experimentdate = time.strftime("%y%m%d%H%M", time.localtime(self.startingtime))
-        experiment = self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}')
-        # include comment on experiment
-        experiment.comment = comment
+        fname = f'{storage_dir}/{sample}_{self.experiment}_{self.experimentdate}'
+        comment = filesettings['plainTextEdit_comments']
+        substrate = filesettings['comboBox_substrate']
+        filterset = filesettings['lineEdit_filter']
+
+        self.dataset = Dataset(f'{fname}.hdf5', 'w', format='NETCDF4')
+
+        gensettings = self.dataset.createGroup(f'settings/general')
+        gensettings.sample = sample
+        gensettings.comment = comment
+        gensettings.substrate = substrate
+        gensettings.filter = filterset
 
     def _write_positionsettings(self):
-        positionsettings = self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}/settings/xystage')
+        positionsettings = self.dataset.createGroup(f'settings/xystage')
         # exclude positions of dark and lamp spectra where applicable.
         paramdict = {'transmission': 2, 'excitation_emission': 1, 'decay': 1}
         positionsettings.xnum = len(np.unique(self.measurement_parameters['x'][paramdict[self.experiment]:]))
         positionsettings.ynum = len(np.unique(self.measurement_parameters['y'][paramdict[self.experiment]:]))
 
     def _write_spectrometersettings(self):
-        spectrometersettings = self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}/settings/spectrometer')
+        spectrometersettings = self.dataset.createGroup(f'settings/spectrometer')
         spectrometersettings.integrationtime = self.instruments['spectrometer'].integrationtime
         spectrometersettings.average_measurements = self.instruments['spectrometer'].average_measurements
         spectrometersettings.spectrometer = self.instruments['spectrometer'].name
 
     def _write_lasersettings(self):
-        lasersettings = self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}/settings/laser')
+        lasersettings = self.dataset.createGroup(f'settings/laser')
         lasersettings.energylevel = self.instruments['laser'].energylevel
         lasersettings.wlnum = len(np.unique(self.measurement_parameters['wl']))
 
     def _write_powermetersettings(self):
-        pmsettings = self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}/settings/powermeter')
+        pmsettings = self.dataset.createGroup(f'settings/powermeter')
         pmsettings.integrationtime = self.instruments['powermeter'].integrationtime
 
     def _write_digitizersettings(self):
-        digitizersettings = self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}/settings/digitizer')
+        digitizersettings = self.dataset.createGroup(f'settings/digitizer')
         digitizersettings.active_channels = list(self.instruments['digitizer'].active_channels)
         digitizersettings.samples = self.instruments['digitizer'].record_length
         digitizersettings.post_trigger_size = self.instruments['digitizer'].post_trigger_size
+        digitizersettings.samplerate = self.instruments['digitizer'].sample_rate
+        digitizersettings.model = self.instruments['digitizer'].model
+
+    def _write_beamsplitter_calibration(self):
+        """ writes calibration file to main file for automatic processing in matlab
+            checks if file is selected and exists
+            creates folder with attributes, dimensions, variables and data
+        """
+        fname = self.settings_ui['lineEdit_beamsplitter_calibration_file']
+
+        if not fname:
+            logging.info('No calibration file was selected')
+            return
+        try:
+            df = pd.read_csv(fname)
+            logging.info(f'Adding calibration file {fname}')
+        except FileNotFoundError as e:
+            logging.info(f'No calibration file with name {fname} found - {e}')
+            return
+
+        wavelength = list(df['Wavelength [nm]'])
+        power1 = list(df['Power Position 1 [W]'])
+        power2 = list(df['Power Position 2 [W]'])
+        integrationtime = list(df['Integration Time [s]'])
+
+        group_beamsplitter = self.dataset.createGroup(f'calibration_beamsplitter')
+        group_beamsplitter.createDimension('calibration_points', len(df))
+        wl = group_beamsplitter.createVariable('wavelength', 'f8', 'calibration_points', fill_value=np.nan)
+        wl.units = 'nm'
+        p1 = group_beamsplitter.createVariable('power_1', 'f8', 'calibration_points', fill_value=np.nan)
+        p1.units = 'W'
+        p2 = group_beamsplitter.createVariable('power_2', 'f8', 'calibration_points', fill_value=np.nan)
+        p2.units = 'W'
+        inttime = group_beamsplitter.createVariable('inttime', 'f8', 'calibration_points', fill_value=np.nan)
+        inttime.units = 'W'
+
+        wl[:] = wavelength
+        p1[:] = power1
+        p2[:] = power2
+        inttime[:] = integrationtime
 
     def _create_dimensions_transmission(self):
-        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('xy_position', 2)
-        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('emission_wavelengths',
-                                                           len(self.instruments['spectrometer'].wavelengths))
-        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('spectrometer_intervals',
-                                                self.instruments['spectrometer'].average_measurements * 2)
-        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('single', 1)
+        self.dataset.createDimension('xy_position', 2)
+        self.dataset.createDimension('emission_wavelengths', len(self.instruments['spectrometer'].wavelengths))
+        self.dataset.createDimension('spectrometer_intervals',
+                                     self.instruments['spectrometer'].average_measurements * 2)
+        self.dataset.createDimension('single', 1)
 
     def _create_dimensions_excitation_emission(self):
-        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('xy_position', 2)
-        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('emission_wavelengths',
-                                                           len(self.instruments['spectrometer'].wavelengths))
-        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('spectrometer_intervals',
-                                                self.instruments['spectrometer'].average_measurements * 2)
-        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('single', 1)
+        self.dataset.createDimension('xy_position', 2)
+        self.dataset.createDimension('emission_wavelengths', len(self.instruments['spectrometer'].wavelengths))
+        self.dataset.createDimension('spectrometer_intervals',
+                                     self.instruments['spectrometer'].average_measurements * 2)
+        self.dataset.createDimension('single', 1)
         excitation_wavelenghts = len(np.unique(self.measurement_parameters['wl'][1:]))
-        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('excitation_wavelengths',
-                                                                                 excitation_wavelenghts)
+        self.dataset.createDimension('excitation_wavelengths', excitation_wavelenghts)
 
     def _create_dimensions_decay(self):
-        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('xy_position', 2)
-        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('single', 1)
+        self.dataset.createDimension('xy_position', 2)
+        self.dataset.createDimension('single', 1)
         excitation_wavelenghts = len(np.unique(self.measurement_parameters['wl'][1:]))
-        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('excitation_wavelengths',
-                                                                                 excitation_wavelenghts)
+        self.dataset.createDimension('excitation_wavelengths', excitation_wavelenghts)
         digitizersettings = self.settings_ui[self.experiment][f'widget_digitizer_{self.experiment}']
         active_channels = len(digitizersettings['listWidget_channels_experiment'])
         samples = int(digitizersettings['comboBox_samples_experiment'])
         number_of_pulses = int(digitizersettings['spinBox_number_pulses_experiment'])
-        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('active_channels', active_channels)
-        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('samples', samples)
-        self.dataset[f'{self.experiment}_{self.experimentdate}'].createDimension('number_of_pulses', number_of_pulses)
+        self.dataset.createDimension('active_channels', active_channels)
+        self.dataset.createDimension('samples', samples)
+        self.dataset.createDimension('number_of_pulses', number_of_pulses)
 
     #endregion
 
@@ -577,12 +691,12 @@ class StateMachine(QObject):
         # make folders for each measurement position, includes dark folder and lamp folder
         # transmission has only one measurement per position so folders need to be created always
         if self.measurement_index == 0:
-            datagroup = self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}/dark')
+            datagroup = self.dataset.createGroup('dark')
         elif self.measurement_index == 1:
-            datagroup = self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}/lamp')
+            datagroup = self.dataset.createGroup('lamp')
         else:
             x_inx, y_iny = self._variable_index()
-            datagroup = self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}/x{x_inx + 1}y{y_iny + 1}')
+            datagroup = self.dataset.createGroup(f'x{x_inx + 1}y{y_iny + 1}')
 
         xy_pos, em_wl, spectrum, spectrum_t = self._create_variables_transmission(datagroup)
 
@@ -596,14 +710,14 @@ class StateMachine(QObject):
         global wl_in_wl
 
         if self.measurement_index == 0:
-            datagroup = self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}/dark')
+            datagroup = self.dataset.createGroup('dark')
         else:
             x_inx, y_iny, wl_in_wl = self._variable_index()
             # check if folder with position index exists, otherwise create it
             try:
-                datagroup = self.dataset[f'{self.experiment}_{self.experimentdate}/x{x_inx + 1}y{y_iny + 1}']
+                datagroup = self.dataset[f'x{x_inx + 1}y{y_iny + 1}']
             except IndexError:
-                datagroup = self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}/x{x_inx + 1}y{y_iny + 1}')
+                datagroup = self.dataset.createGroup(f'x{x_inx + 1}y{y_iny + 1}')
         try:
             xy_pos = datagroup['position']
             em_wl = datagroup['emission']
@@ -633,9 +747,9 @@ class StateMachine(QObject):
         x_inx, y_iny, wl_in_wl = self._variable_index()
         # check if folder with position index exists, otherwise create it
         try:
-            datagroup = self.dataset[f'{self.experiment}_{self.experimentdate}/x{x_inx + 1}y{y_iny + 1}']
+            datagroup = self.dataset[f'x{x_inx + 1}y{y_iny + 1}']
         except IndexError:
-            datagroup = self.dataset.createGroup(f'{self.experiment}_{self.experimentdate}/x{x_inx + 1}y{y_iny + 1}')
+            datagroup = self.dataset.createGroup(f'x{x_inx + 1}y{y_iny + 1}')
         try:
             xy_pos = datagroup['position']
             ex_wl = datagroup['excitation']
@@ -751,14 +865,22 @@ class StateMachine(QObject):
                )
         self.ect.emit(int(ect))
         self.progress.emit(int(progress * 100))
-        logging.info('Progress: {} %'.format(progress * 100))
-        logging.info('Completed at: {}'.format(time.ctime(ect)))
+        logging.info(f'Progress Measurement: {progress * 100} %')
         if progress == 1:
             self.is_done = True
             self.measurement_complete()
+            logging.info(f'Measurement Completed at: {time.ctime(ect)}')
         else:
             self.prepare()
     # endregion
+
+    def _calculate_progress_calibration(self, wavelength, duration):
+        index = np.where(self.beamsplitter_wavelengths == wavelength)[0][0] + 1
+        progress = index/len(self.beamsplitter_wavelengths) * 100
+        ect = duration/index * (len(self.beamsplitter_wavelengths) - index)
+        self.progress.emit(int(progress))
+        self.ect.emit(int(ect))
+        logging.info(f'Calibration progress {progress} %, wavelength = {wavelength} nm, ect = {ect}')
 
     def _return_setexperiment(self):
         self.signal_return_setexperiment.emit()
@@ -775,5 +897,8 @@ class StateMachine(QObject):
         self.is_done = True
         self.continue_experiment()
         self.return_setexperiment()
+
+
+
 
 

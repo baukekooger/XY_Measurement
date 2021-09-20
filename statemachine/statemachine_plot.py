@@ -98,3 +98,9 @@ class PlotStateMachine:
 
     def _define_triggers(self):
         pass
+
+    def _start_calibration(self):
+        pass
+
+    def _continue_calibration(self):
+        pass

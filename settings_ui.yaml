@@ -6,89 +6,61 @@ decay:
     listWidget_channels_experiment:
     - 0
     - 1
-    - 2
-    - 3
     spinBox_number_pulses_experiment: 50
     spinBox_post_trigger_size_alignment: 90
     spinBox_post_trigger_size_experiment: 90
   widget_file_decay:
-    checkBox_append_file: true
     comboBox_substrate: 50X50 mm (Borofloat)
-    lineEdit_append_file: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY/Decaytest.hdf5
     lineEdit_directory: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY
-    lineEdit_sample: Decaytest
-    plainTextEdit_comments: No PMT or sample, just testing
+    lineEdit_filter: Longpass 450nnm
+    lineEdit_sample: Newtest_multiplewls
+    plainTextEdit_comments: 'This is a test, no sample or pmt just photodiode '
   widget_laser_decay:
     checkBox_stable: true
     comboBox_energy_level_experiment: Max
-    spinBox_wavelength_alignment: 220
-    spinBox_wavelength_start: 220
-    spinBox_wavelength_step: 1
-    spinBox_wavelength_stop: 220
+    spinBox_wavelength_alignment: 375
+    spinBox_wavelength_start: 300
+    spinBox_wavelength_step: 25
+    spinBox_wavelength_stop: 375
   widget_shuttercontrol_decay:
     checkBox: true
   widget_xystage_decay:
     checkBox_homed_x: true
     checkBox_homed_y: true
-    doubleSpinBox_x: 10.0
-    doubleSpinBox_y: 10.0
-    spinBox_x_num: 4
+    doubleSpinBox_x: 0.0
+    doubleSpinBox_y: 0.0
+    spinBox_x_num: 3
     spinBox_x_off_left: 5
     spinBox_x_off_right: 5
-    spinBox_y_num: 3
+    spinBox_y_num: 4
     spinBox_y_off_bottom: 5
     spinBox_y_off_top: 5
 excitation_emission:
   widget_file_excitation_emission:
-    checkBox_append_file: false
-    comboBox_substrate: 0
-    lineEdit_append_file: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY/Testtesttrans.hdf5
+    comboBox_substrate: 50X50 mm (Borofloat)
     lineEdit_directory: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY
-    lineEdit_sample: Realtest_vis
-    plainTextEdit_comments: Harde dingen jeweet
+    lineEdit_filter: 'No filter baby 300 '
+    lineEdit_sample: Testwithcalibrationfile
+    plainTextEdit_comments: This is a test without anything properly connected
   widget_laser_excitation_emission:
     checkBox_stable: true
-    comboBox_energy_level_experiment: 0
-    spinBox_wavelength_alignment: 375
-    spinBox_wavelength_start: 240
-    spinBox_wavelength_step: 25
-    spinBox_wavelength_stop: 375
+    comboBox_energy_level_experiment: Max
+    spinBox_wavelength_alignment: 300
+    spinBox_wavelength_start: 250
+    spinBox_wavelength_step: 10
+    spinBox_wavelength_stop: 390
   widget_powermeter_excitation_emission:
-    spinBox_integration_time_alignment: 1
-    spinBox_integration_time_experiment: 50
+    spinBox_integration_time_alignment: 100
+    spinBox_integration_time_experiment: 500
     spinBox_wavelength_alignment: 200
   widget_shuttercontrol_excitation_emission:
     checkBox: true
   widget_spectrometer_excitation_emission:
-    spinBox_averageing_alignment: 10
-    spinBox_averageing_experiment: 10
-    spinBox_integration_time_alignment: 300
-    spinBox_integration_time_experiment: 300
-  widget_xystage_excitation_emission:
-    checkBox_homed_x: true
-    checkBox_homed_y: true
-    doubleSpinBox_x: 20.0
-    doubleSpinBox_y: 109.0
-    spinBox_x_num: 3
-    spinBox_x_off_left: 20
-    spinBox_x_off_right: 20
-    spinBox_y_num: 3
-    spinBox_y_off_bottom: 20
-    spinBox_y_off_top: 20
-transmission:
-  widget_file_transmission:
-    checkBox_append_file: false
-    comboBox_substrate: 1
-    lineEdit_append_file: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY/Realtest_vis.hdf5
-    lineEdit_directory: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY
-    lineEdit_sample: 'Newshit '
-    plainTextEdit_comments: Transmission test for funzors
-  widget_spectrometer_transmission:
     spinBox_averageing_alignment: 1
-    spinBox_averageing_experiment: 2
+    spinBox_averageing_experiment: 1
     spinBox_integration_time_alignment: 100
-    spinBox_integration_time_experiment: 200
-  widget_xystage_transmission:
+    spinBox_integration_time_experiment: 500
+  widget_xystage_excitation_emission:
     checkBox_homed_x: true
     checkBox_homed_y: true
     doubleSpinBox_x: 0.0
@@ -97,5 +69,29 @@ transmission:
     spinBox_x_off_left: 5
     spinBox_x_off_right: 5
     spinBox_y_num: 3
+    spinBox_y_off_bottom: 5
+    spinBox_y_off_top: 5
+lineEdit_beamsplitter_calibration_file: C:/Users/bauke/OneDrive/Bureaublad/BeamSplitter_Calibrations/BS20WR_250_10_390_nm_2109151820.csv
+transmission:
+  widget_file_transmission:
+    comboBox_substrate: 50X50 mm (Borofloat)
+    lineEdit_directory: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY
+    lineEdit_filter: None
+    lineEdit_sample: BK3
+    plainTextEdit_comments: Testmeasurement transmission for reals
+  widget_spectrometer_transmission:
+    spinBox_averageing_alignment: 1
+    spinBox_averageing_experiment: 1
+    spinBox_integration_time_alignment: 2000
+    spinBox_integration_time_experiment: 2000
+  widget_xystage_transmission:
+    checkBox_homed_x: true
+    checkBox_homed_y: true
+    doubleSpinBox_x: 0.0
+    doubleSpinBox_y: 0.0
+    spinBox_x_num: 8
+    spinBox_x_off_left: 5
+    spinBox_x_off_right: 5
+    spinBox_y_num: 8
     spinBox_y_off_bottom: 5
     spinBox_y_off_top: 5

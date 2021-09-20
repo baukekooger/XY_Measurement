@@ -79,6 +79,18 @@ class BlitManager:
         self.canvas.figure.tight_layout()
         self.canvas.draw()
 
+    def redraw_canvas_powermeter(self):
+        data = self._artists[0]
+        _, y = data.get_data()
+        max_y_data = max(y)
+        min_y_data = min(y)
+        spread_data = max_y_data - min_y_data
+        data.axes.set_ylim(top=max_y_data + 0.1 * spread_data)
+        data.axes.set_ylim(bottom=min_y_data - 0.1 * spread_data)
+
+        self.canvas.figure.tight_layout()
+        self.canvas.draw()
+
     def _draw_animated(self):
         """Draw all of the animated artists."""
         fig = self.canvas.figure

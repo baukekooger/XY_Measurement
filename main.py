@@ -26,6 +26,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.statemachine.start()
         self.experiment = None
         self.connect_signals()
+        self.beamsplitter = None
+        self.filedir_calibration = None
 
     def connect_signals(self):
         self.ui.pushButton_transmission.clicked.connect(lambda state, page=0: self.choose_experiment(page))
@@ -35,9 +37,13 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.pushButton_start_experiment.clicked.connect(self.start_experiment)
         self.ui.pushButton_start_experiment.setEnabled(False)
         self.ui.pushButton_alignment_experiment.clicked.connect(self.alignment_experiment)
+        self.ui.pushButton_beamsplitter_calibration.clicked.connect(self.new_beamsplitter_calibration)
+        self.ui.toolButton_beamsplitter_calibration_file.clicked.connect(self.select_beamsplitter_calibration_file)
         self.statemachine.signal_return_setexperiment.connect(self.reset_setexperiment)
         self.statemachine.ect.connect(self.update_completion_time)
         self.statemachine.progress.connect(self.update_progress)
+        self.statemachine.calibration_half_signal.connect(self.beamsplitter_calibration_half)
+        self.statemachine.calibration_complete_signal.connect(self.reset_calibration)
 
     def choose_experiment(self, page):
         self.experiment = self.config['experiments'][page]
@@ -49,7 +55,6 @@ class MainWindow(QtWidgets.QMainWindow):
         self.connect_signals_gui()
         self.connect_position_layout_plot()
         self.fill_ui()
-        self.reset_append()
         self.statemachine.align()
         self.alignment_experiment_gui()
         self.ui.stackedWidget.setCurrentIndex(1)
@@ -135,12 +140,16 @@ class MainWindow(QtWidgets.QMainWindow):
 
         self.ui.pushButton_alignment_experiment.setText(stateconfig['text_button'])
         self.ui.pushButton_start_experiment.setEnabled(stateconfig['enable_start'])
+        self.ui.groupBox_calibration_beamsplitter.setEnabled(stateconfig['beamsplitter_calibration'])
+        self.ui.pushButton_beamsplitter_calibration.setText(stateconfig['text_button_beamsplitter'])
 
     def store_ui(self):
         # writes widget settings for current experiment to file, overwrites previous settings for that experiment
         with open('settings_ui.yaml') as f:
             settings = yaml_safe_load(f)
         settings[self.experiment] = {}
+        # store the last chosen beamsplitter calibration file
+        settings['lineEdit_beamsplitter_calibration_file'] = self.ui.lineEdit_beamsplitter_calibration_file.text()
         for widget_inst in self.config['widgets'][self.experiment].keys():
             if 'plot' not in widget_inst:
                 settings[self.experiment][widget_inst] = {}
@@ -179,6 +188,8 @@ class MainWindow(QtWidgets.QMainWindow):
         with open('settings_ui.yaml') as f:
             settings = yaml_safe_load(f)
         try:
+            fname = settings['lineEdit_beamsplitter_calibration_file']
+            self.ui.lineEdit_beamsplitter_calibration_file.setText(fname)
             for widget in settings[self.experiment].keys():
                 widget_handle = getattr(self.ui, widget)
                 for subwidgetkey, value in settings[self.experiment][widget].items():
@@ -193,12 +204,8 @@ class MainWindow(QtWidgets.QMainWindow):
                         subwidgethandle.setPlainText(value)
                     elif isinstance(subwidgethandle, QtWidgets.QCheckBox):
                         subwidgethandle.setChecked(value)
-        except AttributeError as e:
+        except (AttributeError, KeyError) as e:
             print(f"Can't load UI, UI configuration has been modified. {e}")
-
-    def reset_append(self):
-        filewidget = getattr(self.ui, f'widget_file_{self.experiment}')
-        filewidget.reset()
 
     @pyqtSlot(bool)
     def set_spectrometeraxes(self, set_transmissionaxes):
@@ -248,7 +255,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def start_experiment(self):
         # pop up with ask if the sampleholder is mounted in the correct position
-        if not self.messagebox_substratecheck():
+        if not self._messagebox_substratecheck():
             return
         # check if motors are homed, issue warning otherwise.
         # then store ui settings and disable buttons that should not be pressed when experiment is run.
@@ -257,18 +264,22 @@ class MainWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.information(self, 'homing warning', 'not all stages homed, wait for home to complete')
             self.statemachine.instruments['xystage'].home()
         else:
-            self.store_ui()
-            self.ui.pushButton_start_experiment.setText('Stop')
-            self.ui.pushButton_alignment_experiment.setDisabled(True)
-            self.ui.stackedWidget_experiment.setDisabled(True)
-            self.ui.pushButton_start_experiment.disconnect()
-            self.ui.pushButton_start_experiment.clicked.connect(self.abort_experiment)
+            self.start_experiment_ui()
+            # reset spectrometer settings
             if self.experiment in ['transmission', 'excitation_emission']:
                 widget_spectrometer = getattr(self.ui, f'widget_spectrometer_{self.experiment}')
                 widget_spectrometer.handle_reset()
             self.statemachine.init_experiment()
 
-    def messagebox_substratecheck(self):
+    def start_experiment_ui(self):
+        self.store_ui()
+        self.ui.pushButton_start_experiment.setText('Stop')
+        self.ui.pushButton_alignment_experiment.setDisabled(True)
+        self.ui.stackedWidget_experiment.setDisabled(True)
+        self.ui.pushButton_start_experiment.disconnect()
+        self.ui.pushButton_start_experiment.clicked.connect(self.abort_experiment)
+
+    def _messagebox_substratecheck(self):
         widgetfile = getattr(self.ui, f'widget_file_{self.experiment}')
         substratename = widgetfile.ui.comboBox_substrate.currentText()
         msgbox = QtWidgets.QMessageBox(self)
@@ -283,6 +294,74 @@ class MainWindow(QtWidgets.QMainWindow):
             return True
         if answer == QtWidgets.QMessageBox.No:
             return False
+
+    def new_beamsplitter_calibration(self):
+        """ performs check if calibration can be started.
+            Asks for user input on file name, and stores ui settings
+            Calls statemachine start of calibration procedure
+            """
+        if not self._messagebox_calibrationcheck():
+            return
+        beamsplitters = ['BS20WR', 'Other Type']
+        self.statemachine.beamsplitter, ok = QtWidgets.QInputDialog.getItem(self, 'beamsplitter',
+                                    'please choose beamsplitter type or edit if type not available', beamsplitters)
+        if not ok:
+            return
+        self.statemachine.storage_dir_calibration = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory"))
+        if not self.statemachine.storage_dir_calibration:
+            return
+        QtWidgets.QMessageBox.information(self, 'move powermeter', 'place powermeter in first position'
+                                                                   '(in line with laser beam)')
+        self.start_experiment_ui()
+        QTimer.singleShot(0, self.statemachine.start_calibration)
+
+    def beamsplitter_calibration_half(self):
+        if not self._messagebox_calibrationhalfway():
+            # do abort stuff
+            return
+        else:
+            QTimer.singleShot(0, self.statemachine.continue_calibration)
+
+    def select_beamsplitter_calibration_file(self):
+        file = QtWidgets.QFileDialog.getOpenFileName(self, 'Select Calibration File', '*.csv')[0]
+        self.ui.lineEdit_beamsplitter_calibration_file.setText(file)
+
+    def _messagebox_calibrationcheck(self):
+        wlstart = self.ui.widget_laser_excitation_emission.ui.spinBox_wavelength_start.value()
+        wlstop = self.ui.widget_laser_excitation_emission.ui.spinBox_wavelength_stop.value()
+        wlstep = self.ui.widget_laser_excitation_emission.ui.spinBox_wavelength_step.value()
+        integrationtime = self.ui.widget_powermeter_excitation_emission.ui.spinBox_integration_time_experiment.value()
+
+        msgbox = QtWidgets.QMessageBox(self)
+        msgbox.setIcon(QtWidgets.QMessageBox.Question)
+        msgbox.setText(f'New calibration requested. Current settings for calibration:\n wavelength range = '
+                       f'{wlstart} : {wlstop} nm\n wavelength step = {wlstep} nm\n powermeter integrationtime '
+                       f'= {integrationtime} ms (2000 ms min. recommended)\n'
+                       f'are these settings correct?')
+        msgbox.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
+        msgbox.setDefaultButton(QtWidgets.QMessageBox.No)
+        msgbox.setWindowTitle('check beamsplitter calibration settings')
+        answer = msgbox.exec_()
+        if answer == QtWidgets.QMessageBox.Yes:
+            return True
+        if answer == QtWidgets.QMessageBox.No:
+            return False
+
+    def _messagebox_calibrationhalfway(self):
+        msgbox = QtWidgets.QMessageBox(self)
+        msgbox.setIcon(QtWidgets.QMessageBox.Information)
+        msgbox.setText(f'Calibration measurement at position 1 done. Move powermeter to '
+                       f'position 2, then press ok. (position 2 is below sampleholder)')
+        msgbox.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msgbox.setWindowTitle('Beamsplitter calibration halfway')
+        answer = msgbox.exec_()
+        if answer == QtWidgets.QMessageBox.Ok:
+            return True
+        else:
+            return False
+
+    def reset_calibration(self):
+        pass
 
     def abort_experiment(self):
         self.ui.stackedWidget_experiment.setDisabled(True)
@@ -321,7 +400,8 @@ class MainWindow(QtWidgets.QMainWindow):
     @pyqtSlot(int)
     def update_progress(self, progress):
         self.ui.progressBar.setValue(progress)
-        if progress == 100:
+        if progress == 100 and self.statemachine.state not in ['calibrateBeamsplitterPosition1',
+                                                               'calibrateBeamsplitterPosition2']:
             self.show_complete()
 
     def show_complete(self):

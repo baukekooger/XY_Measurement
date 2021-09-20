@@ -76,6 +76,11 @@ class Digitizer(DigitizerHandle):
                - definitions.BufferCorr[definitions.ModelNumber[self.model]]
 
     @property
+    def sample_rate(self):
+        """ returns sample rate in samples/s """
+        return definitions.SampleRate[definitions.ModelNumber[self.model]] * 1e6
+
+    @property
     def record_length(self):
         '''record_length is a value between N= 0 and 9, what fraction of the total buffersize will be used to store data.
         This is calculated as buffer_size // (2 ^ (10 - N))'''

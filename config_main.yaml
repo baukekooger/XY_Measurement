@@ -49,14 +49,18 @@ instrument_pages: {
         'preffered': 'page_alignment',
         'ignored': 'page_experiment',
         'text_button': 'Set Experiment',
-        'enable_start': False
+        'enable_start': False,
+        'beamsplitter_calibration': False,
+        'text_button_beamsplitter': 'new beamsplitter calibration, go to set experiment'
     },
     'setExperiment': {
         'page': 0,
         'preffered': 'page_experiment',
         'ignored': 'page_alignment',
         'text_button': 'Alignment',
-        'enable_start': True
+        'enable_start': True,
+        'beamsplitter_calibration': True,
+        'text_button_beamsplitter': 'new beamsplitter calibration'
     }
 }
 # Position settings for the different substrates
