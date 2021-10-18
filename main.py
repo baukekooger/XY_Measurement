@@ -1,3 +1,5 @@
+import logging
+
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QTimer, QThread, pyqtSlot
 from gui_design.main import Ui_MainWindow
@@ -5,6 +7,8 @@ from yaml import safe_load as yaml_safe_load, dump
 from statemachine.statemachine import StateMachine
 import time
 import datetime
+logging.basicConfig(level=logging.NOTSET)
+logging.basicConfig(level=logging.INFO)
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -43,7 +47,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.statemachine.ect.connect(self.update_completion_time)
         self.statemachine.progress.connect(self.update_progress)
         self.statemachine.calibration_half_signal.connect(self.beamsplitter_calibration_half)
-        self.statemachine.calibration_complete_signal.connect(self.reset_calibration)
+        self.statemachine.calibration_complete_signal.connect(self.beamsplitter_calibration_complete)
+        self.statemachine.calibration_status.connect(self.update_status_calibration)
 
     def choose_experiment(self, page):
         self.experiment = self.config['experiments'][page]
@@ -264,6 +269,12 @@ class MainWindow(QtWidgets.QMainWindow):
             QtWidgets.QMessageBox.information(self, 'homing warning', 'not all stages homed, wait for home to complete')
             self.statemachine.instruments['xystage'].home()
         else:
+            print(self.ui.widget_digitizer_decay.ui.listWidget_channels_experiment.selectedItems()[0].text())
+            print(self.experiment)
+            if self.experiment == 'decay' and not any(self.ui.widget_digitizer_decay.ui.listWidget_channels_experiment.selectedItems()):
+                print(self.ui.widget_digitizer_decay.ui.listWidget_channels_experiment.selectedItems())
+                if not self._messagebox_digitizer_channel_selected():
+                    return
             self.start_experiment_ui()
             # reset spectrometer settings
             if self.experiment in ['transmission', 'excitation_emission']:
@@ -291,9 +302,25 @@ class MainWindow(QtWidgets.QMainWindow):
         msgbox.setWindowTitle('check substrateholder')
         answer = msgbox.exec_()
         if answer == QtWidgets.QMessageBox.Yes:
+            self.ui.widget_digitizer_decay.ui.listWidget_channels_experiment.setCurrentRow(0)
             return True
         if answer == QtWidgets.QMessageBox.No:
             return False
+
+    def _messagebox_digitizer_channel_selected(self):
+        if not any(self.ui.widget_digitizer_decay.ui.listWidget_channels_alignment.selectedItems()):
+            msgbox = QtWidgets.QMessageBox(self)
+            msgbox.setIcon(QtWidgets.QMessageBox.Warning)
+            msgbox.setText(f'No channel(s) selected for digitizer.\n'
+                           f'Press ok to continue with default channel (channel 0)')
+            msgbox.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
+            msgbox.setDefaultButton(QtWidgets.QMessageBox.Ok)
+            msgbox.setWindowTitle('No channels selected')
+            answer = msgbox.exec_()
+            if answer == QtWidgets.QMessageBox.Ok:
+                return True
+            if answer == QtWidgets.QMessageBox.Cancel:
+                return False
 
     def new_beamsplitter_calibration(self):
         """ performs check if calibration can be started.
@@ -316,11 +343,17 @@ class MainWindow(QtWidgets.QMainWindow):
         QTimer.singleShot(0, self.statemachine.start_calibration)
 
     def beamsplitter_calibration_half(self):
+        self.reset_progress()
         if not self._messagebox_calibrationhalfway():
-            # do abort stuff
+            self.beamsplitter_calibration_complete()
             return
         else:
             QTimer.singleShot(0, self.statemachine.continue_calibration)
+
+    def beamsplitter_calibration_complete(self):
+        self.reset_setexperiment()
+        self.reset_progress()
+        self.ui.lineEdit_beamsplitter_calibration_file.setText(self.statemachine.beamsplitter_fname)
 
     def select_beamsplitter_calibration_file(self):
         file = QtWidgets.QFileDialog.getOpenFileName(self, 'Select Calibration File', '*.csv')[0]
@@ -330,13 +363,11 @@ class MainWindow(QtWidgets.QMainWindow):
         wlstart = self.ui.widget_laser_excitation_emission.ui.spinBox_wavelength_start.value()
         wlstop = self.ui.widget_laser_excitation_emission.ui.spinBox_wavelength_stop.value()
         wlstep = self.ui.widget_laser_excitation_emission.ui.spinBox_wavelength_step.value()
-        integrationtime = self.ui.widget_powermeter_excitation_emission.ui.spinBox_integration_time_experiment.value()
 
         msgbox = QtWidgets.QMessageBox(self)
         msgbox.setIcon(QtWidgets.QMessageBox.Question)
-        msgbox.setText(f'New calibration requested. Current settings for calibration:\n wavelength range = '
-                       f'{wlstart} : {wlstop} nm\n wavelength step = {wlstep} nm\n powermeter integrationtime '
-                       f'= {integrationtime} ms (2000 ms min. recommended)\n'
+        msgbox.setText(f'New calibration requested. Current settings for calibration:\n\n    wavelength range = '
+                       f'{wlstart} : {wlstop} nm\n    wavelength step = {wlstep} nm\n\n'
                        f'are these settings correct?')
         msgbox.setStandardButtons(QtWidgets.QMessageBox.Yes | QtWidgets.QMessageBox.No)
         msgbox.setDefaultButton(QtWidgets.QMessageBox.No)
@@ -359,9 +390,6 @@ class MainWindow(QtWidgets.QMainWindow):
             return True
         else:
             return False
-
-    def reset_calibration(self):
-        pass
 
     def abort_experiment(self):
         self.ui.stackedWidget_experiment.setDisabled(True)
@@ -422,6 +450,10 @@ class MainWindow(QtWidgets.QMainWindow):
     @pyqtSlot(int)
     def update_completion_time(self, ect):
         self.ui.label_completion_time.setText(f'Estimated completion time {datetime.timedelta(seconds=ect)}')
+
+    @pyqtSlot(str)
+    def update_status_calibration(self, status):
+        self.ui.label_completion_time.setText(status)
 
 
 if __name__ == '__main__':

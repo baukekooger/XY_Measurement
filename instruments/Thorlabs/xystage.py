@@ -103,11 +103,11 @@ class QXYStage(QObject):
 
     def settled(self):
         if not self.xstage.is_in_motion and not self.ystage.is_in_motion:
-            print('stages settled')
+            logging.info('stages settled')
             self.stage_settled.emit()
             return True
         else:
-            print('stages moving')
+            logging.info('stages moving')
             return False
 
     def disable(self):
@@ -124,9 +124,15 @@ class QXYStage(QObject):
 
     @pyqtSlot(float, float)
     def move(self, x, y):
-
         self.x = x
         self.y = y
+
+    @pyqtSlot(float, float)
+    def move_with_wait(self, x, y):
+        self.x = x
+        self.y = y
+        while not self.settled():
+            time.sleep(0.1)
 
     @pyqtSlot()
     @pyqtSlot(float, float)

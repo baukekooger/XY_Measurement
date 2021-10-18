@@ -21,7 +21,8 @@ class QPowerMeter(PowerMeter, QObject):
 
     """
     measurement_complete = pyqtSignal(float)
-    measurement_complete_multiple = pyqtSignal(np.ndarray, np.ndarray)
+    measurement_complete_multiple = pyqtSignal(list, list)
+    measurement_done = pyqtSignal()
     measurement_parameters = pyqtSignal(int, int)
     zero_complete = pyqtSignal()
 
@@ -31,12 +32,15 @@ class QPowerMeter(PowerMeter, QObject):
         self.mutex = QMutex(QMutex.Recursive)
         self.integration_time = integration_time
         self.measurements_multiple = 40
+        self.last_powers = []
+        self.last_times = []
 
     @pyqtSlot()
     def connect(self):
         self.connect_device()
         self.averageing = 1
         self.integration_time = 200
+        self.autorange = True
 
     @property
     def integration_time(self):
@@ -93,9 +97,9 @@ class QPowerMeter(PowerMeter, QObject):
         t1 = time.perf_counter()
         measurements = []
         t = []
-        self.pm.write('*CLS')
-        time.sleep(0.002)
         with(QMutexLocker(self.mutex)):
+            self.pm.write('*CLS')
+            time.sleep(0.002)
             while time.perf_counter() - t1 < self.integration_time/1000:
                 power = self.read_power()
                 measurements.append(power)
@@ -104,11 +108,15 @@ class QPowerMeter(PowerMeter, QObject):
         t2 = time.perf_counter()
         logging.info(f'powermeter completed,  time with all measurements {t2-t1:.3f}, '
                      f'number of measurements = {len(measurements)}')
-        t_interp = np.linspace(0, t[-1], self.measurements_multiple)
-        measurements_interp = np.interp(t_interp, t, measurements)
-        self.measurement_complete_multiple.emit(t_interp, measurements_interp)
-        return t_interp, measurements_interp
+        self.last_times = list(np.linspace(0, t[-1], self.measurements_multiple))
+        self.last_powers = list(np.interp(self.last_times, t, measurements))
+        self.measurement_complete_multiple.emit(self.last_times, self.last_powers)
+        self.measurement_done.emit()
+        self.measuring = False
+        self.emit_parameters()
+        return self.last_times, self.last_powers
 
+    @pyqtSlot()
     def zero(self):
         self.measuring = True
         with(QMutexLocker(self.mutex)):
@@ -116,6 +124,7 @@ class QPowerMeter(PowerMeter, QObject):
             self.zero_complete.emit()
         self.measuring = False
 
+    @pyqtSlot()
     def reset(self):
         # returns unit to default condition
         self.measuring = True
@@ -123,6 +132,7 @@ class QPowerMeter(PowerMeter, QObject):
             self.reset_default()
         self.measuring = False
 
+    @pyqtSlot()
     def emit_parameters(self):
         wavelength = int(self.wavelength)
         integration_time = int(self.integration_time)

@@ -11,7 +11,7 @@ states: [
         {'name': 'align', 'on_enter': '_align', 'on_exit': '_stop_align'},
         {'name': 'setExperiment'},
         {'name': 'calibrateBeamsplitterPosition1', 'on_enter': '_start_calibration'},
-        {'name': 'calibrateBeamsplitterPosition2', 'on_enter': '_continue_calibration'},
+        {'name': 'calibrateBeamsplitterPosition2', 'on_enter': '_continue_calibration', 'on_exit': '_finish_calibration'},
         {'name': 'experiment', 'children': [{'name': 'openFile', 'on_enter': ['_reset_experiment', '_open_file']},
                                             {'name': 'prepareMeasurement', 'on_enter': '_prepare_measurement'},
                                             {'name': 'measuring', 'on_enter': '_measure'},

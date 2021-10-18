@@ -1,7 +1,8 @@
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QTimer, pyqtSlot, QThread
 from gui_design.powermeter import Ui_Form
-from instruments.Thorlabs.powermeters import QPowermeter
+import numpy as np
+from instruments.Thorlabs.qpowermeter import QPowerMeter
 
 
 class PowerMeterWidget(QtWidgets.QWidget):
@@ -9,26 +10,25 @@ class PowerMeterWidget(QtWidgets.QWidget):
         super().__init__(*args, **kwargs)
         self.ui = Ui_Form()
         self.ui.setupUi(self)
-        self.powermeter = QPowermeter()
+        self.powermeter = QPowerMeter()
 
     def connect_signals_slots(self):
-        self.powermeter.measurement_complete.connect(self.handle_measurement)
+        self.powermeter.measurement_complete_multiple.connect(self.handle_measurement)
         self.powermeter.measurement_parameters.connect(self.update_parameters)
         self.powermeter.emit_parameters()
         self.ui.spinBox_wavelength_alignment.editingFinished.connect(self.handle_wavelength)
-        self.ui.spinBox_integration_time_alignment.editingFinished.connect(self.handle_integrationtime)
-        self.ui.pushButton_zero.clicked.connect(self.handle_zero)
+        self.ui.pushButton_zero.clicked.connect(self.powermeter.zero)
 
     def disconnect_signals_slots(self):
         self.powermeter.measurement_complete.disconnect()
         self.powermeter.measurement_parameters.disconnect()
         self.ui.spinBox_wavelength_alignment.editingFinished.disconnect()
-        self.ui.spinBox_integration_time_alignment.editingFinished.disconnect()
         self.ui.pushButton_zero.clicked.disconnect()
 
-    @pyqtSlot(float)
-    def handle_measurement(self, measurement):
+    @pyqtSlot(list, list)
+    def handle_measurement(self, times, power):
         # set the right unit depending on the incoming power
+        measurement = np.mean(power)
         if measurement >= 1:
             self.ui.label_power_value_unit.setText(f'{measurement:.2} W')
         elif measurement >= 0.1:
@@ -45,18 +45,12 @@ class PowerMeterWidget(QtWidgets.QWidget):
     @pyqtSlot(int, int)
     def update_parameters(self, wavelength, integration_time):
         self.ui.label_indicator_wavelength_alignment.setText(f'{wavelength} nm')
-        self.ui.label_indicator_integration_time_alignment.setText(f'{integration_time} ms')
 
+    @pyqtSlot()
     def handle_wavelength(self):
         wavelength = self.ui.spinBox_wavelength_alignment.value()
         self.powermeter.wavelength = wavelength
-
-    def handle_integrationtime(self):
-        integration_time = self.ui.spinBox_integration_time_alignment.value()
-        self.powermeter.integration_time = integration_time
-
-    def handle_zero(self):
-        self.powermeter.zero()
+        QTimer.singleShot(0, self.powermeter.emit_parameters)
 
     # def closeEvent(self, event):
     #     self.powermeter.disconnect()

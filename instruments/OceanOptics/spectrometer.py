@@ -115,13 +115,18 @@ class QSpectrometer(QObject):
         """
         with(QMutexLocker(self.mutex)):
             self.measuring = True
-            # perform request a measurement to clear the buffer, then measure and time
-            self.spec.intensities()
+            cache_cleared = False
+            while self.measuring and not cache_cleared:
+                logging.info('spectrometer cache not cleared, requesting measurement')
+                tstart = time.time()
+                self.spec.intensities()
+                tstop = time.time()
+                cache_cleared = self.integrationtime/1000 * 0.9 < tstop-tstart < self.integrationtime/1000 * 1.1
+            logging.info('spectrometer cache cleared')
             self.cache_cleared.emit()
-            logging.info('cache cleared')
             t = []
             t1 = time.time()
-            print(f'spectro started at {t1}')
+            logging.info(f'spectrometer measurment started')
             intensity = np.zeros(len(self.spec.wavelengths()))
             n = 1
             while self.measuring and n <= self.average_measurements:
@@ -136,9 +141,8 @@ class QSpectrometer(QObject):
             # if self.transmission and all(self.lamp):
             #     intensity = intensity/self.lamp
         t2 = time.time()
-        print(f'spectrometer took {t2-t1:.3f} seconds')
         self.measuring = False
-        logging.info('Spectrometer Done')
+        logging.info(f'spectrometer done in {t2-t1:.3f} seconds')
         self.last_intensity = intensity
         self.last_times = t
         self.measurement_complete.emit(intensity, t)
