@@ -425,11 +425,6 @@
               </item>
               <item>
                <property name="text">
-                <string>multiple pulses averaged</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
                 <string>single photon counting</string>
                </property>
               </item>

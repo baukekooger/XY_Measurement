@@ -7,8 +7,8 @@ from yaml import safe_load as yaml_safe_load, dump
 from statemachine.statemachine import StateMachine
 import time
 import datetime
-logging.basicConfig(level=logging.NOTSET)
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig()
+logging.getLogger().setLevel(logging.DEBUG)
 
 
 class MainWindow(QtWidgets.QMainWindow):

@@ -4,6 +4,7 @@
     There are various update methods included for different types of plots as different plots
     require different checks to check if data is still within axis limits.
 """
+import logging
 
 
 class BlitManager:
@@ -50,6 +51,7 @@ class BlitManager:
             the canvas this class is managing.
 
         """
+        logging.debug(f'adding artist {art}')
         if art.figure != self.canvas.figure:
             raise RuntimeError
         art.set_animated(True)
@@ -115,3 +117,4 @@ class BlitManager:
             cv.blit(fig.bbox)
         # let the GUI event loop process anything it has to do
         cv.flush_events()
+

@@ -2,7 +2,7 @@ import sys
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import pyqtSlot
 from gui_action.plot_blitmanager import BlitManager
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
 import time
 import random

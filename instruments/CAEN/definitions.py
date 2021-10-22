@@ -117,11 +117,11 @@ TIMERANGES = {'DT5724F': [f'40 {mu}s', f'80 {mu}s', f'160 {mu}s', f'320 {mu}s', 
               'DT5730': [f'1.2 {mu}s', f'2.4 {mu}s', f'5 {mu}s', f'10 {mu}s', f'20 {mu}s', f'40 {mu}s', f'80 {mu}s',
                          f'160 {mu}s', f'320 {mu}s', f'640 {mu}s', '1.2 ms']}
 
-COMPRESSIONFACTORS = {'DT5724F': {'50 ns': 5, '100 ns': 10, '200 ns': 20, '500 ns': 50, f'1 {mu}s': 100,
+COMPRESSIONFACTORS = {'DT5724F': {'none': 1, '50 ns': 5, '100 ns': 10, '200 ns': 20, '500 ns': 50, f'1 {mu}s': 100,
                                   f'2 {mu}s': 200, f'5{mu}s': 500, f'10 {mu}s': 1000, f'20 {mu}s': 2000,
                                   f'40 {mu}s': 4000},
-                      'DT5730': {'8 ns': 4, '16 ns': 8, '32 ns': 16, '64 ns': 32, '128 ns': 64, '256 ns': 128,
-                                 '640 ns': 320, f'1.2 {mu}s': 640}}
+                      'DT5730': {'none': 1, '8 ns': 4, '16 ns': 8, '32 ns': 16, '64 ns': 32, '128 ns': 64,
+                                 '256 ns': 128, '640 ns': 320, f'1.2 {mu}s': 640}}
 
 
 class ModelInfo:
