@@ -1,0 +1,46 @@
+version: 1
+formatters:
+  messageonly:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  regular:
+    format: '%(asctime)s: logger %(name)s: line %(lineno)d %(levelname)s: %(message)s'
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: regular
+    stream: ext://sys.stdout
+  file:
+    class: logging.FileHandler
+    level: DEBUG
+    filename: output.log
+    mode: w
+    formatter: regular
+
+loggers:
+  __main__:
+    level: DEBUG
+    handlers: [console, file]
+    propagate: no
+  parentlogger:
+    level: warning
+    handlers: [console, file]
+    propagate: no
+  parentlogger.child:
+    level: INFO
+    handlers: [console, file]
+    propagate: no
+  sub1:
+    level: DEBUG
+    handlers: [console, file]
+    propagate: no
+  sub2:
+    level: DEBUG
+    handlers: [console, file]
+    propagate: no
+  root:
+    level: DEBUG
+    handlers: [console, file]
+    propagate: no
+

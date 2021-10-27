@@ -3,7 +3,7 @@ from PyQt5.QtCore import QObject, QTimer, pyqtSignal, pyqtSlot, QEventLoop
 import logging
 import time
 import numpy as np
-from contextlib import contextmanager
+import math
 from yaml import safe_load as yaml_safe_load
 from yaml import dump as yaml_dump
 from instruments.OceanOptics.spectrometer import QSpectrometer
@@ -18,7 +18,6 @@ from netCDF4 import Dataset
 import pandas as pd
 from statemachine.multiple_signals import MultipleSignal
 
-logging.basicConfig(level=logging.INFO)
 
 instrument_parser = {
     'xystage': QXYStage,
@@ -41,35 +40,9 @@ def timed(func):
     return wrapper
 
 
-# @contextmanager
-# def wait_for_signal(signal, timeout=60):
-#     """ Block execution until signal is emitted, or timeout (s) expires """
-#     loop = QEventLoop()
-#     signal.connect(loop.quit)
-#     yield
-#     if timeout is not None:
-#         QTimer.singleShot(timeout * 1000, loop.quit)
-#     # Direct execution of the loop is not possible
-#     # Has to be done by launching it in the QTimer thread
-#     loop.exec_()
-#
-#
-# @contextmanager
-# def wait_for_signals(*signal, timeout=60):
-#     """ Block execution until signal is emitted, or timeout (s) expires """
-#     loop = QEventLoop()
-#     for sig in signal:
-#         signal.connect(add)
-#     yield
-#     if timeout is not None:
-#         QTimer.singleShot(timeout * 1000, loop.quit)
-#     # Direct execution of the loop is not possible
-#     # Has to be done by launching it in the QTimer thread
-#     loop.exec_()
-
-
 class StateMachine(QObject):
-    """State Machine for any Experiment
+    """
+    State Machine for any Experiment
 
     Since this involves a State Machine, all methods are 'private'
     and should be accessed through this class' states
@@ -88,6 +61,8 @@ class StateMachine(QObject):
 
     def __init__(self, parent=None):
         super().__init__()
+        self.logger = logging.getLogger('statemachine')
+        self.logger.info('init statemachine')
         pathstateconfig = Path(__file__).parent / 'config_statemachine.yaml'
         with pathstateconfig.open() as f:
             self.stateconfig = yaml_safe_load(f)
@@ -157,7 +132,7 @@ class StateMachine(QObject):
             self.ymax = 160
 
     def _define_experiment(self, page):
-        # checks the necessary instruments, disconnects ones that are not necessary anymore. Adds new instruments.
+        """ Check which instruments are needed for selected experiment, remove unnecessary instruments """
         self.experiment = self.config['experiments'][page]
         instruments_needed = self.config['instruments'][self.experiment]
         to_remove = [inst for inst in self.instruments.keys() if (inst not in instruments_needed)]
@@ -179,15 +154,15 @@ class StateMachine(QObject):
     def _connect_all(self):
         for inst in self.instruments.keys():
             if self.instruments[inst].connected:
-                logging.info(f'{inst} already connected')
+                self.logger.info(f'{inst} already connected')
             else:
-                logging.info(f'connecting {inst}')
+                self.logger.info(f'connecting {inst}')
                 self.instruments[inst].connect()
                 self.instruments[inst].timeout = self.timeout
 
     def disconnect_all(self):
         for inst in self.instruments.keys():
-            logging.info(f'disconnecting {inst}')
+            self.logger.info(f'disconnecting {inst}')
             self.instruments[inst].disconnect()
 
     def _connect_signals_instruments(self):
@@ -204,6 +179,14 @@ class StateMachine(QObject):
             self.instruments['digitizer'].measurement_done_multiple.connect(self.process_data)
 
     def _align(self):
+        """
+        Start the repeated timer for reading out instruments. For decay, set the digitizer readout to efficiently
+        read many pulses
+        """
+        if self.experiment == 'decay':
+            self.instruments['digitizer'].polltime = self.polltime
+            self.instruments['digitizer'].pulses_per_measurement = math.ceil(self.polltime*101)
+            self.instruments['digitizer'].polltime_enabled = True
         self.heartbeat.start()
 
     def _stop_align(self):
@@ -244,16 +227,16 @@ class StateMachine(QObject):
         self.beamsplitter_fname = f'{self.storage_dir_calibration}/{self.beamsplitter}_{wl}_{date}.csv'
 
         # parse settings
-        logging.info('Parsing settings for calibration, turning off shutter')
+        self.logger.info('Parsing settings for calibration, turning off shutter')
         self.instruments['xystage'].move_with_wait(0, 0)
-        logging.info('Moved stage away for calibration')
+        self.logger.info('Moved stage away for calibration')
         self.instruments['laser'].energylevel = energylevel
         self.instruments['laser'].output = True
         self.instruments['powermeter'].integration_time = self.beamsplitter_integrationtime
         self.instruments['powermeter'].prepare_measurement_multiple()
         self.instruments['shuttercontrol'].disable()
         self.beamsplitter_wavelengths = np.arange(wlstart, wlstop + 0.5*wlstep, wlstep)
-        logging.info('waiting 3 seconds for powermeter to reach equilibrium temperature')
+        self.logger.info('waiting 3 seconds for powermeter to reach equilibrium temperature')
         self.calibration_status.emit('calibration started, waiting for temperature equilibrium')
         QTimer.singleShot(5000, self.measure_calibration)
 
@@ -261,11 +244,11 @@ class StateMachine(QObject):
         """ continues calibration after moving powermeter """
         self.calibration_status.emit('calibration continued, waiting for temperature equilibrium')
         self.instruments['shuttercontrol'].disable()
-        logging.info('shutter closed, waiting 3 seconds for powermeter to reach equilibrium temperature')
+        self.logger.info('shutter closed, waiting 3 seconds for powermeter to reach equilibrium temperature')
         QTimer.singleShot(5000, self.measure_calibration)
 
     def measure_calibration(self):
-        logging.info('powermeter equilibrium reached, zero powermeter')
+        self.logger.info('powermeter equilibrium reached, zero powermeter')
         self.calibration_status.emit('zeroing powermeter')
         self.instruments['powermeter'].zero()
         wavelengths = []
@@ -294,20 +277,20 @@ class StateMachine(QObject):
             df.to_csv(self.beamsplitter_fname, index=False)
             self.calibration_complete()
             self.calibration_complete_signal.emit()
-            logging.info('Calibration of beamsplitter complete')
+            self.logger.info('Calibration of beamsplitter complete')
         except FileNotFoundError:
             df = pd.DataFrame({'Wavelength [nm]': wavelengths, 'Times Position 1 [s]': times,
                                'Power Position 1 [W]': powers})
             df.to_csv(self.beamsplitter_fname, index=False)
             # emit pop up screen signal, do that in main.
             self.calibration_half_signal.emit()
-            logging.info('First part of beamsplitter calibration complete')
+            self.logger.info('First part of beamsplitter calibration complete')
 
     def _finish_calibration(self):
         self.instruments['powermeter'].integration_time = 200
         self.instruments['laser'].energylevel = 'Off'
         self.instruments['shuttercontrol'].disable()
-        logging.info('setting instruments back to alignment/setexperiment settings')
+        self.logger.info('setting instruments back to alignment/setexperiment settings')
 
     # region parse config
 
@@ -410,7 +393,7 @@ class StateMachine(QObject):
         self.instruments['spectrometer'].average_measurements = smsettings['spinBox_averageing_experiment']
         self.instruments['spectrometer'].clear_dark()
         self.instruments['spectrometer'].clear_lamp()
-        logging.info('parsed spectrometer settings')
+        self.logger.info('parsed spectrometer settings')
 
     def _parse_powermetersettings(self):
         # integration time of powermeter is the same as integration time of spectrometer
@@ -419,20 +402,20 @@ class StateMachine(QObject):
         averageing_sm = smsettings['spinBox_averageing_experiment']
         self.instruments['powermeter'].prepare_measurement_multiple()
         self.instruments['powermeter'].integration_time = integration_time_sm * averageing_sm
-        logging.info('parsed powermeter settings')
+        self.logger.info('parsed powermeter settings')
 
     def _parse_connect_spectrometer_powermeter(self):
         """ connects the 'cache-cleared' signal of the spectrometer to the measure method of the
             powermeter to synchronize measurements
         """
         self.instruments['spectrometer'].cache_cleared.connect(self.instruments['powermeter'].measure)
-        logging.info('connected spectrometer cache cleared to powermeter start measure')
+        self.logger.info('connected spectrometer cache cleared to powermeter start measure')
 
     def _parse_lasersettings(self):
         lasersettings = self.settings_ui[self.experiment][f'widget_laser_{self.experiment}']
         self.instruments['laser'].output = True
         self.instruments['laser'].energylevel = lasersettings['comboBox_energy_level_experiment']
-        logging.info('parsed laser settings')
+        self.logger.info('parsed laser settings')
 
     def _parse_digitizersettings(self):
         digitizersettings = self.settings_ui[self.experiment][f'widget_digitizer_{self.experiment}']
@@ -559,13 +542,13 @@ class StateMachine(QObject):
         fname = self.settings_ui['lineEdit_beamsplitter_calibration_file']
 
         if not fname:
-            logging.info('No calibration file was selected')
+            self.logger.info('No calibration file was selected')
             return
         try:
             df = pd.read_csv(fname)
-            logging.info(f'Adding calibration file {fname}')
+            self.logger.info(f'Adding calibration file {fname}')
         except FileNotFoundError as e:
-            logging.info(f'No calibration file with name {fname} found - {e}')
+            self.logger.info(f'No calibration file with name {fname} found - {e}')
             return
 
         wavelength = list(df['Wavelength [nm]'])
@@ -660,15 +643,15 @@ class StateMachine(QObject):
     def _control_shutter(self):
         if self.measurement_index == 0 and self.experiment == 'excitation_emission':
             self.instruments['shuttercontrol'].disable()
-            logging.info('shutter disabled for dark measurement')
+            self.logger.info('shutter disabled for dark measurement')
         else:
             self.instruments['shuttercontrol'].enable()
-            logging.info('shutter enabled')
+            self.logger.info('shutter enabled')
 
     def _prepare_powermeter(self):
         wl = self.measurement_parameters['wl'][self.measurement_index]
         self.instruments['powermeter'].wavelength = wl
-        logging.info(f'powermeter set to {wl} nm')
+        self.logger.info(f'powermeter set to {wl} nm')
 
     def _prepare_laser(self):
         self.laserstable = False
@@ -679,7 +662,7 @@ class StateMachine(QObject):
         while not self.instruments['laser'].is_stable():
             time.sleep(0.1)
         self.laserstable = True
-        logging.info(f'laser power stable at {wl} nm')
+        self.logger.info(f'laser power stable at {wl} nm')
 
     #endregion
 
@@ -695,26 +678,26 @@ class StateMachine(QObject):
             self._measure_decay()
 
     def _measure_transmission(self):
-        logging.info('started measurement transmission')
+        self.logger.info('started measurement transmission')
         QTimer.singleShot(0, self.instruments['spectrometer'].measure)
 
     def _measure_excitation_emission(self):
         """ starts the spectrometer measurement. 'Cache cleared' signal of spectrometer
             is connected to powermeter start measurement
         """
-        logging.info('started measurement excitation emission')
+        self.logger.info('started measurement excitation emission')
         self.wait_signals_experiment.reset()
         QTimer.singleShot(0, self.instruments['spectrometer'].measure)
 
     def _measure_decay(self):
-        logging.info('started decay measurement')
+        self.logger.info('started decay measurement')
         QTimer.singleShot(0, self.instruments['digitizer'].measure_multiple)
 
     #endregion
 
     #region process data
     def _process_data(self):
-        logging.info(f'processing data {self.experiment}')
+        self.logger.info(f'processing data {self.experiment}')
         self.write_file()
         pass
     #endregion
@@ -894,12 +877,12 @@ class StateMachine(QObject):
             except Exception:
                 keep_trying -= 1
                 failed = True
-                logging.info('Getting position failed. Retrying {}'.format(keep_trying))
-                logging.info('Reconnecting...')
+                self.logger.info('Getting position failed. Retrying {}'.format(keep_trying))
+                self.logger.info('Reconnecting...')
                 time.sleep(5 - keep_trying)
                 self.instruments['xystage'].reconnect()
             if not failed:
-                logging.info('Position acquisition successful!')
+                self.logger.info('Position acquisition successful!')
                 keep_trying = 0
 
     # endregion
@@ -921,11 +904,11 @@ class StateMachine(QObject):
                )
         self.ect.emit(int(ect))
         self.progress.emit(int(progress * 100))
-        logging.info(f'Progress Measurement: {progress * 100} %')
+        self.logger.info(f'Progress Measurement: {progress * 100} %')
         if progress == 1:
             self.is_done = True
             self.measurement_complete()
-            logging.info(f'Measurement Completed at: {time.ctime(ect)}')
+            self.logger.info(f'Measurement Completed at: {time.ctime(ect)}')
         else:
             self.prepare()
     # endregion
@@ -936,7 +919,7 @@ class StateMachine(QObject):
         ect = duration/index * (len(self.beamsplitter_wavelengths) - index)
         self.progress.emit(int(progress))
         self.ect.emit(int(ect))
-        logging.info(f'Calibration progress {progress} %, wavelength = {wavelength} nm, ect = {ect}')
+        self.logger.info(f'Calibration progress {progress} %, wavelength = {wavelength} nm, ect = {ect}')
 
     def _return_setexperiment(self):
         self.signal_return_setexperiment.emit()
@@ -959,12 +942,12 @@ class StateMachine(QObject):
     def reset_instruments(self):
         if self.experiment == 'transmission':
             self.instruments['spectrometer'].integrationtime = 100
-            logging.info('transmission ready, set spectrometer back to shorter integration time')
+            self.logger.info('transmission ready, set spectrometer back to shorter integration time')
         elif self.experiment == 'excitation_emission':
             self.instruments['spectrometer'].integrationtime = 100
             self.instruments['spectrometer'].cache_cleared.disconnect()
             self.instruments['powermeter'].integration_time = 200
-            logging.info('excitation emission ready, disconnected cache cleared and set shorter integration'
+            self.logger.info('excitation emission ready, disconnected cache cleared and set shorter integration'
                          'times for powermeter and spectrometer')
 
 

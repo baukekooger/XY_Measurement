@@ -41,6 +41,8 @@ class QLaser(QObject):
     def __init__(self, waittime=0.05, polltime=0.1, timeout=10, parent=None):
         super().__init__(parent=parent)
         # device_name='FT5AOAQM'
+        self.logger = logging.getLogger('Qinstrument.Qlaser')
+        self.logger.info('init laser')
         self.connected = False
         self.mutex = QMutex(QMutex.Recursive)
         self.measuring = False
@@ -73,11 +75,11 @@ class QLaser(QObject):
         """
         if wl < MINIMUM_WAVELENGTH:
             wl = MINIMUM_WAVELENGTH
-            logging.warning('Exceeded wavelength range when setting to {}.2f nm. Set to {}.2f nm'.format(
+            self.logger.warning('Exceeded wavelength range when setting to {}.2f nm. Set to {}.2f nm'.format(
                 wl, MINIMUM_WAVELENGTH))
         if wl > MAXIMUM_WAVELENGTH:
             wl = MAXIMUM_WAVELENGTH
-            logging.warning('Exceeded wavelength range when setting to {}.2f nm. Set to {}.2f nm'.format(
+            self.logger.warning('Exceeded wavelength range when setting to {}.2f nm. Set to {}.2f nm'.format(
                 wl, MAXIMUM_WAVELENGTH))
 
         dev = "MidiOPG:31"
@@ -90,7 +92,7 @@ class QLaser(QObject):
         #        try:
         #            self.set_register_double(dev, reg, mot_pos)
         #        except LaserError as e:
-        #            logging.warning('Register {} not recognized'.format(reg))
+        #            self.logger.warning('Register {} not recognized'.format(reg))
 
     async def set_wavelength(self, wl):
         """
@@ -194,7 +196,7 @@ class QLaser(QObject):
         # Try, if we fail, try again
         e = self.rcdll.rcSetRegFromDoubleA2(self.handle, d, r, v, c_int(0))
         if not e == 0:
-            logging.warning('An error occurred during Laser communication, reattempting...')
+            self.logger.warning('An error occurred during Laser communication, reattempting...')
             time.sleep(self.polltime)
             e = self.rcdll.rcSetRegFromDoubleA2(self.handle, d, r, v, c_int(0))
         self._is_error(e)
@@ -209,7 +211,7 @@ class QLaser(QObject):
         e = self.rcdll.rcGetRegAsDouble2(self.handle, d, r, byref(resp),
                                    self.timeout, None)
         if not e == 0:
-            logging.warning('An error occurred during Laser communication, reattempting...')
+            self.logger.warning('An error occurred during Laser communication, reattempting...')
             time.sleep(self.polltime)
             e = self.rcdll.rcGetRegAsDouble2(self.handle, d, r, byref(resp),
                                        self.timeout, None)
@@ -238,20 +240,21 @@ class QLaser(QObject):
         """
         connect to laser
         """
+        self.logger.info('connecting to laser')
         path_config = path_lib / 'REMOTECONTROL.CSV'
         c_path = c_char_p(bytes(str(path_config), 'utf-8'))
         c_devicename = c_char_p(bytes(device_name, 'utf-8'))
         try:
             self._is_error(self.rcdll.rcConnect2(byref(self.handle), connection_type, c_devicename, c_path))
             self.connected = True
+            self.logger.info('laser connected')
         except ConnectionError:
             # The Laser is already connected to us, nothing to worry about
-            logging.warning('Already connected to laser!')
+            self.logger.warning('Already connected to laser!')
 
     def disconnect(self):
-        """
-            Turns the laser off and disconnects 
-        """
+        """ Turns the laser off and disconnects """
+        self.logger.info('disconnecting from laser')
         self.measuring = False
         self.energylevel = 'Off'
         self._is_error(self.rcdll.rcDisconnect2(self.handle))
@@ -268,7 +271,7 @@ class QLaser(QObject):
         """
         self.measuring = True
         with(QMutexLocker(self.mutex)):
-            logging.info('Measuring laser...')
+            self.logger.info('Measuring laser...')
             wavelength = self.wavelength
             energylevel = self.energylevel
             power = self.power
@@ -337,3 +340,12 @@ class LaserError(Exception):
 class RangeError(LaserError):
     """ Exception raised for errors caused within Laser communication """
     pass
+
+
+if __name__ == '__main__':
+    import yaml
+    import logging.config
+    pathlogging = Path(__file__).parent.parent.parent / 'loggingconfig.yml'
+    with pathlogging.open() as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)

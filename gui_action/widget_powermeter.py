@@ -3,11 +3,14 @@ from PyQt5.QtCore import QTimer, pyqtSlot, QThread
 from gui_design.powermeter import Ui_Form
 import numpy as np
 from instruments.Thorlabs.qpowermeter import QPowerMeter
+import logging
 
 
 class PowerMeterWidget(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.logger = logging.getLogger('gui.PowerMeter')
+        self.logger.info('init powermeter widget ui')
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         self.powermeter = QPowerMeter()
@@ -58,6 +61,15 @@ class PowerMeterWidget(QtWidgets.QWidget):
 
 
 if __name__ == '__main__':
+    # set up logging if file called directly
+    from pathlib import Path
+    import yaml
+    import logging.config
+    pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
+    with pathlogging.open() as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)
+    # setup pyqt app
     import sys
     app = QtWidgets.QApplication(sys.argv)
     window = PowerMeterWidget()

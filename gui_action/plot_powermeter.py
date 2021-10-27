@@ -1,12 +1,12 @@
 import sys
 from PyQt5 import QtWidgets
+import logging
 from PyQt5.QtCore import pyqtSlot, QTimer
 import numpy as np
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 # from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
 from instruments.Thorlabs.qpowermeter import QPowerMeter
-from matplotlib.ticker import FormatStrFormatter
 from gui_action.plot_blitmanager import BlitManager
 import time
 
@@ -14,6 +14,8 @@ import time
 class PowerMeterPlotWidget(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.logger = logging.getLogger('plot.PowerMeter')
+        self.logger.info('init powermeter plot')
         self.powermeter = QPowerMeter()
         self.figure, self.ax = plt.subplots()
         self.canvas = FigureCanvas(self.figure)
@@ -48,7 +50,7 @@ class PowerMeterPlotWidget(QtWidgets.QWidget):
 
     def init_blitmanager(self):
         self.blitmanager = None
-        self.line, = self.ax.plot(self.log_time, 1000* self.log_power[-2001:-1], animated=True)
+        self.line, = self.ax.plot(self.log_time, 1000 * self.log_power[-2001:-1], animated=True)
         self.ax.set_ylabel('power [mW]')
         self.ax.set_xlabel('time [s]')
         self.ax.invert_xaxis()
@@ -68,6 +70,15 @@ class PowerMeterPlotWidget(QtWidgets.QWidget):
 
 
 if __name__ == '__main__':
+    # setup logging
+    from pathlib import Path
+    import yaml
+    import logging.config
+    pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
+    with pathlogging.open() as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)
+    # setup app
     app = QtWidgets.QApplication(sys.argv)
     main = PowerMeterPlotWidget()
     main.show()

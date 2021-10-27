@@ -1,13 +1,13 @@
-""" Blitmanager class which enables easy blitting of all plots to speed
-    up the plotting process, making the gui more responsive.
-
-    There are various update methods included for different types of plots as different plots
-    require different checks to check if data is still within axis limits.
-"""
 import logging
 
 
 class BlitManager:
+    """ Blitmanager class which enables easy blitting of all plots to speed
+        up the plotting process, making the gui more responsive.
+
+        There are various update methods included for different types of plots as different plots
+        require different checks to check if data is still within axis limits.
+    """
     def __init__(self, canvas, animated_artists=()):
         """
         Parameters
@@ -20,6 +20,8 @@ class BlitManager:
         animated_artists : Iterable[Artist]
             List of the artists to manage
         """
+        self.logger = logging.getLogger('plot.Blitmanager')
+        self.logger.info(f'init blitmanager')
         self.canvas = canvas
         self._bg = None
         self._artists = []
@@ -51,13 +53,15 @@ class BlitManager:
             the canvas this class is managing.
 
         """
-        logging.debug(f'adding artist {art}')
+        self.logger.debug(f'adding artist {art}')
         if art.figure != self.canvas.figure:
             raise RuntimeError
         art.set_animated(True)
         self._artists.append(art)
 
     def redraw_canvas_spectrometer(self):
+        """ Redraw the canvas for the spectrometer to fit the axes """
+        self.logger.info('redrawn canvas spectrometer')
         data = self._artists[0]
         _, y = data.get_data()
         max_y_data = max(y)
@@ -70,18 +74,24 @@ class BlitManager:
         self.canvas.draw()
 
     def redraw_canvas_digitizer(self):
+        """ Redraw the canvas for the digitizer to fit the axes """
+        self.logger.info('redrawn canvas digitizer')
         data = self._artists[0]
-        _, y = data.get_data()
-        max_y_data = max(y)
-        min_y_data = min(y)
-        spread_data = max_y_data - min_y_data
-        data.axes.set_ylim(top=max_y_data + 0.1 * spread_data)
-        data.axes.set_ylim(bottom=min_y_data - 0.1 * spread_data)
+        times, values = data.get_data()
+        max_values = max(values)
+        min_values = min(values)
+        spread_data = max_values - min_values
+
+        data.axes.set_ylim(top=max_values + 0.1 * spread_data)
+        data.axes.set_ylim(bottom=min_values - 0.1 * spread_data)
+        data.axes.set_xlim(left=times[0], right=times[-1])
 
         self.canvas.figure.tight_layout()
         self.canvas.draw()
 
     def redraw_canvas_powermeter(self):
+        """ Redraw the canvas for the powermeter to fit the axes """
+        self.logger.info('redrawn canvas powermeter')
         data = self._artists[0]
         _, y = data.get_data()
         max_y_data = max(y)
@@ -95,6 +105,7 @@ class BlitManager:
 
     def _draw_animated(self):
         """Draw all of the animated artists."""
+        self.logger.debug('drawing all artists')
         fig = self.canvas.figure
         for a in self._artists:
             fig.draw_artist(a)
@@ -118,3 +129,13 @@ class BlitManager:
         # let the GUI event loop process anything it has to do
         cv.flush_events()
 
+
+if __name__ == '__main__':
+    # set up logging if file called directly
+    from pathlib import Path
+    import yaml
+    import logging.config
+    pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
+    with pathlogging.open() as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)

@@ -5,6 +5,7 @@ from gui_action.plot_blitmanager import BlitManager
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas, NavigationToolbar2QT as NavigationToolbar
 import matplotlib.pyplot as plt
 import time
+import logging
 import random
 import numpy as np
 from instruments.OceanOptics.spectrometer import QSpectrometer
@@ -14,6 +15,8 @@ class SpectrometerPlotWidget(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.logger = logging.getLogger('plot.Spectrometer')
+        self.logger.info('init spectrometer plotwindow')
         self.spectrometer = QSpectrometer()
         self.figure, self.ax = plt.subplots()
         layout = QtWidgets.QVBoxLayout()
@@ -56,15 +59,24 @@ class SpectrometerPlotWidget(QtWidgets.QWidget):
 
     @pyqtSlot()
     def fit_plots(self):
+        """
+        Fit plots to screen by redrawing the canvas
+
+        Function called from main.py as the button for it is in the main ui.
+        """
         if self.bm:
             self.bm.redraw_canvas_spectrometer()
 
-    def clear(self):
-        self.figure.clear()
-        self.canvas.draw()
-
 
 if __name__ == '__main__':
+    # setup logging
+    from pathlib import Path
+    import yaml
+    import logging.config
+    pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
+    with pathlogging.open() as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)
     app = QtWidgets.QApplication(sys.argv)
     main = SpectrometerPlotWidget()
     main.show()

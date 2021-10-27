@@ -2,7 +2,6 @@ import serial
 import serial.tools.list_ports
 import logging
 from PyQt5.QtCore import QObject, QMutexLocker, QMutex, pyqtSignal, pyqtSlot
-logging.basicConfig(level=logging.INFO)
 
 
 class QShutterControl(QObject):
@@ -12,6 +11,8 @@ class QShutterControl(QObject):
 
     def __init__(self, parent=None, port=None, timeout=10, polltime=0.1):
         super().__init__(parent=parent)
+        self.logger = logging.getLogger('Qinstrument.QShutterControl')
+        self.logger.info('init QShutterControl')
         self.sc = None  # serial handle to the actual shuttercontroller
         # Shuttercontrol status
         self.mutex = QMutex(QMutex.Recursive)
@@ -41,6 +42,7 @@ class QShutterControl(QObject):
                 self.write_value('ens')
 
     def measure(self):
+        self.logger.info('measuring shutter status')
         self.measuring = True
         with(QMutexLocker(self.mutex)):
             # returns true is shutter is enabled
@@ -51,7 +53,8 @@ class QShutterControl(QObject):
             self.measuring = False
 
     def disable(self):
-        # Closes the shutter
+        """ Close the shutter """
+        self.logger.info('disabling shutter')
         with(QMutexLocker(self.mutex)):
             if int(self.query_value('ens')):
                 self.write_value('ens')
@@ -99,3 +102,14 @@ class QShutterControl(QObject):
             self.sc.write('{}\r'.format(command).encode())
         else:
             self.sc.write('{}={}\r'.format(command, value).encode())
+
+
+if __name__ == '__main__':
+    # set up logging if file called directly
+    from pathlib import Path
+    import yaml
+    import logging.config
+    pathlogging = Path(__file__).parent.parent.parent / 'loggingconfig.yml'
+    with pathlogging.open() as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)

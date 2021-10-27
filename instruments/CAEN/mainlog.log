@@ -1,0 +1,4 @@
+2021-10-27 18:20:52,712: logger Qinstrument.Qdigitizer: file Qdigitizer.py: line 56 INFO: init QDigitizer
+2021-10-27 18:20:58,189: logger Qinstrument.Qdigitizer: file digitizers.py: line 123 INFO: set record length to 4000 samples per channel
+2021-10-27 18:20:58,193: logger Qinstrument.Qdigitizer: file Qdigitizer.py: line 291 INFO: setting data channel to 0, no jitter channel
+2021-10-27 18:20:58,194: logger Qinstrument.Qdigitizer: file Qdigitizer.py: line 299 INFO: setting the DC offset of the data channel to 10

@@ -1,5 +1,4 @@
 import logging
-
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QTimer, QThread, pyqtSlot
 from gui_design.main import Ui_MainWindow
@@ -7,14 +6,14 @@ from yaml import safe_load as yaml_safe_load, dump
 from statemachine.statemachine import StateMachine
 import time
 import datetime
-logging.basicConfig()
-logging.getLogger().setLevel(logging.DEBUG)
 
 
 class MainWindow(QtWidgets.QMainWindow):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.logger = logging.getLogger(__name__)
+        self.logger.info('Init mainwindow')
         self.ui = Ui_MainWindow()
         self.ui.setupUi(self)
         self.ui.stackedWidget.setCurrentIndex(0)
@@ -457,6 +456,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
 
 if __name__ == '__main__':
+    import yaml
+    import logging.config
+    with open('loggingconfig.yml', 'r') as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)
     import sys
     app = QtWidgets.QApplication(sys.argv)
     window = MainWindow()

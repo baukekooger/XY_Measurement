@@ -5,7 +5,6 @@ import pyvisa as visa
 import logging
 from instruments.Thorlabs.powermeters import PowerMeter
 from PyQt5.QtCore import QObject, QMutexLocker, QMutex, pyqtSignal, pyqtSlot
-logging.basicConfig(level=logging.INFO)
 import math
 
 
@@ -29,6 +28,8 @@ class QPowerMeter(PowerMeter, QObject):
     def __init__(self, integration_time=200):
         PowerMeter.__init__(self, 'USB0::0x1313::0x8079::P1002333::INSTR')
         QObject.__init__(self)
+        self.logger = logging.getLogger('Qinstrument.QPowerMeter')
+        self.logger.info('init QPowerMeter')
         self.mutex = QMutex(QMutex.Recursive)
         self.integration_time = integration_time
         self.measurements_multiple = 40
@@ -45,12 +46,13 @@ class QPowerMeter(PowerMeter, QObject):
     @property
     def integration_time(self):
         """ Duration of integration time in [ms] """
+        self.logger.info(f'integration time = {self._integration_time} ms')
         return self._integration_time
 
     @integration_time.setter
     def integration_time(self, value):
-        """ sets the integration time and accompanying number of values for a multiple measurement
-            """
+        """ sets the integration time and accompanying number of values for a multiple measurement """
+        self.logger.info(f'setting integration time to {value} ms')
         self._integration_time = value
         # set number of multiple measurements to average over
         self.measurements_multiple = math.ceil(value/5)
@@ -82,7 +84,7 @@ class QPowerMeter(PowerMeter, QObject):
             power = self.read_power()
             self.measurement_complete.emit(power)
         t2 = time.time()
-        logging.info(f'powermeter completed with internal averaging in {t2-t1:.3f} seconds')
+        self.logger.info(f'powermeter completed with internal averaging in {t2-t1:.3f} seconds')
         self.measuring = False
         return power
 
@@ -106,7 +108,7 @@ class QPowerMeter(PowerMeter, QObject):
                 t.append(time.perf_counter() - t1)
                 time.sleep(0.002)
         t2 = time.perf_counter()
-        logging.info(f'powermeter completed,  time with all measurements {t2-t1:.3f}, '
+        self.logger.info(f'powermeter completed,  time with all measurements {t2-t1:.3f}, '
                      f'number of measurements = {len(measurements)}')
         self.last_times = list(np.linspace(0, t[-1], self.measurements_multiple))
         self.last_powers = list(np.interp(self.last_times, t, measurements))
@@ -143,3 +145,14 @@ class QPowerMeter(PowerMeter, QObject):
 
     def __repr__(self):
         return self.pm.query('*IDN?')
+
+
+if __name__ == '__main__':
+    # set up logging if file called directly
+    from pathlib import Path
+    import yaml
+    import logging.config
+    pathlogging = Path(__file__).parent.parent.parent / 'loggingconfig.yml'
+    with pathlogging.open() as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)

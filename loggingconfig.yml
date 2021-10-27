@@ -1,0 +1,48 @@
+version: 1
+formatters:
+  messageonly:
+    format: '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  regular:
+    format: '%(asctime)s: logger %(name)s: file %(filename)s: line %(lineno)d %(levelname)s: %(message)s'
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: regular
+    stream: ext://sys.stdout
+  file:
+    class: logging.FileHandler
+    level: DEBUG
+    filename: mainlog.log
+    mode: w
+    formatter: regular
+
+loggers:
+  __main__:
+    level: INFO
+    handlers: [console, file]
+    propagate: no
+  Qinstrument:
+    level: INFO
+    handlers: [console, file]
+    propagate: no
+  instrument:
+    level: WARNING
+    handlers: [console, file]
+    propagate: no
+  statemachine:
+    level: INFO
+    handlers: [console, file]
+    propagate: no
+  gui:
+    level: INFO
+    handlers: [ console, file ]
+    propagate: no
+  plot:
+    level: INFO
+    handlers: [ console, file ]
+    propagate: no
+  root:
+    level: DEBUG
+    handlers: [console, file]

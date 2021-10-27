@@ -7,17 +7,17 @@ decay:
     comboBox_jitter_channel_alignment: '0'
     comboBox_jitter_channel_experiment: '0'
     comboBox_measurement_mode_alignment: single pulse
-    comboBox_measurement_mode_experiment: multiple pulses averaged
+    comboBox_measurement_mode_experiment: averageing
     comboBox_single_photon_compression_alignment: none
     comboBox_single_photon_compression_experiment: none
     comboBox_time_range_alignment: "40 \u03BCs"
     comboBox_time_range_experiment: "40 \u03BCs"
-    spinBox_dc_offset_alignment: 0
+    spinBox_dc_offset_alignment: 10
     spinBox_dc_offset_experiment: 0
     spinBox_number_pulses_experiment: 1
     spinBox_post_trigger_size_alignment: 90
     spinBox_post_trigger_size_experiment: 90
-    spinBox_single_photon_treshold_alignment: 0
+    spinBox_single_photon_treshold_alignment: 870
     spinBox_single_photon_treshold_experiment: 0
   widget_file_decay:
     comboBox_substrate: 50X50 mm (Borofloat)
@@ -28,15 +28,15 @@ decay:
   widget_laser_decay:
     checkBox_stable: true
     comboBox_energy_level_experiment: Max
-    spinBox_wavelength_alignment: 375
+    spinBox_wavelength_alignment: 372
     spinBox_wavelength_start: 200
     spinBox_wavelength_step: 1
     spinBox_wavelength_stop: 375
   widget_shuttercontrol_decay:
     checkBox: false
   widget_xystage_decay:
-    checkBox_homed_x: true
-    checkBox_homed_y: true
+    checkBox_homed_x: false
+    checkBox_homed_y: false
     doubleSpinBox_x: 65.0
     doubleSpinBox_y: 100.0
     spinBox_x_num: 1
@@ -60,13 +60,13 @@ excitation_emission:
     spinBox_wavelength_step: 5
     spinBox_wavelength_stop: 370
   widget_powermeter_excitation_emission:
-    spinBox_wavelength_alignment: 221
+    spinBox_wavelength_alignment: 230
   widget_shuttercontrol_excitation_emission:
     checkBox: true
   widget_spectrometer_excitation_emission:
     spinBox_averageing_alignment: 1
     spinBox_averageing_experiment: 20
-    spinBox_integration_time_alignment: 100
+    spinBox_integration_time_alignment: 500
     spinBox_integration_time_experiment: 100
   widget_xystage_excitation_emission:
     checkBox_homed_x: true

@@ -9,12 +9,13 @@ import numpy as np
 from instruments.CAEN.Qdigitizer import QDigitizer
 import matplotlib.pyplot as plt
 import time
-import random
 
 
 class DigitizerPlotWidget(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.logger = logging.getLogger('plot.digitizer')
+        self.logger.info('init plotwindow digitizter')
         self.digitizer = QDigitizer()
         self.figure, self.ax = plt.subplots()
         self.canvas = FigureCanvas(self.figure)
@@ -35,26 +36,19 @@ class DigitizerPlotWidget(QtWidgets.QWidget):
     def connect_signals_slots(self):
         """ Connect all the signals from the digitizer to the plotwindow """
         self.digitizer.measurement_complete.connect(self.plot)
-        self.digitizer.redraw_plot.connect(self.redraw_axes)
 
     def disconnect_signals_slots(self):
-        """ Disconnecting all the signals from the digitizer """
+        """ Disconnect all the signals from the digitizer """
         self.digitizer.measurement_complete.disconnect()
-        self.digitizer.redraw_plot.disconnect()
-
-    @pyqtSlot()
-    def redraw_axes(self):
-        self.ax.clear()
-        self.blitmanager = None
 
     @pyqtSlot(np.ndarray, np.ndarray, str)
-    def plot(self, time, data, plotinfo):
+    def plot(self, times, data, plotinfo):
         if not self.blitmanager:
-            self.init_blitmanager(time, data, plotinfo)
+            self.init_blitmanager(times, data, plotinfo)
         else:
             # for count, line in enumerate(self.lines, start=0):
-            logging.debug(f'this is self.lines at updateing artists {self.lines}')
-            self.lines.set_xdata(time)
+            self.logger.debug(f'this is self.lines at updateing artists {self.lines}')
+            self.lines.set_xdata(times)
             self.lines.set_ydata(data)
             self.annotation.set_text(plotinfo)
             self.blitmanager.update()
@@ -63,30 +57,43 @@ class DigitizerPlotWidget(QtWidgets.QWidget):
         """
         Initializes the blitmanager by drawing the graph based on the data and saving a copy of the background """
         # clear blitmanager if existing
-        logging.info('initializing blitmanager')
+        self.logger.info('initializing blitmanager digitizer plotwindow')
         if self.blitmanager:
             self.blitmanager = None
 
-        self.lines = self.ax.plot(times, data, animated=True)
-        logging.debug(f'this is self.lines at creation {self.lines}')
-        # active_channels = list(self.digitizer.active_channels)
+        self.lines, = self.ax.plot(times, data, animated=True)
         self.annotation = self.ax.annotate(plotinfo, (0, 1), xycoords="axes fraction", xytext=(10, -10),
                                            textcoords="offset points", ha="left", va="top", animated=True)
         self.ax.set_ylabel('counts')
-        self.ax.set_xlabel('time [ns]')
+        self.ax.set_xlabel('time [s]')
         self.ax.set_title('digitizer')
-        self.blitmanager = BlitManager(self.canvas, [self.lines])
+        self.blitmanager = BlitManager(self.canvas, [self.lines, self.annotation])
         time.sleep(0.1)
         # self.fit_plots()
 
     @pyqtSlot()
     def fit_plots(self):
+        """
+        Fit plots to screen by redrawing the canvas
+
+        Function called from main.py as the button for it is in the main ui.
+        """
         if self.blitmanager:
             self.blitmanager.redraw_canvas_digitizer()
 
 
 if __name__ == '__main__':
+    # setup logging
+    from pathlib import Path
+    import yaml
+    import logging.config
+    pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
+    with pathlogging.open() as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)
+    # pyqt app
     app = QtWidgets.QApplication(sys.argv)
     main = DigitizerPlotWidget()
     main.show()
     sys.exit(app.exec_())
+

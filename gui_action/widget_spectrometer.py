@@ -3,12 +3,14 @@ from PyQt5.QtCore import pyqtSignal
 from gui_design.spectrometer import Ui_Form
 from instruments.OceanOptics.spectrometer import QSpectrometer
 from PyQt5.QtCore import pyqtSlot, QTimer
-
+import logging
 
 class SpectrometerWidget(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.logger = logging.getLogger('gui.SpectrometerWidget')
+        self.logger.info('init spectrometer widget ui')
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         self.spectrometer = QSpectrometer()
@@ -102,6 +104,15 @@ class SpectrometerWidget(QtWidgets.QWidget):
 
 
 if __name__ == '__main__':
+    # set up logging if file called directly
+    from pathlib import Path
+    import yaml
+    import logging.config
+    pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
+    with pathlogging.open() as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)
+    # setup pyqt app
     import sys
     app = QtWidgets.QApplication(sys.argv)
     window = SpectrometerWidget()

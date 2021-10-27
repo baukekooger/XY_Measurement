@@ -15,13 +15,13 @@ from gui_action.plot_blitmanager import BlitManager
 import random
 import time
 
-logging.basicConfig(level=logging.INFO)
-
 
 class XYStagePlotWidget(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.logger = logging.getLogger('plot.XYStage')
+        self.logger.info('init plotwindow XYStage (position indicator)')
         self.xystage = QXYStage()
         self.figure, self.ax = plt.subplots()
         self.layout = QtWidgets.QVBoxLayout()
@@ -202,6 +202,14 @@ class XYStagePlotWidget(QtWidgets.QWidget):
 
 
 if __name__ == '__main__':
+    # set up logging if file called directly
+    import yaml
+    import logging.config
+    pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
+    with pathlogging.open() as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)
+    # setup pyqt app
     app = QtWidgets.QApplication(sys.argv)
     main = XYStagePlotWidget()
     main.show()

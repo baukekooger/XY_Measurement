@@ -2,6 +2,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from gui_design.xystage import Ui_Form
 from instruments.Thorlabs.xystage import QXYStage
+import logging
 
 
 class XYStageWidget(QtWidgets.QWidget):
@@ -10,6 +11,8 @@ class XYStageWidget(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.logger = logging.getLogger('gui.XYStageWidget')
+        self.logger.info('init xystage widget')
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         self.xystage = QXYStage()
@@ -60,6 +63,15 @@ class XYStageWidget(QtWidgets.QWidget):
 
 
 if __name__ == '__main__':
+    # set up logging if file called directly
+    from pathlib import Path
+    import yaml
+    import logging.config
+    pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
+    with pathlogging.open() as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)
+    # setup pyqt app
     import sys
     app = QtWidgets.QApplication(sys.argv)
     window = XYStageWidget()

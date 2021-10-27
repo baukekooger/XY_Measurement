@@ -2,26 +2,18 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import pyqtSlot, QTimer
 from gui_design.laser import Ui_Form
 from instruments.Ekspla.lasers import QLaser
+import logging
 
 
 class LaserWidget(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.logger = logging.getLogger('gui.Laser')
+        self.logger.info('init laser widget ui')
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         self.laser = QLaser()
-
-        # self.laser.connect()
-        # self.connect_signals_slots()
-        # self.hb = QTimer()
-        # self.hb.setInterval(500)
-        # self.hb.timeout.connect(self.measure)
-        # self.hb.start()
-
-    # def measure(self):
-    #     if not self.laser.measuring:
-    #         self.laser.measure()
 
     def connect_signals_slots(self):
         self.laser.measurement_complete.connect(self.update_status)
@@ -76,8 +68,28 @@ class LaserWidget(QtWidgets.QWidget):
 
 
 if __name__ == '__main__':
+    # set up logging if file called directly
+    from pathlib import Path
+    import yaml
+    import logging.config
+    pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
+    with pathlogging.open() as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)
+    # setup pyqt app
     import sys
     app = QtWidgets.QApplication(sys.argv)
     window = LaserWidget()
     window.show()
     sys.exit(app.exec_())
+
+    # self.laser.connect()
+    # self.connect_signals_slots()
+    # self.hb = QTimer()
+    # self.hb.setInterval(500)
+    # self.hb.timeout.connect(self.measure)
+    # self.hb.start()
+
+    # def measure(self):
+    #     if not self.laser.measuring:
+    #         self.laser.measure()

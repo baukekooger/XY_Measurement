@@ -3,10 +3,7 @@ import time
 import numpy as np
 import pyvisa as visa
 import logging
-
 import pyvisa.errors
-from PyQt5.QtCore import QObject, QMutexLocker, QMutex, pyqtSignal, pyqtSlot
-logging.basicConfig(level=logging.INFO)
 
 
 def list_available_devices():
@@ -15,10 +12,12 @@ def list_available_devices():
 
 class PowerMeter:
     """
-    Python interface for the Thorlabs PM100A powermeter with bare functionalities
+    Python Class for the Thorlabs PM100A powermeter with basic functionalities
     """
 
     def __init__(self, name='USB0::0x1313::0x8079::P1002333::INSTR'):
+        self.logger = logging.getLogger('ínstrument.PowerMeter')
+        self.logger.info('init PowerMeter')
         self.name = name
         self.pm = None
         self.connected = False
@@ -99,7 +98,7 @@ class PowerMeter:
             sensitivity = self.pm.query('sens:corr:pow:pdio:resp?').strip()
             return sensitivity
         except pyvisa.errors.VisaIOError:
-            logging.info('Cannot read photodiode response, no thermopile connected')
+            self.logger.info('Cannot read photodiode response, no thermopile connected')
 
     @property
     def sensitivity_thermopile(self):
@@ -108,7 +107,7 @@ class PowerMeter:
             sensitivity = self.pm.query('sens:corr:pow:ther:resp?').strip()
             return sensitivity
         except pyvisa.errors.VisaIOError:
-            logging.info('Cannot read thermopile response, no thermopile connected')
+            self.logger.info('Cannot read thermopile response, no thermopile connected')
 
     @property
     def autorange(self):
@@ -130,7 +129,7 @@ class PowerMeter:
             acceleratorstatus = self.pm.query('inp:ther:acc:state?').strip()
             return bool(int(acceleratorstatus))
         except pyvisa.errors.VisaIOError:
-            logging.info('Cannot read accelerator status, no thermopile connected')
+            self.logger.info('Cannot read accelerator status, no thermopile connected')
 
     @accelerator.setter
     def accelerator(self, value):
@@ -139,7 +138,7 @@ class PowerMeter:
         try:
             self.pm.write(f'inp:ther:acc:state {intvalue}')
         except pyvisa.errors.VisaIOError:
-            logging.info('Cannot set accelerator, no thermopile connected')
+            self.logger.info('Cannot set accelerator, no thermopile connected')
 
     @property
     def thermopile_timeconstant(self):
@@ -148,7 +147,7 @@ class PowerMeter:
             tau = self.pm.query('inp:ther:acc:tau?').strip()
             return tau
         except pyvisa.errors.VisaIOError:
-            logging.info('Cannot read timeconstant, no thermopile connected')
+            self.logger.info('Cannot read timeconstant, no thermopile connected')
 
     def set_sensitivity_correction(self, file):
         """
@@ -184,3 +183,14 @@ class PowerMeter:
 
     def __repr__(self):
         return self.pm.query('*IDN?')
+
+
+if __name__ == '__main__':
+    # set up logging if file called directly
+    from pathlib import Path
+    import yaml
+    import logging.config
+    pathlogging = Path(__file__).parent.parent.parent / 'loggingconfig.yml'
+    with pathlogging.open() as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)

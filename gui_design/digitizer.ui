@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>532</width>
-    <height>596</height>
+    <width>377</width>
+    <height>367</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -57,7 +57,7 @@
        <item row="1" column="0">
         <widget class="QGroupBox" name="groupBox">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -91,7 +91,7 @@
              <widget class="QComboBox" name="comboBox_measurement_mode_experiment">
               <item>
                <property name="text">
-                <string>multiple pulses averaged</string>
+                <string>averageing</string>
                </property>
               </item>
               <item>
@@ -189,7 +189,7 @@
                </size>
               </property>
               <property name="text">
-               <string>Post Trigger Size (1-100)</string>
+               <string>Post Trigger Size (1-90)</string>
               </property>
              </widget>
             </item>
@@ -199,7 +199,7 @@
                <number>1</number>
               </property>
               <property name="maximum">
-               <number>100</number>
+               <number>90</number>
               </property>
               <property name="value">
                <number>90</number>
@@ -230,7 +230,11 @@
              </widget>
             </item>
             <item>
-             <widget class="QSpinBox" name="spinBox_dc_offset_experiment"/>
+             <widget class="QSpinBox" name="spinBox_dc_offset_experiment">
+              <property name="maximum">
+               <number>100</number>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
@@ -294,7 +298,7 @@
                <number>1</number>
               </property>
               <property name="maximum">
-               <number>1000</number>
+               <number>100000</number>
               </property>
              </widget>
             </item>
@@ -354,7 +358,11 @@
                 </widget>
                </item>
                <item>
-                <widget class="QSpinBox" name="spinBox_single_photon_treshold_experiment"/>
+                <widget class="QSpinBox" name="spinBox_single_photon_treshold_experiment">
+                 <property name="maximum">
+                  <number>16383</number>
+                 </property>
+                </widget>
                </item>
               </layout>
              </item>
@@ -367,6 +375,12 @@
       </layout>
      </widget>
      <widget class="QWidget" name="page_alignment">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
       <layout class="QGridLayout" name="gridLayout_4">
        <property name="leftMargin">
         <number>0</number>
@@ -386,7 +400,7 @@
        <item row="0" column="0">
         <widget class="QGroupBox" name="groupBox_2">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+          <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -421,6 +435,11 @@
               <item>
                <property name="text">
                 <string>single pulse</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>averageing</string>
                </property>
               </item>
               <item>
@@ -474,10 +493,10 @@
             </item>
            </layout>
           </item>
-          <item row="2" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <item row="4" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
             <item>
-             <widget class="QLabel" name="label_5">
+             <widget class="QLabel" name="label_7">
               <property name="sizePolicy">
                <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
                 <horstretch>0</horstretch>
@@ -491,22 +510,27 @@
                </size>
               </property>
               <property name="text">
-               <string>Timerange</string>
+               <string>Post Trigger Size (1-90)</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QComboBox" name="comboBox_time_range_alignment">
-              <item>
-               <property name="text">
-                <string>40 μs</string>
-               </property>
-              </item>
-              <item>
-               <property name="text">
-                <string>80 μs</string>
-               </property>
-              </item>
+             <widget class="QSpinBox" name="spinBox_post_trigger_size_alignment">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimum">
+               <number>1</number>
+              </property>
+              <property name="maximum">
+               <number>90</number>
+              </property>
+              <property name="value">
+               <number>90</number>
+              </property>
              </widget>
             </item>
            </layout>
@@ -533,47 +557,9 @@
              </widget>
             </item>
             <item>
-             <widget class="QSpinBox" name="spinBox_dc_offset_alignment"/>
-            </item>
-           </layout>
-          </item>
-          <item row="4" column="0">
-           <layout class="QHBoxLayout" name="horizontalLayout_4">
-            <item>
-             <widget class="QLabel" name="label_7">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimumSize">
-               <size>
-                <width>120</width>
-                <height>0</height>
-               </size>
-              </property>
-              <property name="text">
-               <string>Post Trigger Size (1-100)</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QSpinBox" name="spinBox_post_trigger_size_alignment">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-              <property name="minimum">
-               <number>1</number>
-              </property>
+             <widget class="QSpinBox" name="spinBox_dc_offset_alignment">
               <property name="maximum">
                <number>100</number>
-              </property>
-              <property name="value">
-               <number>90</number>
               </property>
              </widget>
             </item>
@@ -618,7 +604,44 @@
             </item>
            </layout>
           </item>
-          <item row="6" column="0">
+          <item row="2" column="0">
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <item>
+             <widget class="QLabel" name="label_5">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="minimumSize">
+               <size>
+                <width>120</width>
+                <height>0</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>Timerange</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="comboBox_time_range_alignment">
+              <item>
+               <property name="text">
+                <string>40 μs</string>
+               </property>
+              </item>
+              <item>
+               <property name="text">
+                <string>80 μs</string>
+               </property>
+              </item>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="7" column="0">
            <widget class="QGroupBox" name="groupBox_single_photon_alignment">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
@@ -701,9 +724,29 @@
                 </widget>
                </item>
                <item>
-                <widget class="QSpinBox" name="spinBox_single_photon_treshold_alignment"/>
+                <widget class="QSpinBox" name="spinBox_single_photon_treshold_alignment">
+                 <property name="maximum">
+                  <number>16383</number>
+                 </property>
+                </widget>
                </item>
               </layout>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="6" column="0">
+           <widget class="QGroupBox" name="groupBox_3">
+            <property name="title">
+             <string>Averageing</string>
+            </property>
+            <layout class="QGridLayout" name="gridLayout_7">
+             <item row="0" column="0">
+              <widget class="QPushButton" name="pushButton_clear_averageing_alignment">
+               <property name="text">
+                <string>Clear</string>
+               </property>
+              </widget>
              </item>
             </layout>
            </widget>
