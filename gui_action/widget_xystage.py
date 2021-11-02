@@ -11,8 +11,8 @@ class XYStageWidget(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.logger = logging.getLogger('gui.XYStageWidget')
-        self.logger.info('init xystage widget')
+        self.logger_widget = logging.getLogger('gui.XYStageWidget')
+        self.logger_widget.info('init xystage widget')
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         self.xystage = QXYStage()
@@ -67,6 +67,7 @@ if __name__ == '__main__':
     from pathlib import Path
     import yaml
     import logging.config
+    import logging.handlers
     pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
     with pathlogging.open() as f:
         config = yaml.safe_load(f.read())

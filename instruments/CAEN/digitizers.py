@@ -70,8 +70,8 @@ class Digitizer(DigitizerHandle):
     """
     def __init__(self):
         DigitizerHandle.__init__(self, None, None, None)
-        self.logger = logging.getLogger('instrument.digitizer')
-        self.logger.info('init digitizer')
+        self.logger_instrument = logging.getLogger('instrument.digitizer')
+        self.logger_instrument.info('init digitizer')
         self._handle = c_uint32(0)
         self.board_info = None
         self.buffer = c_char_p()
@@ -95,7 +95,7 @@ class Digitizer(DigitizerHandle):
         """ Gets the record length """
         return_value = c_uint32(0)
         handle_error(_lib.CAEN_DGTZ_GetRecordLength(self._handle, byref(return_value)))
-        self.logger.info(f'record length = {return_value.value} samples per channel')
+        self.logger_instrument.info(f'record length = {return_value.value} samples per channel')
         return return_value.value
 
     @record_length.setter
@@ -110,24 +110,24 @@ class Digitizer(DigitizerHandle):
         """
         if value < 0:
             value = 0
-            self.logger.warning(f'specified record length too small. set to minimum value: {value}')
+            self.logger_instrument.warning(f'specified record length too small. set to minimum value: {value}')
         elif value > 10:
             value = 10
-            self.logger.warning(f'specified record length too big, set to maximum value: {value}')
+            self.logger_instrument.warning(f'specified record length too big, set to maximum value: {value}')
         self.rl = value
         post_trigger_size = self.post_trigger_size
         buffer_size = self.buffer_size_max
         record_length = buffer_size // (1 << (10 - value))
         set_value = c_uint32(record_length)
         handle_error(_lib.CAEN_DGTZ_SetRecordLength(self._handle, set_value))
-        self.logger.info(f'set record length to {record_length} samples per channel')
+        self.logger_instrument.info(f'set record length to {record_length} samples per channel')
         self.post_trigger_size = post_trigger_size
 
     def manual_record_length(self, value):
         """ Sets the record length to a manual value """
         set_value = c_uint32(value)
         handle_error(_lib.CAEN_DGTZ_SetRecordLength(self._handle, set_value))
-        self.logger.info(f'set record length to manual value of {value} samples')
+        self.logger_instrument.info(f'set record length to manual value of {value} samples')
 
     @property
     def post_trigger_size(self):
@@ -146,7 +146,7 @@ class Digitizer(DigitizerHandle):
         """ Get/Sets the maximum number of events per block transfer """
         return_value = c_uint32(0)
         handle_error(_lib.CAEN_DGTZ_GetMaxNumEventsBLT(self._handle, byref(return_value)))
-        self.logger.info(f'Max num events per block transfer = {return_value.value}')
+        self.logger_instrument.info(f'Max num events per block transfer = {return_value.value}')
         return return_value.value
 
     @max_num_events_blt.setter
@@ -165,7 +165,7 @@ class Digitizer(DigitizerHandle):
         address = 0x800c
         value = c_int32(0)
         handle_error(_lib.CAEN_DGTZ_ReadRegister(self._handle, address, byref(value)))
-        self.logger.info(f'Number of buffers per channel memory = {1 << value.value}')
+        self.logger_instrument.info(f'Number of buffers per channel memory = {1 << value.value}')
         return 1 << value.value
 
     @buffer_organization.setter
@@ -173,7 +173,7 @@ class Digitizer(DigitizerHandle):
         address = 0x800c
         set_value = c_int32(set_value)
         handle_error(_lib.CAEN_DGTZ_WriteRegister(self._handle, address, set_value))
-        self.logger.info(f'Number of buffers per channel memory set to {1 << set_value.value}')
+        self.logger_instrument.info(f'Number of buffers per channel memory set to {1 << set_value.value}')
 
     @property
     def number_of_channels(self):
@@ -565,13 +565,13 @@ class Digitizer(DigitizerHandle):
     def free_event(self):
         """ Release the event memory buffer allocated by either the DecodeEvent or AllocateEvent function. """
 
-        self.logger.info('CAEN DT57xx frees event')
+        self.logger_instrument.info('CAEN DT57xx frees event')
         handle_error(_lib.CAEN_DGTZ_FreeEvent(self._handle, byref(self.event)))
 
     def free_readout_buffer(self):
         """ Free memory allocated by the MallocReadoutBuffer function. """
 
-        self.logger.debug('CAEN DT57xx frees memory allocated by the MallocReadoutBuffer function')
+        self.logger_instrument.debug('CAEN DT57xx frees memory allocated by the MallocReadoutBuffer function')
         handle_error(_lib.CAEN_DGTZ_FreeReadoutBuffer(byref(self.buffer)))
 
     def send_sw_trigger(self):
@@ -580,7 +580,7 @@ class Digitizer(DigitizerHandle):
         window on all channels at the same time and/or to generate a pulse on the Trigger Output of the board,
         according to the SW trigger mode set by the “Set” function of the Set / GetSWTriggerMode.
         """
-        self.logger.info('CAEN DT57xx software trigger sent')
+        self.logger_instrument.info('CAEN DT57xx software trigger sent')
         handle_error(_lib.CAEN_DGTZ_SendSWtrigger(self._handle))
 
     def start_measurement(self):
@@ -593,7 +593,7 @@ class Digitizer(DigitizerHandle):
     @pyqtSlot()
     def finish_measurement(self):
         """ This function finishes up the measurement by stopping the acquisition and freeing all buffers. """
-        self.logger.debug("finishing measurement")
+        self.logger_instrument.debug("finishing measurement")
         self.sw_stop_acquisition()
         self.free_event()
         self.free_readout_buffer()
@@ -603,7 +603,7 @@ class Digitizer(DigitizerHandle):
         This function allocates the memory buffer for the decoded event data. The size of the buffer is calculated
         in order to keep the maximum event size.
         """
-        self.logger.info('CAEN DT57xx allocates event')
+        self.logger_instrument.info('CAEN DT57xx allocates event')
         self.event.value = None
         handle_error(_lib.CAEN_DGTZ_AllocateEvent(self._handle, byref(self.event)))
 
@@ -612,7 +612,7 @@ class Digitizer(DigitizerHandle):
         This function scans the readout buffer and gets the number of events contained in the data block previously
         read by the ReadData function. The number of events is returned in the parameter numEvents.
         """
-        self.logger.debug('CAEN DT57xx scans the readout buffer and gets the number of events')
+        self.logger_instrument.debug('CAEN DT57xx scans the readout buffer and gets the number of events')
         num_events = c_int32(0)
         _lib.CAEN_DGTZ_GetNumEvents(self._handle, self.buffer, self.buffer_size, byref(num_events))
         return num_events.value
@@ -635,7 +635,7 @@ class Digitizer(DigitizerHandle):
 
         return evtptr, event_info
 
-    def decode_event(self, evtptr):
+    def decode_event(self, evtptr, active_channels):
         """
         Decode an event into data.
 
@@ -643,21 +643,21 @@ class Digitizer(DigitizerHandle):
         :return: measurement data as [channels][samples]
         """
 
-        self.logger.debug(f'Decode Event {evtptr}')
+        self.logger_instrument.debug(f'Decode Event {evtptr}')
         handle_error(_lib.CAEN_DGTZ_DecodeEvent(self._handle, evtptr, byref(self.event)))
         number_of_channels = len(self.active_channels)
-        self.logger.debug(f'digitzier decode active channels = {self.active_channels}')
+        self.logger_instrument.debug(f'digitzier decode active channels = {self.active_channels}')
 
         channel_size = 0
-        for channel in self.active_channels:
+        for channel in active_channels:
             channel_size = self.event.contents.ChSize[channel]
             if channel_size > 0:
                 break
 
-        self.logger.debug(f'digitizer channel size = {channel_size}')
+        self.logger_instrument.debug(f'digitizer channel size = {channel_size}')
         data = np.zeros((number_of_channels, channel_size))
 
-        for count, channel in enumerate(self.active_channels):
+        for count, channel in enumerate(active_channels):
             data[count] = self.event.contents.DataChannel[channel][0:channel_size]
         return data
 
@@ -672,7 +672,7 @@ class Digitizer(DigitizerHandle):
         allocated by MallocReadoutBuffer function. The function returns in bufferSize the size of the data block
         read from the card, expressed in bytes.
         """
-        self.logger.debug('CAEN DT57xx Read data')
+        self.logger_instrument.debug('CAEN DT57xx Read data')
         self.buffer_size = c_uint32(0)
         readmode = c_uint32(readoutmode)
         # not pretty but without this wait for longer record lengths the readout will crash
@@ -681,14 +681,14 @@ class Digitizer(DigitizerHandle):
         elif self.rl == 10:
             time.sleep(0.5)
         _lib.CAEN_DGTZ_ReadData(self._handle, readmode, self.buffer, byref(self.buffer_size))
-        self.logger.debug(f"ReadData self.buffersizesize.value : {self.buffer_size}")
+        self.logger_instrument.debug(f"ReadData self.buffersizesize.value : {self.buffer_size}")
         return self.buffer_size.value
 
     def read_readout_status(self):
         """
             Read the Readout Status register.
         """
-        self.logger.info('Read CAEN DT57xx Acquisition Status Register')
+        self.logger_instrument.info('Read CAEN DT57xx Acquisition Status Register')
         address = 0xEF04
         status = c_int32(0)
         handle_error(_lib.CAEN_DGTZ_ReadRegister(self._handle, address, byref(status)))
@@ -703,7 +703,7 @@ class Digitizer(DigitizerHandle):
         digitizer, if the parameters that determine the size of the buffer change, it is necessary to free it
         by calling the FreeReadoutBuffer function and then reallocated.
         """
-        self.logger.debug('CAEN DT57xx allocates memory buffer for the data block transfer')
+        self.logger_instrument.debug('CAEN DT57xx allocates memory buffer for the data block transfer')
         size = c_uint32(0)
         self.buffer.value = None  # NULL pointer
         handle_error(_lib.CAEN_DGTZ_MallocReadoutBuffer(self._handle, byref(self.buffer), byref(size)))
@@ -717,7 +717,7 @@ class Digitizer(DigitizerHandle):
         cycle when an acquisition starts. The function can be used during an acquisition when aware that the data
         stored in memory are not interesting and not going to be read.
         """
-        self.logger.info('CAEN DT57xx clearing all data in the digitizer')
+        self.logger_instrument.info('CAEN DT57xx clearing all data in the digitizer')
         handle_error(_lib.CAEN_DGTZ_ClearData(self._handle))
 
     def events_stored(self):
@@ -726,7 +726,7 @@ class Digitizer(DigitizerHandle):
         NOTE: the value of this register cannot exceed the maximum number of available buffers according to the
         register address 0x800C (max num events BLT).
         """
-        self.logger.info('Read CAEN DT57xx Events Stored Register')
+        self.logger_instrument.info('Read CAEN DT57xx Events Stored Register')
         address = 0x812C
         events = c_int32(0)
         handle_error(_lib.CAEN_DGTZ_ReadRegister(self._handle, address, byref(events)))
@@ -740,13 +740,13 @@ class Digitizer(DigitizerHandle):
         to use to start the acquisition using aphysical signal, such as the S-IN or GPI as well as the
         TRG-IN-TRG-OUT Daisy chain. Please refer to Digitizer manual for more details on this issue.
         """
-        self.logger.debug('DT57XX Started acquisition with software command')
+        self.logger_instrument.debug('DT57XX Started acquisition with software command')
         handle_error(_lib.CAEN_DGTZ_SWStartAcquisition(self._handle))
 
     def sw_stop_acquisition(self):
         """ This function stops the acquisition in a board using a software command. """
 
-        self.logger.debug('DT57XX Stopped acquisition with software command')
+        self.logger_instrument.debug('DT57XX Stopped acquisition with software command')
         handle_error(_lib.CAEN_DGTZ_SWStopAcquisition(self._handle))
 
     def measurement_single_event(self):
@@ -757,6 +757,8 @@ class Digitizer(DigitizerHandle):
         :return: data [channels][samples]
         """
 
+        # check it here such that the correct number is used if channels are changed in meantime
+        active_channels = self.active_channels
         self.start_measurement()
         # check if data is present, otherwise wait
         while self.read_readout_status() & 1 == 0:
@@ -768,7 +770,7 @@ class Digitizer(DigitizerHandle):
             time.sleep(0.4)
         self.read_data(definitions.ReadMode.POLLING_MBLT.value)
         evtptr, _ = self.get_event_info(0)
-        data = self.decode_event(evtptr)
+        data = self.decode_event(evtptr, active_channels)
         self.finish_measurement()
 
         return data
@@ -786,6 +788,7 @@ class Digitizer(DigitizerHandle):
 if __name__ == '__main__':
     import yaml
     import logging.config
+    import logging.handlers
     pathlogging = Path(__file__).parent.parent.parent / 'loggingconfig.yml'
     with pathlogging.open() as f:
         config = yaml.safe_load(f.read())

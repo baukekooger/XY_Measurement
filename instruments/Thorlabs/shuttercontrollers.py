@@ -109,6 +109,7 @@ if __name__ == '__main__':
     from pathlib import Path
     import yaml
     import logging.config
+    import logging.handlers
     pathlogging = Path(__file__).parent.parent.parent / 'loggingconfig.yml'
     with pathlogging.open() as f:
         config = yaml.safe_load(f.read())

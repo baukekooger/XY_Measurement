@@ -5,12 +5,13 @@ from instruments.OceanOptics.spectrometer import QSpectrometer
 from PyQt5.QtCore import pyqtSlot, QTimer
 import logging
 
+
 class SpectrometerWidget(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.logger = logging.getLogger('gui.SpectrometerWidget')
-        self.logger.info('init spectrometer widget ui')
+        self.logger_widget = logging.getLogger('gui.SpectrometerWidget')
+        self.logger_widget.info('init spectrometer widget ui')
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         self.spectrometer = QSpectrometer()
@@ -108,6 +109,7 @@ if __name__ == '__main__':
     from pathlib import Path
     import yaml
     import logging.config
+    import logging.handlers
     pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
     with pathlogging.open() as f:
         config = yaml.safe_load(f.read())

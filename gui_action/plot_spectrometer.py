@@ -15,8 +15,8 @@ class SpectrometerPlotWidget(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.logger = logging.getLogger('plot.Spectrometer')
-        self.logger.info('init spectrometer plotwindow')
+        self.logger_plot = logging.getLogger('plot.Spectrometer')
+        self.logger_plot.info('init spectrometer plotwindow')
         self.spectrometer = QSpectrometer()
         self.figure, self.ax = plt.subplots()
         layout = QtWidgets.QVBoxLayout()
@@ -73,6 +73,7 @@ if __name__ == '__main__':
     from pathlib import Path
     import yaml
     import logging.config
+    import logging.handlers
     pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
     with pathlogging.open() as f:
         config = yaml.safe_load(f.read())

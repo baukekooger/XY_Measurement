@@ -9,8 +9,8 @@ import logging
 class PowerMeterWidget(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.logger = logging.getLogger('gui.PowerMeter')
-        self.logger.info('init powermeter widget ui')
+        self.logger_widget = logging.getLogger('gui.PowerMeter')
+        self.logger_widget.info('init powermeter widget ui')
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         self.powermeter = QPowerMeter()
@@ -65,6 +65,7 @@ if __name__ == '__main__':
     from pathlib import Path
     import yaml
     import logging.config
+    import logging.handlers
     pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
     with pathlogging.open() as f:
         config = yaml.safe_load(f.read())

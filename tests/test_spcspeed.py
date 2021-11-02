@@ -8,10 +8,11 @@ channels = 3
 samples = 1000
 
 data = np.random.randint(10, dtype=np.ushort, size=samples)
-data = np.tile(data, (channels, 1))
+# data = np.tile(data, (channels, 1))
 tnpbf = time.perf_counter_ns()
 data_treshold = data > treshold
-filter_sp = np.tile([1, 0], (channels, 1))
+# filter_sp = np.tile([1, 0], (channels, 1))
+filter_sp = [1, 0]
 data_corrected = data_treshold > sp.maximum_filter(
     data_treshold, footprint=filter_sp, mode='constant', cval=-np.inf)
 

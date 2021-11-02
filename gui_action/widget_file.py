@@ -8,8 +8,8 @@ class FileWidget(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.logger = logging.getLogger('gui.file')
-        self.logger.info('init filewidget ui')
+        self.logger_widget = logging.getLogger('gui.file')
+        self.logger_widget.info('init filewidget ui')
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         self.filename = None
@@ -21,7 +21,7 @@ class FileWidget(QtWidgets.QWidget):
         self.ui.toolButton_directory.clicked.disconnect()
 
     def select_filedir(self):
-        self.logger.info('selecting file directory')
+        self.logger_widget.info('selecting file directory')
         filedir = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory"))
         self.ui.lineEdit_directory.setText(filedir)
 
@@ -31,6 +31,7 @@ if __name__ == '__main__':
     from pathlib import Path
     import yaml
     import logging.config
+    import logging.handlers
     pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
     with pathlogging.open() as f:
         config = yaml.safe_load(f.read())

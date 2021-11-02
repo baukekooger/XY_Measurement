@@ -13,11 +13,12 @@ from instruments.Thorlabs.shuttercontrollers import QShutterControl
 from instruments.Thorlabs.qpowermeter import QPowerMeter
 from instruments.Ekspla import QLaser
 from instruments.CAEN.Qdigitizer import QDigitizer
+from instruments.CAEN.definitions import TIMERANGES, COMPRESSIONFACTORS
 from pathlib import Path
+import multitimer
 from netCDF4 import Dataset
 import pandas as pd
 from statemachine.multiple_signals import MultipleSignal
-
 
 instrument_parser = {
     'xystage': QXYStage,
@@ -48,16 +49,16 @@ class StateMachine(QObject):
     and should be accessed through this class' states
     """
 
-    signalstatechange = pyqtSignal(str)         # signal that emits the state
-    progress = pyqtSignal(int)                  # signal emitting the progress of the measurement
-    ect = pyqtSignal(int)                       # estimated completion time
-    connecting_done = pyqtSignal()              # done connecting to all instruments
+    signalstatechange = pyqtSignal(str)  # signal that emits the state
+    progress = pyqtSignal(int)  # signal emitting the progress of the measurement
+    ect = pyqtSignal(int)  # estimated completion time
+    connecting_done = pyqtSignal()  # done connecting to all instruments
     signal_return_setexperiment = pyqtSignal()  # signal for returning gui to set experiment state
-    save_configuration = pyqtSignal()           # signal to start saving the current instrument config
-    state = pyqtSignal(str)                     # signal emitting current statemachine state
-    calibration_half_signal = pyqtSignal()             # signal emitted halfway during beamsplitter calibration
-    calibration_complete_signal = pyqtSignal()         # emitted when beamsplitter calibration complete
-    calibration_status = pyqtSignal(str)        # status signal for the completion bar
+    save_configuration = pyqtSignal()  # signal to start saving the current instrument config
+    state = pyqtSignal(str)  # signal emitting current statemachine state
+    calibration_half_signal = pyqtSignal()  # signal emitted halfway during beamsplitter calibration
+    calibration_complete_signal = pyqtSignal()  # emitted when beamsplitter calibration complete
+    calibration_status = pyqtSignal(str)  # status signal for the completion bar
 
     def __init__(self, parent=None):
         super().__init__()
@@ -75,6 +76,7 @@ class StateMachine(QObject):
         self.settings_ui = None
         self.instruments = {}
         self.measurement_parameters = {}
+        self.timekeeper = None
         self.timeout = 60
         self.wait_signals_experiment = MultipleSignal()
         self._reset_experiment()
@@ -176,20 +178,21 @@ class StateMachine(QObject):
             self.instruments['powermeter'].measurement_done.connect(self.wait_signals_experiment.set_signal_2_done)
             self.wait_signals_experiment.global_done.connect(self.process_data)
         elif self.experiment == 'decay':
-            self.instruments['digitizer'].measurement_done_multiple.connect(self.process_data)
+            self.instruments['digitizer'].measurement_done.connect(self.process_data)
 
     def _align(self):
         """
-        Start the repeated timer for reading out instruments. For decay, set the digitizer readout to efficiently
-        read many pulses
+        Start the repeated timer for reading out instruments. For decay, set the digitizer readout mode to timed to
+        make the readout time-efficient
         """
         if self.experiment == 'decay':
             self.instruments['digitizer'].polltime = self.polltime
-            self.instruments['digitizer'].pulses_per_measurement = math.ceil(self.polltime*101)
+            self.instruments['digitizer'].pulses_per_measurement = math.ceil(self.polltime * 101)
             self.instruments['digitizer'].polltime_enabled = True
         self.heartbeat.start()
 
     def _stop_align(self):
+        """ Stop the repeated timer for reading out instruments. Also shuts down the laser. """
         self.heartbeat.stop()
         # wait till laser is done measuring
         time.sleep(0.3)
@@ -235,7 +238,7 @@ class StateMachine(QObject):
         self.instruments['powermeter'].integration_time = self.beamsplitter_integrationtime
         self.instruments['powermeter'].prepare_measurement_multiple()
         self.instruments['shuttercontrol'].disable()
-        self.beamsplitter_wavelengths = np.arange(wlstart, wlstop + 0.5*wlstep, wlstep)
+        self.beamsplitter_wavelengths = np.arange(wlstart, wlstop + 0.5 * wlstep, wlstep)
         self.logger.info('waiting 3 seconds for powermeter to reach equilibrium temperature')
         self.calibration_status.emit('calibration started, waiting for temperature equilibrium')
         QTimer.singleShot(5000, self.measure_calibration)
@@ -296,6 +299,7 @@ class StateMachine(QObject):
 
     def _parse_config(self):
         # read in the ui settings
+        self.logger.info('parsing instrument configuration started')
         path_settings = Path(__file__).parent.parent / 'settings_ui.yaml'
         with path_settings.open() as f:
             self.settings_ui = yaml_safe_load(f)
@@ -310,12 +314,16 @@ class StateMachine(QObject):
         self.start_experiment()
 
     def _parse_config_transmission(self):
+        """ Parse transmission configuration """
+        self.logger.info(f'parsing configuration {self.experiment}')
         self._parse_xypositions()
         self._add_lamp_measurement()
         self._add_dark_measurement()
         self._parse_spectrometersettings()
 
     def _parse_config_excitation_emission(self):
+        """ Parse excitation emission configuration """
+        self.logger.info(f'parsing configuration {self.experiment}')
         self._parse_xypositions()
         self._parse_excitation_wavelengths()
         self._add_dark_measurement()
@@ -325,12 +333,16 @@ class StateMachine(QObject):
         self._parse_connect_spectrometer_powermeter()
 
     def _parse_config_decay(self):
+        """ Parse decay configuration. """
+        self.logger.info('parsing decay configuration')
         self._parse_xypositions()
         self._parse_excitation_wavelengths()
         self._parse_digitizersettings()
         self._parse_lasersettings()
 
     def _parse_xypositions(self):
+        """ Parse position settings from the ui to make the position measurement parameters. """
+        self.logger.info('parse position settings')
         substrate = self.settings_ui[self.experiment][f'widget_file_{self.experiment}']['comboBox_substrate']
         subtratesettings = self.config['substrates'][substrate]
         xysettings = self.settings_ui[self.experiment][f'widget_xystage_{self.experiment}']
@@ -353,6 +365,8 @@ class StateMachine(QObject):
         self._add_measurement_parameter('y', y)
 
     def _parse_excitation_wavelengths(self):
+        """ Parse the laser excitation wavelength settings to measurement parameters. """
+        self.logger.info('parse laser excitation wavelength settings')
         lasersettings = self.settings_ui[self.experiment][f'widget_laser_{self.experiment}']
         wl_start = lasersettings['spinBox_wavelength_start']
         wl_step = lasersettings['spinBox_wavelength_step']
@@ -361,6 +375,8 @@ class StateMachine(QObject):
         self._add_measurement_parameter('wl', wavelengths)
 
     def _add_measurement_parameter(self, name, parameter):
+        """ Add a measurement parameters by repeating all existing measurement parameters for the new parameter """
+        self.logger.debug('adding measurement parameter')
         length = None
         for keys, values in self.measurement_parameters.items():
             length = len(values)
@@ -387,7 +403,7 @@ class StateMachine(QObject):
         self.measurement_parameters['y'] = np.hstack((dark_lamp_y, self.measurement_parameters['y']))
 
     def _parse_spectrometersettings(self):
-        # spectrometer settings
+        """ Parse the spectrometer settings. """
         smsettings = self.settings_ui[self.experiment][f'widget_spectrometer_{self.experiment}']
         self.instruments['spectrometer'].integrationtime = smsettings['spinBox_integration_time_experiment']
         self.instruments['spectrometer'].average_measurements = smsettings['spinBox_averageing_experiment']
@@ -405,7 +421,7 @@ class StateMachine(QObject):
         self.logger.info('parsed powermeter settings')
 
     def _parse_connect_spectrometer_powermeter(self):
-        """ connects the 'cache-cleared' signal of the spectrometer to the measure method of the
+        """ connect the 'cache-cleared' signal of the spectrometer to the measure method of the
             powermeter to synchronize measurements
         """
         self.instruments['spectrometer'].cache_cleared.connect(self.instruments['powermeter'].measure)
@@ -418,14 +434,28 @@ class StateMachine(QObject):
         self.logger.info('parsed laser settings')
 
     def _parse_digitizersettings(self):
+        """ Parse the digitizer settings from the ui to the digitizer """
+        self.logger.debug('parsing digitizersettings')
+
         digitizersettings = self.settings_ui[self.experiment][f'widget_digitizer_{self.experiment}']
-        self.instruments['digitizer'].active_channels = digitizersettings['listWidget_channels_experiment']
-        integrationtime = digitizersettings['spinBox_integration_time_experiment']
-        samples = int(integrationtime/1e9 * self.instruments['digitizer'].sample_rate)
-        self.instruments['digitizer'].set_samples(samples)
-        self.instruments['digitizer'].set_post_trigger_size(
-            digitizersettings['spinBox_post_trigger_size_experiment'])
-        self.instruments['digitizer'].number_of_pulses = digitizersettings['spinBox_number_pulses_experiment']
+
+        self.instruments['digitizer'].data_channel = int(digitizersettings['comboBox_data_channel_experiment'])
+        self.instruments['digitizer'].jitter_channel = int(digitizersettings['comboBox_jitter_channel_experiment'])
+        self.instruments['digitizer'].jitter_correction_enabled = digitizersettings[
+            'checkBox_jitter_correction_experiment']
+        self.instruments['digitizer'].measurement_mode = digitizersettings['comboBox_measurement_mode_experiment']
+        self.instruments['digitizer'].polltime_enabled = False
+        self.instruments['digitizer'].pulses_per_measurement = digitizersettings['spinBox_number_pulses_experiment']
+        self.instruments['digitizer'].post_trigger_size = digitizersettings['spinBox_post_trigger_size_experiment']
+
+        timerange = TIMERANGES[self.instruments['digitizer'].model].index(digitizersettings[
+                                                                              'comboBox_time_range_experiment'])
+        self.instruments['digitizer'].record_length = timerange
+        self.instruments['digitizer'].single_photon_counting_treshold = digitizersettings[
+            'spinBox_single_photon_treshold_experiment']
+        self.instruments['digitizer'].set_dc_offset_data_channel(digitizersettings['spinBox_dc_offset_experiment'])
+
+        self.instruments['digitizer'].set_active_channels()
 
     @staticmethod
     def _define_positions(num, off1, off2, start, sse, ss):
@@ -438,9 +468,9 @@ class StateMachine(QObject):
                                 sse - (sse - ss + bw) / 2 - off2_mm + start, num) if num > 1 else positions
         return positions
 
-    #endregion
+    # endregion
 
-    #region open file
+    # region open file
 
     def _open_file(self):
         # pick open file process
@@ -532,7 +562,14 @@ class StateMachine(QObject):
         digitizersettings.post_trigger_size = self.instruments['digitizer'].post_trigger_size
         digitizersettings.samplerate = self.instruments['digitizer'].sample_rate
         digitizersettings.model = self.instruments['digitizer'].model
-        digitizersettings.pulses = self.instruments['digitizer'].number_of_pulses
+        digitizersettings.pulses = self.instruments['digitizer'].pulses_per_measurement
+        digitizersettings.measurement_mode = self.instruments['digitizer'].measurement_mode
+        digitizersettings.jitter_correction = str(self.instruments['digitizer'].jitter_correction_enabled)
+        digitizersettings.jitter_channel = self.instruments['digitizer'].jitter_channel
+        digitizersettings.single_photon_counting_treshold = \
+            self.instruments['digitizer'].single_photon_counting_treshold
+        digitizersettings.dc_offset = self.instruments['digitizer'].get_dc_offset(
+            self.instruments['digitizer'].data_channel)
 
     def _write_beamsplitter_calibration(self):
         """ writes calibration file to main file for automatic processing in matlab
@@ -597,17 +634,12 @@ class StateMachine(QObject):
         self.dataset.createDimension('single', 1)
         excitation_wavelenghts = len(np.unique(self.measurement_parameters['wl'][1:]))
         self.dataset.createDimension('excitation_wavelengths', excitation_wavelenghts)
-        digitizersettings = self.settings_ui[self.experiment][f'widget_digitizer_{self.experiment}']
-        active_channels = len(digitizersettings['listWidget_channels_experiment'])
         samples = int(self.instruments['digitizer'].record_length)
-        number_of_pulses = int(digitizersettings['spinBox_number_pulses_experiment'])
-        self.dataset.createDimension('active_channels', active_channels)
         self.dataset.createDimension('samples', samples)
-        self.dataset.createDimension('number_of_pulses', number_of_pulses)
 
-    #endregion
+    # endregion
 
-    #region prepare measurement
+    # region prepare measurement
 
     @timed
     def _prepare_measurement(self):
@@ -631,8 +663,10 @@ class StateMachine(QObject):
         self._control_shutter()
         self._prepare_laser()
         self._prepare_move_stage()
+        self._prepare_digitizer()
 
     def _prepare_move_stage(self):
+        """ Move the stages to the new position. """
         try:
             x = self.measurement_parameters['x'][self.measurement_index]
             y = self.measurement_parameters['y'][self.measurement_index]
@@ -641,6 +675,7 @@ class StateMachine(QObject):
             raise IndexError
 
     def _control_shutter(self):
+        """ Enable shutter except when a dark measurement is taken. """
         if self.measurement_index == 0 and self.experiment == 'excitation_emission':
             self.instruments['shuttercontrol'].disable()
             self.logger.info('shutter disabled for dark measurement')
@@ -649,11 +684,17 @@ class StateMachine(QObject):
             self.logger.info('shutter enabled')
 
     def _prepare_powermeter(self):
+        """ Set the powermeter to the new laser wavelength. """
         wl = self.measurement_parameters['wl'][self.measurement_index]
         self.instruments['powermeter'].wavelength = wl
         self.logger.info(f'powermeter set to {wl} nm')
 
+    def _prepare_digitizer(self):
+        """ Clear the average measurements from the digitizer. """
+        self.instruments['digitizer'].clear_measurement()
+
     def _prepare_laser(self):
+        """ Set the laser to the new wavelength and check until stable. """
         self.laserstable = False
         wl = self.measurement_parameters['wl'][self.measurement_index]
         self.instruments['laser'].wavelength = wl
@@ -664,12 +705,16 @@ class StateMachine(QObject):
         self.laserstable = True
         self.logger.info(f'laser power stable at {wl} nm')
 
-    #endregion
+    # endregion
 
-    #region measure
+    # region measure
 
-    @timed
     def _measure(self):
+        """
+        Perform the actual measurements on the instruments. Since these are threaded processes can't time the
+        function but must time when the next process starts.
+        """
+        self.timekeeper = time.time()
         if self.experiment == 'transmission':
             self._measure_transmission()
         elif self.experiment == 'excitation_emission':
@@ -690,22 +735,26 @@ class StateMachine(QObject):
         QTimer.singleShot(0, self.instruments['spectrometer'].measure)
 
     def _measure_decay(self):
-        self.logger.info('started decay measurement')
-        QTimer.singleShot(0, self.instruments['digitizer'].measure_multiple)
+        self.logger.info(f'started decay measurement')
+        QTimer.singleShot(0, self.instruments['digitizer'].measure)
 
-    #endregion
+    # endregion
 
-    #region process data
+    # region process data
     def _process_data(self):
-        self.logger.info(f'processing data {self.experiment}')
+        time_measuring = time.time() - self.timekeeper
+        self.measurement_duration += time_measuring
+        self.logger.info(f'processing data {self.experiment}, measurement time = {time_measuring}')
         self.write_file()
         pass
-    #endregion
+
+    # endregion
 
     # region write file
 
     @timed
     def _write_file(self):
+        self.logger.info(f'writing data to file')
         if self.experiment == 'transmission':
             self._write_file_transmission()
         elif self.experiment == 'excitation_emission':
@@ -717,8 +766,10 @@ class StateMachine(QObject):
         self.calculate_progress()
 
     def _write_file_transmission(self):
-        # make folders for each measurement position, includes dark folder and lamp folder
-        # transmission has only one measurement per position so folders need to be created always
+        """
+        Make folders for each measurement position. Includes dark folder and lamp folder. Transmission has only
+        one measurement per position so folders need to be created always.
+        """
         if self.measurement_index == 0:
             datagroup = self.dataset.createGroup('dark')
         elif self.measurement_index == 1:
@@ -792,11 +843,16 @@ class StateMachine(QObject):
 
         xy_pos[:] = self._write_position()
         ex_wl[wl_in_wl] = self.instruments['laser'].wavelength
-        pulses[wl_in_wl] = self.instruments['digitizer'].last_pulses
+        if self.instruments['digitizer'].measurement_mode == 'averageing':
+            pulses[wl_in_wl] = self.instruments['digitizer'].average_pulses
+        elif self.instruments['digitizer'].measurement_mode == 'single photon counting':
+            pulses[wl_in_wl] = self.instruments['digitizer'].single_photon_counts
 
     def _variable_index(self):
-        # creates an index for the variables for the folder name per measurement position and for indexing the
-        # spectra per excitation wavelength
+        """
+        Create an index for the variables for the folder name per measurement position and for indexing the
+        spectra per excitation wavelength.
+        """
         x = self.measurement_parameters['x'][self.measurement_index]
         y = self.measurement_parameters['y'][self.measurement_index]
         # exclude positions of dark and lamp spectra where applicable.
@@ -810,7 +866,8 @@ class StateMachine(QObject):
         else:
             return x_inx, y_iny
 
-    def _create_variables_transmission(self, datagroup):
+    @staticmethod
+    def _create_variables_transmission(datagroup):
         xy_pos = datagroup.createVariable('position', 'f8', 'xy_position', fill_value=np.nan)
         xy_pos.units = 'mm'
         em_wl = datagroup.createVariable('emission', 'f8', 'emission_wavelengths', fill_value=np.nan)
@@ -855,15 +912,16 @@ class StateMachine(QObject):
             power.units = 'W'
             return xy_pos, em_wl, spectrum, spectrum_t, ex_wl, t_power, power
 
-    def _create_variables_decay(self, datagroup):
+    @staticmethod
+    def _create_variables_decay(datagroup):
         xy_pos = datagroup.createVariable('position', 'f8', 'xy_position', fill_value=np.nan)
         xy_pos.units = 'mm'
         ex_wl = datagroup.createVariable('excitation', 'f8', 'excitation_wavelengths', fill_value=np.nan)
         ex_wl.units = 'nm'
         pulses = datagroup.createVariable('pulses', 'f8',
-                            ('excitation_wavelengths', 'active_channels', 'number_of_pulses', 'samples'),
+                                          ('excitation_wavelengths', 'samples'),
                                           fill_value=np.nan)
-        pulses.units = 'adc counts'
+        pulses.units = 'normalized adc counts'
         return xy_pos, ex_wl, pulses
 
     def _write_position(self):
@@ -911,12 +969,13 @@ class StateMachine(QObject):
             self.logger.info(f'Measurement Completed at: {time.ctime(ect)}')
         else:
             self.prepare()
+
     # endregion
 
     def _calculate_progress_calibration(self, wavelength, duration):
         index = np.where(self.beamsplitter_wavelengths == wavelength)[0][0] + 1
-        progress = index/len(self.beamsplitter_wavelengths) * 100
-        ect = duration/index * (len(self.beamsplitter_wavelengths) - index)
+        progress = index / len(self.beamsplitter_wavelengths) * 100
+        ect = duration / index * (len(self.beamsplitter_wavelengths) - index)
         self.progress.emit(int(progress))
         self.ect.emit(int(ect))
         self.logger.info(f'Calibration progress {progress} %, wavelength = {wavelength} nm, ect = {ect}')
@@ -940,17 +999,33 @@ class StateMachine(QObject):
         self.return_setexperiment()
 
     def reset_instruments(self):
+        """ Reset instrument settings for align state. """
         if self.experiment == 'transmission':
             self.instruments['spectrometer'].integrationtime = 100
             self.logger.info('transmission ready, set spectrometer back to shorter integration time')
         elif self.experiment == 'excitation_emission':
+            self.logger.info('excitation emission ready, disconnected cache cleared and set shorter integration'
+                             'times for powermeter and spectrometer, turning off laser')
             self.instruments['spectrometer'].integrationtime = 100
             self.instruments['spectrometer'].cache_cleared.disconnect()
             self.instruments['powermeter'].integration_time = 200
-            self.logger.info('excitation emission ready, disconnected cache cleared and set shorter integration'
-                         'times for powermeter and spectrometer')
+            self.instruments['laser'].energylevel = 'Off'
+        elif self.experiment == 'decay':
+            self.logger.info('decay ready, reverting digitizer settings to align state, turning off laser')
+            self.instruments['digitizer'].polltime = self.polltime
+            self.instruments['digitizer'].pulses_per_measurement = math.ceil(self.polltime * 101)
+            self.instruments['digitizer'].polltime_enabled = True
+            self.instruments['laser'].energylevel = 'Off'
 
 
+if __name__ == '__main__':
+    # set up logging if file called directly
+    from pathlib import Path
+    import yaml
+    import logging.config
+    import logging.handlers
 
-
-
+    pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
+    with pathlogging.open() as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)

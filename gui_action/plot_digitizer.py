@@ -14,8 +14,8 @@ import time
 class DigitizerPlotWidget(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.logger = logging.getLogger('plot.digitizer')
-        self.logger.info('init plotwindow digitizter')
+        self.logger_plot = logging.getLogger('plot.digitizer')
+        self.logger_plot.info('init plotwindow digitizter')
         self.digitizer = QDigitizer()
         self.figure, self.ax = plt.subplots()
         self.canvas = FigureCanvas(self.figure)
@@ -34,12 +34,14 @@ class DigitizerPlotWidget(QtWidgets.QWidget):
         self.sample_rate = None
 
     def connect_signals_slots(self):
-        """ Connect all the signals from the digitizer to the plotwindow """
+        """ Connect all the signals from the digitizer to the plotwindow. Also checks """
         self.digitizer.measurement_complete.connect(self.plot)
+        self.digitizer.plotaxis_labels.connect(self.set_axislabels)
 
     def disconnect_signals_slots(self):
         """ Disconnect all the signals from the digitizer """
         self.digitizer.measurement_complete.disconnect()
+        self.digitizer.plotaxis_labels.disconnect()
 
     @pyqtSlot(np.ndarray, np.ndarray, str)
     def plot(self, times, data, plotinfo):
@@ -47,7 +49,7 @@ class DigitizerPlotWidget(QtWidgets.QWidget):
             self.init_blitmanager(times, data, plotinfo)
         else:
             # for count, line in enumerate(self.lines, start=0):
-            self.logger.debug(f'this is self.lines at updateing artists {self.lines}')
+            self.logger_plot.debug(f'this is self.lines at updateing artists {self.lines}')
             self.lines.set_xdata(times)
             self.lines.set_ydata(data)
             self.annotation.set_text(plotinfo)
@@ -57,7 +59,7 @@ class DigitizerPlotWidget(QtWidgets.QWidget):
         """
         Initializes the blitmanager by drawing the graph based on the data and saving a copy of the background """
         # clear blitmanager if existing
-        self.logger.info('initializing blitmanager digitizer plotwindow')
+        self.logger_plot.info('initializing blitmanager digitizer plotwindow')
         if self.blitmanager:
             self.blitmanager = None
 
@@ -70,6 +72,14 @@ class DigitizerPlotWidget(QtWidgets.QWidget):
         self.blitmanager = BlitManager(self.canvas, [self.lines, self.annotation])
         time.sleep(0.1)
         # self.fit_plots()
+
+    @pyqtSlot(dict)
+    def set_axislabels(self, axislabels):
+        """ Set the axes values when measurement mode changes """
+        title = axislabels['title']
+        ylabel = axislabels['ylabel']
+        self.ax.set_ylabel(ylabel)
+        self.ax.set_title(title)
 
     @pyqtSlot()
     def fit_plots(self):
@@ -87,6 +97,7 @@ if __name__ == '__main__':
     from pathlib import Path
     import yaml
     import logging.config
+    import logging.handlers
     pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
     with pathlogging.open() as f:
         config = yaml.safe_load(f.read())

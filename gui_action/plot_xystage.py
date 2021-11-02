@@ -20,8 +20,8 @@ class XYStagePlotWidget(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.logger = logging.getLogger('plot.XYStage')
-        self.logger.info('init plotwindow XYStage (position indicator)')
+        self.logger_plot = logging.getLogger('plot.XYStage')
+        self.logger_plot.info('init plotwindow XYStage (position indicator)')
         self.xystage = QXYStage()
         self.figure, self.ax = plt.subplots()
         self.layout = QtWidgets.QVBoxLayout()
@@ -205,6 +205,7 @@ if __name__ == '__main__':
     # set up logging if file called directly
     import yaml
     import logging.config
+    import logging.handlers
     pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
     with pathlogging.open() as f:
         config = yaml.safe_load(f.read())

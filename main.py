@@ -33,6 +33,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.filedir_calibration = None
 
     def connect_signals(self):
+        """ Connect signals of the main UI and the statemachine """
+        self.logger.info('connecting main ui button and statemachine signals')
         self.ui.pushButton_transmission.clicked.connect(lambda state, page=0: self.choose_experiment(page))
         self.ui.pushButton_excitation_emission.clicked.connect(lambda state, page=1: self.choose_experiment(page))
         self.ui.pushButton_decay.clicked.connect(lambda state, page=2: self.choose_experiment(page))
@@ -50,6 +52,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.statemachine.calibration_status.connect(self.update_status_calibration)
 
     def choose_experiment(self, page):
+        """ Initialize the chosen experiment """
+        self.logger.info(f'picked experiment page {page}')
         self.experiment = self.config['experiments'][page]
         self.statemachine.choose_experiment(page)
         self.define_threads()
@@ -258,28 +262,23 @@ class MainWindow(QtWidgets.QMainWindow):
             self.handle_position_layout_plot()
 
     def start_experiment(self):
-        # pop up with ask if the sampleholder is mounted in the correct position
+        """
+        Perform checks if the automated measurement routine may be started.
+        If allowed, call the UI change and start the automated measurement routine by giving the init experiment
+        command to the statemachine.
+        """
+
         if not self._messagebox_substratecheck():
             return
-        # check if motors are homed, issue warning otherwise.
-        # then store ui settings and disable buttons that should not be pressed when experiment is run.
-        self.statemachine.instruments['xystage'].measure_homing()
-        if not all([self.statemachine.instruments['xystage'].xhomed, self.statemachine.instruments['xystage'].xhomed]):
-            QtWidgets.QMessageBox.information(self, 'homing warning', 'not all stages homed, wait for home to complete')
-            self.statemachine.instruments['xystage'].home()
-        else:
-            print(self.ui.widget_digitizer_decay.ui.listWidget_channels_experiment.selectedItems()[0].text())
-            print(self.experiment)
-            if self.experiment == 'decay' and not any(self.ui.widget_digitizer_decay.ui.listWidget_channels_experiment.selectedItems()):
-                print(self.ui.widget_digitizer_decay.ui.listWidget_channels_experiment.selectedItems())
-                if not self._messagebox_digitizer_channel_selected():
-                    return
-            self.start_experiment_ui()
-            # reset spectrometer settings
-            if self.experiment in ['transmission', 'excitation_emission']:
-                widget_spectrometer = getattr(self.ui, f'widget_spectrometer_{self.experiment}')
-                widget_spectrometer.handle_reset()
-            self.statemachine.init_experiment()
+        if not self._homingcheck():
+            return
+
+        self.start_experiment_ui()
+        # reset spectrometer settings
+        # if self.experiment in ['transmission', 'excitation_emission']:
+        #     widget_spectrometer = getattr(self.ui, f'widget_spectrometer_{self.experiment}')
+        #     widget_spectrometer.handle_reset()
+        self.statemachine.init_experiment()
 
     def start_experiment_ui(self):
         self.store_ui()
@@ -290,6 +289,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.pushButton_start_experiment.clicked.connect(self.abort_experiment)
 
     def _messagebox_substratecheck(self):
+        """ Make a messagebox which asks the user if the correct substrateholder is selected. """
         widgetfile = getattr(self.ui, f'widget_file_{self.experiment}')
         substratename = widgetfile.ui.comboBox_substrate.currentText()
         msgbox = QtWidgets.QMessageBox(self)
@@ -301,25 +301,32 @@ class MainWindow(QtWidgets.QMainWindow):
         msgbox.setWindowTitle('check substrateholder')
         answer = msgbox.exec_()
         if answer == QtWidgets.QMessageBox.Yes:
-            self.ui.widget_digitizer_decay.ui.listWidget_channels_experiment.setCurrentRow(0)
             return True
         if answer == QtWidgets.QMessageBox.No:
             return False
 
-    def _messagebox_digitizer_channel_selected(self):
-        if not any(self.ui.widget_digitizer_decay.ui.listWidget_channels_alignment.selectedItems()):
-            msgbox = QtWidgets.QMessageBox(self)
-            msgbox.setIcon(QtWidgets.QMessageBox.Warning)
-            msgbox.setText(f'No channel(s) selected for digitizer.\n'
-                           f'Press ok to continue with default channel (channel 0)')
-            msgbox.setStandardButtons(QtWidgets.QMessageBox.Ok | QtWidgets.QMessageBox.Cancel)
-            msgbox.setDefaultButton(QtWidgets.QMessageBox.Ok)
-            msgbox.setWindowTitle('No channels selected')
-            answer = msgbox.exec_()
-            if answer == QtWidgets.QMessageBox.Ok:
-                return True
-            if answer == QtWidgets.QMessageBox.Cancel:
-                return False
+    def _homingcheck(self):
+        """ Perform a check if the motors are homed. """
+        self.logger.info('checking if motors are homed before starting experiment')
+        self.statemachine.instruments['xystage'].measure_homing()
+        if not all([self.statemachine.instruments['xystage'].xhomed, self.statemachine.instruments['xystage'].xhomed]):
+            self.logger.info('motors not homed, homing and notifying user')
+            self._messagebox_homingcheck()
+            self.statemachine.instruments['xystage'].home()
+            return False
+        else:
+            return True
+
+    def _messagebox_homingcheck(self):
+        """ Make a messagebox informing the user the motors are not homed. """
+        msgbox = QtWidgets.QMessageBox(self)
+        msgbox.setIcon(QtWidgets.QMessageBox.Information)
+        msgbox.setText(f'Motors not homed, please wait for homing to complete.')
+        msgbox.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msgbox.setDefaultButton(QtWidgets.QMessageBox.No)
+        msgbox.setWindowTitle('Wait for homing')
+        msgbox.exec_()
+
 
     def new_beamsplitter_calibration(self):
         """ performs check if calibration can be started.
@@ -458,6 +465,7 @@ class MainWindow(QtWidgets.QMainWindow):
 if __name__ == '__main__':
     import yaml
     import logging.config
+    import logging.handlers
     with open('loggingconfig.yml', 'r') as f:
         config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)

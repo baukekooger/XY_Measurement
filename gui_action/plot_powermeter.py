@@ -14,8 +14,8 @@ import time
 class PowerMeterPlotWidget(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.logger = logging.getLogger('plot.PowerMeter')
-        self.logger.info('init powermeter plot')
+        self.logger_plot = logging.getLogger('plot.PowerMeter')
+        self.logger_plot.info('init powermeter plot')
         self.powermeter = QPowerMeter()
         self.figure, self.ax = plt.subplots()
         self.canvas = FigureCanvas(self.figure)
@@ -74,6 +74,7 @@ if __name__ == '__main__':
     from pathlib import Path
     import yaml
     import logging.config
+    import logging.handlers
     pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
     with pathlogging.open() as f:
         config = yaml.safe_load(f.read())
