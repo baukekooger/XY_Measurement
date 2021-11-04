@@ -67,12 +67,12 @@ class StateMachine(QObject):
 
     def __init__(self, parent=None):
         super().__init__()
-        pathstateconfig = Path.home() / 'PycharmProjects/XY_New/statemachine/config_statemachine.yaml'
+        pathstateconfig = Path.home() / 'Repositories/XY_New/statemachine/config_statemachine.yaml'
         with pathstateconfig.open() as f:
             self.stateconfig = yaml_safe_load(f)
         self.stateconfig['model'] = self
         self.machine = Machine(**self.stateconfig)
-        pathconfig = Path.home() / 'PycharmProjects/XY_New/config_main.yaml'
+        pathconfig = Path.home() / 'Repositories/XY_New/config_main.yaml'
         with pathconfig.open() as f:
             self.config = yaml_safe_load(f)
         self.experiment = None

@@ -27,23 +27,23 @@ excitation_emission:
     spinBox_y_num: 0
 transmission:
   widget_file_transmission:
-    comboBox_substrate: 0
-    lineEdit_directory: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY
+    comboBox_substrate: 1
+    lineEdit_directory: C:/Users/tud257183/Desktop/Max/210810_TransmissionBK_B13
     lineEdit_sample: BK3
     plainTextEdit_comments: SiALO:SM
   widget_spectrometer_transmission:
     spinBox_averageing_alignment: 1
     spinBox_averageing_experiment: 1
-    spinBox_integration_time_alignment: 5000
+    spinBox_integration_time_alignment: 1000
     spinBox_integration_time_experiment: 5000
   widget_xystage_transmission:
     checkBox_homed_x: true
     checkBox_homed_y: true
-    doubleSpinBox_x: 30.0
-    doubleSpinBox_y: 30.0
-    spinBox_x_num: 3
+    doubleSpinBox_x: 0.0
+    doubleSpinBox_y: 20.0
+    spinBox_x_num: 5
     spinBox_x_off_left: 5
     spinBox_x_off_right: 5
-    spinBox_y_num: 3
+    spinBox_y_num: 5
     spinBox_y_off_bottom: 5
     spinBox_y_off_top: 5

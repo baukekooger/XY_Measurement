@@ -1,4 +1,4 @@
-# from transitions.extensions import HierarchicalGraphMachine as Machine
+from transitions.extensions import HierarchicalGraphMachine as Machine
 from yaml import safe_load as yaml_safe_load
 import io
 from PIL import Image
