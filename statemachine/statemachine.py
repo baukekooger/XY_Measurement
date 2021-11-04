@@ -98,6 +98,7 @@ class StateMachine(QObject):
         self.beamsplitter_fname = None
         self.beamsplitter_wavelengths = None
         self.beamsplitter_integrationtime = None
+        self.position_offsets = {}
         self.startingtime = time.time()
 
     def _init_poll(self):
@@ -352,14 +353,14 @@ class StateMachine(QObject):
         x_start = subtratesettings[f'x_start_{self.experiment}']
         width_sample = subtratesettings['whse']
         width_sample_usable = subtratesettings['ws']
-        x = self._define_positions(x_num, x_off_left, x_off_right, x_start, width_sample, width_sample_usable)
+        x = self._define_positions(x_num, x_off_left, x_off_right, x_start, width_sample, width_sample_usable, 'x')
         y_num = xysettings['spinBox_y_num']
         y_off_bottom = xysettings['spinBox_y_off_bottom']
         y_off_top = xysettings['spinBox_y_off_top']
         y_start = subtratesettings[f'y_start_{self.experiment}']
         height_sample = subtratesettings['hhse']
         height_sample_usable = subtratesettings['hs']
-        y = self._define_positions(y_num, y_off_bottom, y_off_top, y_start, height_sample, height_sample_usable)
+        y = self._define_positions(y_num, y_off_bottom, y_off_top, y_start, height_sample, height_sample_usable, 'y')
         self.measurement_parameters = {}
         self._add_measurement_parameter('x', x)
         self._add_measurement_parameter('y', y)
@@ -421,8 +422,9 @@ class StateMachine(QObject):
         self.logger.info('parsed powermeter settings')
 
     def _parse_connect_spectrometer_powermeter(self):
-        """ connect the 'cache-cleared' signal of the spectrometer to the measure method of the
-            powermeter to synchronize measurements
+        """
+        connect the 'cache-cleared' signal of the spectrometer to the measure method of the
+        powermeter to synchronize measurements
         """
         self.instruments['spectrometer'].cache_cleared.connect(self.instruments['powermeter'].measure)
         self.logger.info('connected spectrometer cache cleared to powermeter start measure')
@@ -457,8 +459,11 @@ class StateMachine(QObject):
 
         self.instruments['digitizer'].set_active_channels()
 
-    @staticmethod
-    def _define_positions(num, off1, off2, start, sse, ss):
+    def _define_positions(self, num, off1, off2, start, sse, ss, param: str):
+        """
+        Return the x and y positions where the stage should measure. Also populate the offset and sample size dict
+        for writing these offsets to the file
+        """
         # sse is sample size including edge of sample hodler, ss is visible part only
         bw = 3.5
         off1_mm = (ss - bw) * off1 / (100 + off2)
@@ -466,6 +471,20 @@ class StateMachine(QObject):
         positions = [(sse + off1_mm - off2_mm) / 2 + start]
         positions = np.linspace((sse - ss + bw) / 2 + off1_mm + start,
                                 sse - (sse - ss + bw) / 2 - off2_mm + start, num) if num > 1 else positions
+        # write settings to dictionary for later retrieval offset here are with respect to sample outer edge
+        self.position_offsets[param] = {}
+        self.position_offsets['beam_width'] = 3.5
+        if param == 'x':
+            self.position_offsets[param]['sample_width'] = sse
+            self.position_offsets[param]['sample_width_effective'] = ss
+            self.position_offsets[param]['offset_left'] = off1_mm + bw/2 + (sse-ss)/2
+            self.position_offsets[param]['offset_right'] = off2_mm + bw/2 + (sse-ss)/2
+        elif param == 'y':
+            self.position_offsets[param]['sample_height'] = sse
+            self.position_offsets[param]['sample_height_effective'] = ss
+            self.position_offsets[param]['offset_bottom'] = off1_mm + bw / 2 + (sse - ss) / 2
+            self.position_offsets[param]['offset_top'] = off2_mm + bw / 2 + (sse - ss) / 2
+
         return positions
 
     # endregion
@@ -535,6 +554,15 @@ class StateMachine(QObject):
         paramdict = {'transmission': 2, 'excitation_emission': 1, 'decay': 1}
         positionsettings.xnum = len(np.unique(self.measurement_parameters['x'][paramdict[self.experiment]:]))
         positionsettings.ynum = len(np.unique(self.measurement_parameters['y'][paramdict[self.experiment]:]))
+        positionsettings.beamwidth = self.position_offsets['beam_width']
+        positionsettings.sample_width = self.position_offsets['x']['sample_width']
+        positionsettings.sample_width_effective = self.position_offsets['x']['sample_width_effective']
+        positionsettings.offset_left = self.position_offsets['x']['offset_left']
+        positionsettings.offset_right = self.position_offsets['x']['offset_right']
+        positionsettings.sample_height = self.position_offsets['y']['sample_height']
+        positionsettings.sample_height_effective = self.position_offsets['y']['sample_height_effective']
+        positionsettings.offset_bottom = self.position_offsets['y']['offset_bottom']
+        positionsettings.offset_top = self.position_offsets['y']['offset_top']
 
     def _write_spectrometersettings(self):
         spectrometersettings = self.dataset.createGroup(f'settings/spectrometer')
@@ -570,6 +598,7 @@ class StateMachine(QObject):
             self.instruments['digitizer'].single_photon_counting_treshold
         digitizersettings.dc_offset = self.instruments['digitizer'].get_dc_offset(
             self.instruments['digitizer'].data_channel)
+        digitizersettings.data_channel = self.instruments['digitizer'].data_channel
 
     def _write_beamsplitter_calibration(self):
         """ writes calibration file to main file for automatic processing in matlab
