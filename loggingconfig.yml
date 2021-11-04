@@ -1,0 +1,57 @@
+version: 1
+formatters:
+  messageonly:
+    format: 'u%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+  regular:
+    format: '%(asctime)s: logger %(name)s: file %(filename)s: line %(lineno)d %(levelname)s: %(message)s'
+
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: regular
+    stream: ext://sys.stdout
+  file:
+    class: logging.handlers.RotatingFileHandler
+    level: DEBUG
+    formatter: regular
+    mode: w
+    filename: C:/Users/bauke/PycharmProjects/XY_New/logs/logout.txt
+    backupCount: 1
+    maxBytes: 1_000_000
+    encoding: utf-8
+
+
+loggers:
+  __main__:
+    level: INFO
+    handlers: [console, file]
+    propagate: no
+  Qinstrument:
+    level: INFO
+    handlers: [console, file]
+    propagate: no
+  Qinstrument.QDigitizer:
+    level: DEBUG
+    handlers: [console, file]
+    propagate: no
+  instrument:
+    level: WARNING
+    handlers: [console, file]
+    propagate: no
+  statemachine:
+    level: INFO
+    handlers: [console, file]
+    propagate: no
+  gui:
+    level: DEBUG
+    handlers: [ console, file ]
+    propagate: no
+  plot:
+    level: INFO
+    handlers: [ console, file ]
+    propagate: no
+  root:
+    level: DEBUG
+    handlers: [console, file]

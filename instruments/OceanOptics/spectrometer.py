@@ -4,8 +4,6 @@ import numpy as np
 from PyQt5.QtCore import QObject, QMutexLocker, QMutex, pyqtSignal, pyqtSlot
 import logging
 
-logging.basicConfig(level=logging.INFO)
-
 
 class QSpectrometer(QObject):
     """PyQt5 implementation of Spectrometer Instrument
@@ -16,10 +14,15 @@ class QSpectrometer(QObject):
     """
     measurement_complete = pyqtSignal(np.ndarray, list)
     measurement_done = pyqtSignal()
+    measurement_dark_complete = pyqtSignal()
+    measurement_lamp_complete = pyqtSignal()
     measurement_parameters = pyqtSignal(int, int)
+    cache_cleared = pyqtSignal()
 
     def __init__(self, integrationtime=500, average_measurements=1, polltime=0.01, timeout=30, parent=None):
         super().__init__(parent=parent)
+        self.logger = logging.getLogger('QInstrument.QSpectrometer')
+        self.logger.info('init QSpectrometer')
         self.mutex = QMutex(QMutex.Recursive)
         self.measuring = False
         self.polltime = polltime
@@ -78,9 +81,9 @@ class QSpectrometer(QObject):
         v = value * 1000
         min_v = self.min_integrationtime * 1000
         if v < min_v:
-            logging.warning(f'{float(v) / 1000} ms is lower than the minimal '
+            self.logger.warning(f'{float(v) / 1000} ms is lower than the minimal '
                             'allowed integration time')
-            logging.warning('Integration time set to mimimal value')
+            self.logger.warning('Integration time set to mimimal value')
             v = min_v
         self.spec.integration_time_micros(v)
         self._integrationtime = v / 1000
@@ -112,7 +115,18 @@ class QSpectrometer(QObject):
         """
         with(QMutexLocker(self.mutex)):
             self.measuring = True
+            cache_cleared = False
+            while self.measuring and not cache_cleared:
+                self.logger.info('spectrometer cache not cleared, requesting measurement')
+                tstart = time.time()
+                self.spec.intensities()
+                tstop = time.time()
+                cache_cleared = self.integrationtime/1000 * 0.9 < tstop-tstart < self.integrationtime/1000 * 1.1
+            self.logger.info('spectrometer cache cleared')
+            self.cache_cleared.emit()
             t = []
+            t1 = time.time()
+            self.logger.info(f'spectrometer measurment started')
             intensity = np.zeros(len(self.spec.wavelengths()))
             n = 1
             while self.measuring and n <= self.average_measurements:
@@ -126,14 +140,14 @@ class QSpectrometer(QObject):
             #     intensity = intensity - self.dark
             # if self.transmission and all(self.lamp):
             #     intensity = intensity/self.lamp
-
+        t2 = time.time()
         self.measuring = False
-        logging.info('Spectrometer Done')
+        self.logger.info(f'spectrometer done in {t2-t1:.3f} seconds')
         self.last_intensity = intensity
         self.last_times = t
         self.measurement_complete.emit(intensity, t)
         self.measurement_done.emit()
-        self.measurement_parameters.emit(self.integrationtime, self.average_measurements)
+        self.measurement_parameters.emit(int(self.integrationtime), int(self.average_measurements))
         return intensity, t
 
     @pyqtSlot()
@@ -146,6 +160,7 @@ class QSpectrometer(QObject):
         self.measurement_complete.emit(self.dark, t)
         self.last_intensity = self.dark
         self.last_times = t
+        self.measurement_dark_complete.emit()
         return self.dark, t
 
     @pyqtSlot()
@@ -160,10 +175,24 @@ class QSpectrometer(QObject):
         with(QMutexLocker(self.mutex)):
             self.lamp, t = self.measure()
         self.measurement_complete.emit(self.lamp, t)
+
         self.last_intensity = self.lamp
         self.last_times = t
+        self.measurement_lamp_complete.emit()
         return self.dark, t
 
+    @pyqtSlot()
     def clear_lamp(self):
         self.lamp = np.zeros(len(self.spec.wavelengths()))
 
+
+if __name__ == '__main__':
+    # set up logging if file called directly
+    from pathlib import Path
+    import yaml
+    import logging.config
+    import logging.handlers
+    pathlogging = Path(__file__).parent.parent.parent / 'loggingconfig.yml'
+    with pathlogging.open() as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)

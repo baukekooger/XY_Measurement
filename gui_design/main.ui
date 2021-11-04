@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>856</width>
-    <height>674</height>
+    <width>929</width>
+    <height>705</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -120,7 +120,7 @@
         <item row="0" column="0">
          <widget class="QStackedWidget" name="stackedWidget_experiment">
           <property name="currentIndex">
-           <number>0</number>
+           <number>1</number>
           </property>
           <widget class="QWidget" name="page_transmission">
            <property name="sizePolicy">
@@ -179,8 +179,8 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>619</width>
-                  <height>508</height>
+                  <width>318</width>
+                  <height>412</height>
                  </rect>
                 </property>
                 <property name="sizePolicy">
@@ -356,8 +356,8 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>98</width>
-                  <height>130</height>
+                  <width>686</width>
+                  <height>537</height>
                  </rect>
                 </property>
                 <property name="sizePolicy">
@@ -366,54 +366,8 @@
                   <verstretch>0</verstretch>
                  </sizepolicy>
                 </property>
-                <layout class="QGridLayout" name="gridLayout_8">
-                 <item row="1" column="0">
-                  <widget class="XYStageWidget" name="widget_xystage_excitation_emission" native="true">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                   <property name="minimumSize">
-                    <size>
-                     <width>0</width>
-                     <height>0</height>
-                    </size>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="4" column="0">
-                  <widget class="PowerMeterWidget" name="widget_powermeter_excitation_emission" native="true">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="3" column="0">
-                  <widget class="SpectrometerWidget" name="widget_spectrometer_excitation_emission" native="true">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="5" column="0">
-                  <widget class="LaserWidget" name="widget_laser_excitation_emission" native="true">
-                   <property name="sizePolicy">
-                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-                     <horstretch>0</horstretch>
-                     <verstretch>0</verstretch>
-                    </sizepolicy>
-                   </property>
-                  </widget>
-                 </item>
-                 <item row="0" column="0">
+                <layout class="QGridLayout" name="gridLayout_9">
+                 <item row="0" column="0" colspan="2">
                   <widget class="FileWidget" name="widget_file_excitation_emission" native="true">
                    <property name="sizePolicy">
                     <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
@@ -429,10 +383,118 @@
                    </property>
                   </widget>
                  </item>
-                 <item row="6" column="0">
+                 <item row="1" column="0" colspan="2">
+                  <widget class="XYStageWidget" name="widget_xystage_excitation_emission" native="true">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="2" column="0" colspan="2">
+                  <widget class="XYStagePlotWidget" name="widget_xystageplot_excitation_emission" native="true">
+                   <property name="enabled">
+                    <bool>true</bool>
+                   </property>
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                   <property name="minimumSize">
+                    <size>
+                     <width>300</width>
+                     <height>300</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>16777215</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="3" column="0" colspan="2">
+                  <widget class="SpectrometerWidget" name="widget_spectrometer_excitation_emission" native="true">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="4" column="0" colspan="2">
+                  <widget class="PowerMeterWidget" name="widget_powermeter_excitation_emission" native="true">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="5" column="0" colspan="2">
+                  <widget class="LaserWidget" name="widget_laser_excitation_emission" native="true">
+                   <property name="sizePolicy">
+                    <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+                     <horstretch>0</horstretch>
+                     <verstretch>0</verstretch>
+                    </sizepolicy>
+                   </property>
+                  </widget>
+                 </item>
+                 <item row="6" column="0" colspan="2">
+                  <widget class="QGroupBox" name="groupBox_calibration_beamsplitter">
+                   <property name="title">
+                    <string>beamsplitter calibration</string>
+                   </property>
+                   <layout class="QGridLayout" name="gridLayout_8">
+                    <item row="0" column="0">
+                     <widget class="QPushButton" name="pushButton_beamsplitter_calibration">
+                      <property name="text">
+                       <string>new beamsplitter calibration (go to set experiment) </string>
+                      </property>
+                     </widget>
+                    </item>
+                    <item row="1" column="0">
+                     <layout class="QHBoxLayout" name="horizontalLayout_2">
+                      <item>
+                       <widget class="QLabel" name="label_beamsplitter_calibration">
+                        <property name="text">
+                         <string>current calibration file</string>
+                        </property>
+                       </widget>
+                      </item>
+                      <item>
+                       <widget class="QLineEdit" name="lineEdit_beamsplitter_calibration_file"/>
+                      </item>
+                      <item>
+                       <widget class="QToolButton" name="toolButton_beamsplitter_calibration_file">
+                        <property name="text">
+                         <string>...</string>
+                        </property>
+                       </widget>
+                      </item>
+                     </layout>
+                    </item>
+                   </layout>
+                  </widget>
+                 </item>
+                 <item row="7" column="0" colspan="2">
                   <widget class="ShutterControlWidget" name="widget_shuttercontrol_excitation_emission" native="true"/>
                  </item>
-                 <item row="7" column="0">
+                 <item row="9" column="1">
                   <spacer name="verticalSpacer_2">
                    <property name="orientation">
                     <enum>Qt::Vertical</enum>
@@ -444,9 +506,6 @@
                     </size>
                    </property>
                   </spacer>
-                 </item>
-                 <item row="2" column="0">
-                  <widget class="XYStagePlotWidget" name="widget_xystageplot_excitation_emission" native="true"/>
                  </item>
                 </layout>
                </widget>
@@ -497,8 +556,8 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>98</width>
-                  <height>114</height>
+                  <width>534</width>
+                  <height>537</height>
                  </rect>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_10">
@@ -570,7 +629,14 @@
                   </spacer>
                  </item>
                  <item row="2" column="0">
-                  <widget class="XYStagePlotWidget" name="widget_xystageplot_decay" native="true"/>
+                  <widget class="XYStagePlotWidget" name="widget_xystageplot_decay" native="true">
+                   <property name="minimumSize">
+                    <size>
+                     <width>300</width>
+                     <height>300</height>
+                    </size>
+                   </property>
+                  </widget>
                  </item>
                 </layout>
                </widget>
@@ -583,6 +649,13 @@
         </item>
         <item row="1" column="0">
          <layout class="QHBoxLayout" name="horizontalLayout">
+          <item>
+           <widget class="QPushButton" name="pushButton_fit_plots_to_screen">
+            <property name="text">
+             <string>Fit Plots to Screen</string>
+            </property>
+           </widget>
+          </item>
           <item>
            <widget class="QLabel" name="label_completion_time">
             <property name="minimumSize">
@@ -674,7 +747,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>856</width>
+     <width>929</width>
      <height>21</height>
     </rect>
    </property>

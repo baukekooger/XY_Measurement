@@ -1,21 +1,19 @@
 from ctypes import c_int, c_double, c_char_p, byref, windll
-import os
 import time
 import logging.config
 import numpy
-import platform
 import win32com.client
 import re
 import asyncio
+from PyQt5.QtCore import QObject, pyqtSignal, QMutex, QMutexLocker
+from pathlib import Path
+import os
 
-# Add location of EKSPLA REMOTECONTROL library to path
-if platform.architecture()[0] == '64bit':
-    os.environ['PATH'] = os.path.dirname(__file__) + os.path.sep + 'lib64' + ';' + os.environ['PATH']
-    path = os.path.join(os.path.dirname(__file__), 'lib64', 'REMOTECONTROL64.dll')
-    _lib = windll.LoadLibrary(path)
-else:
-    os.environ['PATH'] = os.path.dirname(__file__) + os.path.sep + 'lib' + ';' + os.environ['PATH']
-    _lib = windll.LoadLibrary('REMOTECONTROL.dll')
+# Adds laser dll library path to environment path
+path_lib = Path(__file__).parent / 'lib64'
+os.environ['PATH'] += os.pathsep + str(path_lib)
+
+
 # Constants
 MINIMUM_WAVELENGTH = 190
 MAXIMUM_WAVELENGTH = 2300
@@ -31,20 +29,30 @@ def list_available_devices():
     return devices
 
 
-class NT230:
+class QLaser(QObject):
     """
-    Ekspla NT230 OPO Laser control class.
+    Ekspla NT230 OPO Laser control class as a Qobject
     
     Interfaces to control the Ekspla NT230 OPO laser through the EKSPLA REMOTECONTROL library over USB
     """
 
-    def __init__(self, connection_type=0, device_name='FTZ3O6AD', waittime=0.05, polltime=0.1, timeout=10):
+    measurement_complete = pyqtSignal(float, str, float, bool, bool)
+
+    def __init__(self, waittime=0.05, polltime=0.1, timeout=10, parent=None):
+        super().__init__(parent=parent)
+        # device_name='FT5AOAQM'
+        self.logger = logging.getLogger('Qinstrument.Qlaser')
+        self.logger.info('init laser')
+        self.connected = False
+        self.mutex = QMutex(QMutex.Recursive)
+        self.measuring = False
         self.waittime = waittime
         self.polltime = polltime
         self.timeout = timeout
         self.measuring = False
         self.handle = c_int()
-        self.connect(connection_type, device_name)
+        path_dll = str(Path(__file__).parent / 'lib64/REMOTECONTROL64.dll')
+        self.rcdll = windll.LoadLibrary(path_dll)
 
     @property
     def wavelength(self):
@@ -67,11 +75,11 @@ class NT230:
         """
         if wl < MINIMUM_WAVELENGTH:
             wl = MINIMUM_WAVELENGTH
-            logging.warning('Exceeded wavelength range when setting to {}.2f nm. Set to {}.2f nm'.format(
+            self.logger.warning('Exceeded wavelength range when setting to {}.2f nm. Set to {}.2f nm'.format(
                 wl, MINIMUM_WAVELENGTH))
         if wl > MAXIMUM_WAVELENGTH:
             wl = MAXIMUM_WAVELENGTH
-            logging.warning('Exceeded wavelength range when setting to {}.2f nm. Set to {}.2f nm'.format(
+            self.logger.warning('Exceeded wavelength range when setting to {}.2f nm. Set to {}.2f nm'.format(
                 wl, MAXIMUM_WAVELENGTH))
 
         dev = "MidiOPG:31"
@@ -84,7 +92,7 @@ class NT230:
         #        try:
         #            self.set_register_double(dev, reg, mot_pos)
         #        except LaserError as e:
-        #            logging.warning('Register {} not recognized'.format(reg))
+        #            self.logger.warning('Register {} not recognized'.format(reg))
 
     async def set_wavelength(self, wl):
         """
@@ -92,7 +100,26 @@ class NT230:
         """
         self.wavelength = wl
         # Wait for waittime to allow the laser to settle
-        asyncio.sleep(self.waittime)      
+        asyncio.sleep(self.waittime)
+
+    @property
+    def output(self):
+        """
+        get/set status of the output enable
+        """
+        dev = "CPU8000:16"
+        reg = "Power"
+        output_enabled = self._get_register_double(dev, reg)
+        return bool(output_enabled)
+
+    @output.setter
+    def output(self, status):
+        """
+        setter of the output, true for enabled
+        """
+        dev = "CPU8000:16"
+        reg = "Power"
+        self._set_register_double(dev, reg, int(status))
 
     @property
     def use_spectral_cleaning_unit(self):
@@ -167,11 +194,11 @@ class NT230:
         r = c_char_p(bytes(reg, 'utf-8'))
         v = c_double(val)
         # Try, if we fail, try again
-        e = _lib.rcSetRegFromDoubleA2(self.handle, d, r, v, c_int(0))
+        e = self.rcdll.rcSetRegFromDoubleA2(self.handle, d, r, v, c_int(0))
         if not e == 0:
-            logging.warning('An error occurred during Laser communication, reattempting...')
+            self.logger.warning('An error occurred during Laser communication, reattempting...')
             time.sleep(self.polltime)
-            e = _lib.rcSetRegFromDoubleA2(self.handle, d, r, v, c_int(0))
+            e = self.rcdll.rcSetRegFromDoubleA2(self.handle, d, r, v, c_int(0))
         self._is_error(e)
 
     def _get_register_double(self, dev, reg):
@@ -181,12 +208,12 @@ class NT230:
         r = c_char_p(bytes(reg, 'utf-8'))
         resp = c_double()
         # Try, if we fail, try again
-        e = _lib.rcGetRegAsDouble2(self.handle, d, r, byref(resp),
+        e = self.rcdll.rcGetRegAsDouble2(self.handle, d, r, byref(resp),
                                    self.timeout, None)
         if not e == 0:
-            logging.warning('An error occurred during Laser communication, reattempting...')
+            self.logger.warning('An error occurred during Laser communication, reattempting...')
             time.sleep(self.polltime)
-            e = _lib.rcGetRegAsDouble2(self.handle, d, r, byref(resp),
+            e = self.rcdll.rcGetRegAsDouble2(self.handle, d, r, byref(resp),
                                        self.timeout, None)
         self._is_error(e)
         return resp.value
@@ -209,25 +236,28 @@ class NT230:
         else:
             raise LaserError(e)
 
-    def connect(self, connection_type=0, device_name='FTZ3O6AD'):
+    def connect(self, connection_type=0, device_name='FT5AOAQM'):
         """
         connect to laser
         """
+        self.logger.info('connecting to laser')
+        path_config = path_lib / 'REMOTECONTROL.CSV'
+        c_path = c_char_p(bytes(str(path_config), 'utf-8'))
         c_devicename = c_char_p(bytes(device_name, 'utf-8'))
         try:
-            self._is_error(_lib.rcConnect2(byref(self.handle),
-                                           connection_type, c_devicename, None))
+            self._is_error(self.rcdll.rcConnect2(byref(self.handle), connection_type, c_devicename, c_path))
+            self.connected = True
+            self.logger.info('laser connected')
         except ConnectionError:
             # The Laser is already connected to us, nothing to worry about
-            logging.warning('Already connected to laser!')
+            self.logger.warning('Already connected to laser!')
 
-    def close(self):
-        """
-            Turns the laser off and disconnects 
-        """
+    def disconnect(self):
+        """ Turns the laser off and disconnects """
+        self.logger.info('disconnecting from laser')
         self.measuring = False
         self.energylevel = 'Off'
-        self._is_error(_lib.rcDisconnect2(self.handle))
+        self._is_error(self.rcdll.rcDisconnect2(self.handle))
 
     def measure(self):
         """Measure the current values of the laser.
@@ -240,13 +270,16 @@ class NT230:
             | bool: stability of the laser
         """
         self.measuring = True
-        logging.info('Measuring laser...')
-        wavelength = self.wavelength
-        energylevel = self.energylevel
-        power = self.power
-        stable = self.is_stable()
+        with(QMutexLocker(self.mutex)):
+            self.logger.info('Measuring laser...')
+            wavelength = self.wavelength
+            energylevel = self.energylevel
+            power = self.power
+            stable = self.is_stable()
+            output = self.output
         self.measuring = False
-        return wavelength, energylevel, power, stable
+        self.measurement_complete.emit(wavelength, energylevel, power, stable, output)
+        return wavelength, energylevel, power, stable, output
 
     def is_stable(self):
         """ Returns True if no fluctuation in Power higher than 5% occurs
@@ -262,15 +295,16 @@ class NT230:
         return numpy.std(p) / numpy.mean(p) < 0.05
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
+        self.disconnect()
 
     def __repr__(self):
-        """
-            get serial number + model number and configuration file creation date
-        """
-        dev = "id()"
-        ID = self._get_register_double(dev, "")
-        return ID
+        if self.connected:
+            """
+                get serial number + model number and configuration file creation date
+            """
+            dev = "id()"
+            ID = self._get_register_double(dev, "")
+            return ID
 
 
 class LaserError(Exception):
@@ -306,3 +340,13 @@ class LaserError(Exception):
 class RangeError(LaserError):
     """ Exception raised for errors caused within Laser communication """
     pass
+
+
+if __name__ == '__main__':
+    import yaml
+    import logging.config
+    import logging.handlers
+    pathlogging = Path(__file__).parent.parent.parent / 'loggingconfig.yml'
+    with pathlogging.open() as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)

@@ -1,99 +1,153 @@
 import csv
 import time
-
 import numpy as np
-import visa
+import pyvisa as visa
 import logging
+import pyvisa.errors
 
 
 def list_available_devices():
-    return visa.ResourceManager().list_resources(query='?*P0013932::INSTR')
+    return visa.ResourceManager().list_resources()
 
 
-class PM100D:
+class PowerMeter:
     """
-    Thorlabs PM100D Powermeter python interface
-
-    Note that the _minimal_ value for the integration time is around 10 ms
-    As 1 measurement takes ~1/3 ms. This will yield 300 averages.
-
-    Directly controls the PM100D Powermeter through a VISA interface
+    Python Class for the Thorlabs PM100A powermeter with basic functionalities
     """
-    def __init__(self, name='USB0::0x1313::0x8078::P0013932::INSTR', average_time=500, integration_time=30,
-                 timeout=1, sensitivity_correction=None):
-        self.handle = visa.ResourceManager().open_resource(name)  # visa handle to the actual powermeter
-        # Set spectrometer to power mode
-        self.handle.write('conf:pow')
-        self.average_time = average_time
-        self._integration_time = integration_time
-        self.integration_time = integration_time
-        self._timeout = timeout
-        self.timeout = timeout
-        self.sensitivity_correction = self.set_sensitivity_correction(sensitivity_correction)
 
+    def __init__(self, name='USB0::0x1313::0x8079::P1002333::INSTR'):
+        self.logger_instrument = logging.getLogger('ínstrument.PowerMeter')
+        self.logger_instrument.info('init PowerMeter')
+        self.name = name
+        self.pm = None
+        self.connected = False
         self.measuring = False
 
-    @property
-    def timeout(self):
-        """Timeout [s] of the powermeter """
-        return self._timeout
-
-    @timeout.setter
-    def timeout(self, value):
-        self._timeout = value
-        if self.handle:
-            self.handle.timeout = value * 1000
+    def connect_device(self):
+        self.pm = visa.ResourceManager().open_resource(self.name)
+        self.connected = True
+        # Set spectrometer to power mode
+        self.pm.write('conf:pow')
 
     @property
     def wavelength(self):
-        """ Current wavelength the powermeter is scanning on """
-        wavelength = self.query_value("sense:corr:wav?")
+        """ Current wavelength the powermeter is scanning on [nm]"""
+        wavelength = self.pm.query_ascii_values("sense:corr:wav?")[0]
         return wavelength
 
     @wavelength.setter
     def wavelength(self, value):
-        self.write_value("sense:corr:wav", value)
+        self.pm.write(f'sense:corr:wav {value}')
 
     @property
-    def integration_time(self):
-        """ Duration of integration time in [ms] """
-        return self._integration_time
+    def averageing(self):
+        """ returns the number of measurements being averaged over
+            one measurement takes approximately 3 ms
+            """
+        averaging = int(self.pm.query('sens:aver:coun?').strip())
+        return averaging
 
-    @integration_time.setter
-    def integration_time(self, value):
-        self._integration_time = value
-        # One measurement takes ~ 1/3 ms
-        averages = round(self._integration_time * 3)
-        self.write_value('sense:average:count', averages)
-
-    def measure(self):
-        """Measures incident power over the specified averaging time, with
-        separate measurements stored for each integration time.
-
-        Returns:
-            dict: Dictionary as {'interval':   [list of times],
-                                 'value':   [list of powers [W/s] ] }
+    @averageing.setter
+    def averageing(self, value):
+        """ sets the number of values being averaged over
+            one measurement takes approximately 3 ms
+            timeout not automatically adjusted
         """
-        if self.measuring:
-            logging.warning('Measurement in progress, please wait.')
-            return -1
-        self.measuring = True
-        self.handle.write('*CLS')  # Clear event queue
-        measurement = {'times': [], 'power': []}
-        start = time.time()
-        while self.measuring:
-            measurement['times'].extend([time.time()])
-            measurement['power'].append(self.query_value("read?"))
-            measurement['times'][-1].append(time.time())
-            last = time.time()
-            if (last - start) * 1000 >= self.average_time:
-                self.measuring = False
-        if self.sensitivity_correction:
-            power = np.array(measurement['power'])
-            correction = np.interp(self.wavelength, self.sensitivity_correction['wavelength'],
-                                   self.sensitivity_correction['intensity'])
-            measurement['power'] = list(power / correction)
-        return measurement
+        value = int(value)
+        self.pm.write(f'sens:aver:coun {value}')
+
+    @property
+    def timeout(self):
+        """ returns the timeout of the PM in ms """
+        return self.pm.timeout
+
+    @timeout.setter
+    def timeout(self, value):
+        """ sets the value of the timeout, value in seconds """
+        value = int(value * 1000)
+        self.pm.timeout = value
+
+    @property
+    def sensor(self):
+        sensorinfo = self.pm.query('syst:sens:idn?').strip().split(',')
+        model = sensorinfo[0]
+        sn = sensorinfo[1]
+        caldate = sensorinfo[2]
+        sensor = {'Model': model, 'Serial_Number': sn, 'Calibration_Date': caldate}
+        return sensor
+
+    def read_power(self):
+        power = self.pm.query_ascii_values('read?')[0]
+        return power
+
+    def zero_device(self):
+        """ initialises blocking procedure, returns when done """
+        self.pm.write('sens:corr:coll:zero:init')
+        while int(self.pm.query('sens:corr:coll:zero:stat?').strip()):
+            time.sleep(0.2)
+
+    def reset_default(self):
+        # returns unit to default condition
+        self.pm.write('*RST')
+        self.pm.write('*CLS')
+
+    @property
+    def sensitivity_photodiode(self):
+        """ queries the thermopile sensor sensitivity at the current wavelength """
+        try:
+            sensitivity = self.pm.query('sens:corr:pow:pdio:resp?').strip()
+            return sensitivity
+        except pyvisa.errors.VisaIOError:
+            self.logger_instrument.info('Cannot read photodiode response, no thermopile connected')
+
+    @property
+    def sensitivity_thermopile(self):
+        """ queries the thermopile sensor sensitivity at the current wavelength """
+        try:
+            sensitivity = self.pm.query('sens:corr:pow:ther:resp?').strip()
+            return sensitivity
+        except pyvisa.errors.VisaIOError:
+            self.logger_instrument.info('Cannot read thermopile response, no thermopile connected')
+
+    @property
+    def autorange(self):
+        """ reads if the autoranging is on in power mode"""
+        autorange = int(self.pm.query('sens:pow:rang:auto?').strip())
+        autorange = bool(autorange)
+        return autorange
+
+    @autorange.setter
+    def autorange(self, value):
+        """ turns autorange on or off, accepts boolean"""
+        integervalue = int(value)
+        self.pm.write(f'sens:pow:rang:auto {integervalue}')
+
+    @property
+    def accelerator(self):
+        """ queries if the accelerator circuit is turned on """
+        try:
+            acceleratorstatus = self.pm.query('inp:ther:acc:state?').strip()
+            return bool(int(acceleratorstatus))
+        except pyvisa.errors.VisaIOError:
+            self.logger_instrument.info('Cannot read accelerator status, no thermopile connected')
+
+    @accelerator.setter
+    def accelerator(self, value):
+        """ turns the accelerator circuit of or on. accepts boolean value """
+        intvalue = int(value)
+        try:
+            self.pm.write(f'inp:ther:acc:state {intvalue}')
+        except pyvisa.errors.VisaIOError:
+            self.logger_instrument.info('Cannot set accelerator, no thermopile connected')
+
+    @property
+    def thermopile_timeconstant(self):
+        """ reads the thermopile time constant """
+        try:
+            tau = self.pm.query('inp:ther:acc:tau?').strip()
+            return tau
+        except pyvisa.errors.VisaIOError:
+            self.logger_instrument.info('Cannot read timeconstant, no thermopile connected')
 
     def set_sensitivity_correction(self, file):
         """
@@ -118,29 +172,26 @@ class PM100D:
                     continue
                 sensitivity_correction['wavelengths'].append(row[0])
                 sensitivity_correction['intensity'].append(row[1])
-        self.sensitivity_correction = sensitivity_correction
         return sensitivity_correction
 
-    def query_value(self, command):
-        if not self.connected:
-            raise ConnectionError('Powermeter not connected, please connect first')
-        v = None
-        v = self.handle.query_ascii_values(command)[0]
-        return v
-
-    def write_value(self, command, value):
-        if type(value) is int:
-            self.handle.write(command + ' %d' % value)
-        if type(value) is float:
-            self.handle.write(command + ' %.2f' % value)
-        else:
-            self.handle.write(command + ' %s' % value)
-
-    def close(self):
-        self.handle.close()
+    def disconnect(self):
+        self.pm.close()
+        self.connected = False
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.close()
+        self.disconnect()
 
     def __repr__(self):
-        return self.handle.read('IDN?')
+        return self.pm.query('*IDN?')
+
+
+if __name__ == '__main__':
+    # set up logging if file called directly
+    from pathlib import Path
+    import yaml
+    import logging.config
+    import logging.handlers
+    pathlogging = Path(__file__).parent.parent.parent / 'loggingconfig.yml'
+    with pathlogging.open() as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)

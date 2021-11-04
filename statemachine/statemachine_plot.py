@@ -4,8 +4,8 @@ import io
 from PIL import Image
 from pathlib import Path
 # provide path to the main configuration file
-pathconfigstate = Path.cwd() / 'config_statemachine.yaml'
-pathconfig = Path.cwd().parent / 'config_main.yaml'
+pathconfigstate = Path(__file__).parent / 'config_statemachine.yaml'
+pathconfig = Path(__file__).parent.parent / 'config_main.yaml'
 
 
 class PlotStateMachine:
@@ -21,11 +21,14 @@ class PlotStateMachine:
         with pathconfig.open() as f:
             self.config = yaml_safe_load(f)
         self.is_done = False
+        path_settings = Path(__file__).parent.parent / 'settings_ui.yaml'
+        with path_settings.open() as f:
+            self.settings_ui = yaml_safe_load(f)
 
     def show_statemachine(self, **kwargs):
         # use kwarg show_roi = True to show statechart for current state only
         stream = io.BytesIO()
-        self.get_graph(**kwargs).draw(stream, prog='dot', format='png')
+        self.machine.get_graph(**kwargs).draw(stream, prog='dot', format='png')
         image = Image.open(stream)
         image.show()
 
@@ -94,4 +97,10 @@ class PlotStateMachine:
         pass
 
     def _define_triggers(self):
+        pass
+
+    def _start_calibration(self):
+        pass
+
+    def _continue_calibration(self):
         pass

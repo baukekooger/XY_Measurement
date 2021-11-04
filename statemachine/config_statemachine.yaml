@@ -9,7 +9,9 @@ states: [
         {'name': 'defineExperiment', 'on_enter': '_define_experiment'},
         {'name': 'connecting', 'on_enter': '_connect_all'},
         {'name': 'align', 'on_enter': '_align', 'on_exit': '_stop_align'},
-        {'name': 'setExperiment', 'on_enter': '_load_configuration', 'on_exit': '_save_configuration'},
+        {'name': 'setExperiment'},
+        {'name': 'calibrateBeamsplitterPosition1', 'on_enter': '_start_calibration'},
+        {'name': 'calibrateBeamsplitterPosition2', 'on_enter': '_continue_calibration', 'on_exit': '_finish_calibration'},
         {'name': 'experiment', 'children': [{'name': 'openFile', 'on_enter': ['_reset_experiment', '_open_file']},
                                             {'name': 'prepareMeasurement', 'on_enter': '_prepare_measurement'},
                                             {'name': 'measuring', 'on_enter': '_measure'},
@@ -47,7 +49,13 @@ transitions: [
             {'trigger': 'abort', 'source': ['experiment_openFile', 'experiment_prepareMeasurement',
                                             'experiment_measuring', 'experiment_processingData',
                                             'experiment_writeFile', 'experiment_calculateProgress'],
-                                            'dest': 'experiment_aborted'}]
+                                            'dest': 'experiment_aborted'},
+            {'trigger': 'start_calibration', 'source': 'setExperiment', 'dest': 'calibrateBeamsplitterPosition1'},
+            {'trigger': 'continue_calibration', 'source': 'calibrateBeamsplitterPosition1', 'dest': 'calibrateBeamsplitterPosition2'},
+            {'trigger': 'calibration_complete', 'source': 'calibrateBeamsplitterPosition2', 'dest': 'setExperiment'},
+            {'trigger': 'abort', 'source': ['calibrateBeamsplitterPosition1', 'calibrateBeamsplitterPosition2'],
+            'dest': 'setExperiment'}
+            ]
 
 auto_transitions: False
 initial: 'initialize'

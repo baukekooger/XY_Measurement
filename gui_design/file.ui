@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>272</width>
-    <height>218</height>
+    <width>389</width>
+    <height>506</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
   <layout class="QGridLayout" name="gridLayout_2">
-   <item row="0" column="0">
+   <item row="1" column="0">
     <widget class="QGroupBox" name="groupBox">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -95,17 +95,17 @@
           </property>
           <item>
            <property name="text">
-            <string>50X50 (Borofloat) </string>
+            <string>50X50 mm (Borofloat)</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>44X44 (Quartz) </string>
+            <string>44X44 mm (Quartz)</string>
            </property>
           </item>
           <item>
            <property name="text">
-            <string>22X22 (Quartz small) </string>
+            <string>22X22 mm (Quartz small)</string>
            </property>
           </item>
          </widget>
@@ -113,6 +113,32 @@
        </layout>
       </item>
       <item row="2" column="0">
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item>
+         <widget class="QLabel" name="label_4">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="minimumSize">
+           <size>
+            <width>75</width>
+            <height>0</height>
+           </size>
+          </property>
+          <property name="text">
+           <string>filter</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLineEdit" name="lineEdit_filter"/>
+        </item>
+       </layout>
+      </item>
+      <item row="3" column="0">
        <layout class="QHBoxLayout" name="horizontalLayout_2">
         <item>
          <widget class="QLabel" name="label_2">
@@ -151,7 +177,7 @@
         </item>
        </layout>
       </item>
-      <item row="3" column="0">
+      <item row="4" column="0">
        <layout class="QHBoxLayout" name="horizontalLayout">
         <item>
          <widget class="QLabel" name="label_3">
@@ -168,7 +194,7 @@
            </size>
           </property>
           <property name="text">
-           <string>directory</string>
+           <string>storage dir</string>
           </property>
          </widget>
         </item>

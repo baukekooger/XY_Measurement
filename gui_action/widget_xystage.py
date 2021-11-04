@@ -2,6 +2,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from gui_design.xystage import Ui_Form
 from instruments.Thorlabs.xystage import QXYStage
+import logging
 
 
 class XYStageWidget(QtWidgets.QWidget):
@@ -10,6 +11,8 @@ class XYStageWidget(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.logger_widget = logging.getLogger('gui.XYStageWidget')
+        self.logger_widget.info('init xystage widget')
         self.ui = Ui_Form()
         self.ui.setupUi(self)
         self.xystage = QXYStage()
@@ -35,19 +38,15 @@ class XYStageWidget(QtWidgets.QWidget):
         if not self.xystage.xhomed:
             QtWidgets.QMessageBox.information(self, 'homing warning', 'x stage not homed, wait for stages to home')
             self._handle_home()
-            self.ui.doubleSpinBox_x.clear()
         else:
             self.xystage.x = self.ui.doubleSpinBox_x.value()
-            self.ui.doubleSpinBox_x.clear()
 
     def _handle_move_y(self):
         if not self.xystage.yhomed:
             QtWidgets.QMessageBox.information(self, 'homing warning', 'y stage not homed, wait for stages to home')
             self._handle_home()
-            self.ui.doubleSpinBox_y.clear()
         else:
             self.xystage.y = self.ui.doubleSpinBox_y.value()
-            self.ui.doubleSpinBox_y.clear()
 
     def _handle_home(self):
         self.xystage.home()
@@ -64,6 +63,16 @@ class XYStageWidget(QtWidgets.QWidget):
 
 
 if __name__ == '__main__':
+    # set up logging if file called directly
+    from pathlib import Path
+    import yaml
+    import logging.config
+    import logging.handlers
+    pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
+    with pathlogging.open() as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)
+    # setup pyqt app
     import sys
     app = QtWidgets.QApplication(sys.argv)
     window = XYStageWidget()

@@ -2,17 +2,22 @@ import logging
 from instruments.Thorlabs import apt
 import time
 from PyQt5.QtCore import QObject, QMutexLocker, QMutex, pyqtSignal, pyqtSlot
-logging.basicConfig(level=logging.INFO)
 
 
 class QXYStage(QObject):
+    """
+    Python implementation of XY stages as a QObject.
+    Wraps thorlabs apt dll and provides additional functionality
 
+    """
     measurement_complete = pyqtSignal(float, float)
     stage_settled = pyqtSignal()
     homing_status = pyqtSignal(bool, bool)
 
     def __init__(self, xstage_serial=45951910, ystage_serial=45962470, polltime=0.1, timeout=30, parent=None):
         super().__init__(parent=parent)
+        self.logger = logging.getLogger('Qinstrument.QXYStage')
+        self.logger.info('init QXYStage')
         self.mutex = QMutex(QMutex.Recursive)
         self.measuring = False
         self.timeout = timeout
@@ -47,8 +52,8 @@ class QXYStage(QObject):
     @x.setter
     def x(self, value):
         if not (self.xmin <= value <= self.xmax):
-            logging.warning('Attempt to move x stage out of bounds')
-            logging.warning('Retaining position x=%.2f mm', self.x)
+            self.logger.warning('Attempt to move x stage out of bounds')
+            self.logger.warning('Retaining position x=%.2f mm', self.x)
             return
         self.xstage.move_to(value, blocking=False)
 
@@ -59,8 +64,8 @@ class QXYStage(QObject):
     @y.setter
     def y(self, value):
         if not (self.ymin <= value <= self.ymax):
-            logging.warning('Attempt to move y stage out of bounds')
-            logging.warning('Retaining position y=%.2f mm', self.y)
+            self.logger.warning('Attempt to move y stage out of bounds')
+            self.logger.warning('Retaining position y=%.2f mm', self.y)
             return
         self.ystage.move_to(value, blocking=False)
 
@@ -79,6 +84,11 @@ class QXYStage(QObject):
         apt.reconnect()
         self.connected = False
 
+    def stop_motors(self):
+        # stops motors slowly such they don't loose their homing
+        self.xstage.stop_profiled()
+        self.ystage.stop_profiled()
+
     def reconnect(self):
         self.connected = False
         while not self.connected:
@@ -88,7 +98,7 @@ class QXYStage(QObject):
                 self.ystage = apt.Motor(self.ystage_serial)
                 self.connected = True
             except Exception as e:
-                logging.error(f'Failed to connect to XYStage... reattempting! - error = {e}')
+                self.logger.error(f'Failed to connect to XYStage... reattempting! - error = {e}')
                 time.sleep(1)
 
     def close(self):
@@ -98,11 +108,11 @@ class QXYStage(QObject):
 
     def settled(self):
         if not self.xstage.is_in_motion and not self.ystage.is_in_motion:
-            print('stages settled')
+            self.logger.info('stages settled')
             self.stage_settled.emit()
             return True
         else:
-            print('stages moving')
+            self.logger.info('stages moving')
             return False
 
     def disable(self):
@@ -119,9 +129,15 @@ class QXYStage(QObject):
 
     @pyqtSlot(float, float)
     def move(self, x, y):
-
         self.x = x
         self.y = y
+
+    @pyqtSlot(float, float)
+    def move_with_wait(self, x, y):
+        self.x = x
+        self.y = y
+        while not self.settled():
+            time.sleep(0.1)
 
     @pyqtSlot()
     @pyqtSlot(float, float)
@@ -150,3 +166,14 @@ class QXYStage(QObject):
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
+
+if __name__ == '__main__':
+    # set up logging if file called directly
+    from pathlib import Path
+    import yaml
+    import logging.config
+    import logging.handlers
+    pathlogging = Path(__file__).parent.parent.parent / 'loggingconfig.yml'
+    with pathlogging.open() as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)
