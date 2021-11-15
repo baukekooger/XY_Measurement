@@ -17,7 +17,7 @@ handlers:
     level: DEBUG
     formatter: regular
     mode: w
-    filename: C:/Users/bauke/PycharmProjects/XY_New/logs/logout.txt
+    filename: logout.txt
     backupCount: 1
     maxBytes: 1_000_000
     encoding: utf-8
@@ -33,7 +33,7 @@ loggers:
     handlers: [console, file]
     propagate: no
   Qinstrument.QDigitizer:
-    level: DEBUG
+    level: INFO
     handlers: [console, file]
     propagate: no
   instrument:
@@ -41,11 +41,11 @@ loggers:
     handlers: [console, file]
     propagate: no
   statemachine:
-    level: INFO
+    level: DEBUG
     handlers: [console, file]
     propagate: no
   gui:
-    level: DEBUG
+    level: INFO
     handlers: [ console, file ]
     propagate: no
   plot:

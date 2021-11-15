@@ -1,47 +1,47 @@
 decay:
   widget_digitizer_decay:
     checkBox_jitter_correction_alignment: false
-    checkBox_jitter_correction_experiment: true
+    checkBox_jitter_correction_experiment: false
     comboBox_data_channel_alignment: '0'
     comboBox_data_channel_experiment: '0'
     comboBox_jitter_channel_alignment: '1'
     comboBox_jitter_channel_experiment: '1'
-    comboBox_measurement_mode_alignment: single pulse
+    comboBox_measurement_mode_alignment: single photon counting
     comboBox_measurement_mode_experiment: averageing
-    comboBox_single_photon_compression_alignment: none
-    comboBox_time_range_alignment: "40 \u03BCs"
-    comboBox_time_range_experiment: "80 \u03BCs"
+    comboBox_single_photon_compression_alignment: 200 ns
+    comboBox_time_range_alignment: "640 \u03BCs"
+    comboBox_time_range_experiment: "640 \u03BCs"
     spinBox_dc_offset_alignment: 10
     spinBox_dc_offset_experiment: 10
-    spinBox_number_pulses_experiment: 300
+    spinBox_number_pulses_experiment: 1000
     spinBox_post_trigger_size_alignment: 90
     spinBox_post_trigger_size_experiment: 90
-    spinBox_single_photon_treshold_alignment: 780
-    spinBox_single_photon_treshold_experiment: 780
+    spinBox_single_photon_treshold_alignment: 785
+    spinBox_single_photon_treshold_experiment: 785
   widget_file_decay:
-    comboBox_substrate: 50X50 mm (Borofloat)
-    lineEdit_directory: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY
+    comboBox_substrate: 44X44 mm (Quartz)
+    lineEdit_directory: C:/Users/tud257183/Desktop/XY Test Data
     lineEdit_filter: 680 nm bandpass
-    lineEdit_sample: BK3
+    lineEdit_sample: B13
     plainTextEdit_comments: Averageing Example
   widget_laser_decay:
     checkBox_stable: true
     comboBox_energy_level_experiment: Max
     spinBox_wavelength_alignment: 375
-    spinBox_wavelength_start: 350
+    spinBox_wavelength_start: 375
     spinBox_wavelength_step: 25
     spinBox_wavelength_stop: 375
   widget_shuttercontrol_decay:
-    checkBox: false
+    checkBox: true
   widget_xystage_decay:
     checkBox_homed_x: true
     checkBox_homed_y: true
-    doubleSpinBox_x: 40.0
-    doubleSpinBox_y: 100.0
-    spinBox_x_num: 4
+    doubleSpinBox_x: 0.0
+    doubleSpinBox_y: 0.0
+    spinBox_x_num: 8
     spinBox_x_off_left: 5
     spinBox_x_off_right: 5
-    spinBox_y_num: 3
+    spinBox_y_num: 8
     spinBox_y_off_bottom: 5
     spinBox_y_off_top: 5
 excitation_emission:
@@ -52,16 +52,16 @@ excitation_emission:
     lineEdit_sample: BK1
     plainTextEdit_comments: Film
   widget_laser_excitation_emission:
-    checkBox_stable: true
+    checkBox_stable: false
     comboBox_energy_level_experiment: Max
-    spinBox_wavelength_alignment: 250
+    spinBox_wavelength_alignment: 375
     spinBox_wavelength_start: 310
     spinBox_wavelength_step: 5
     spinBox_wavelength_stop: 370
   widget_powermeter_excitation_emission:
-    spinBox_wavelength_alignment: 210
+    spinBox_wavelength_alignment: 375
   widget_shuttercontrol_excitation_emission:
-    checkBox: true
+    checkBox: false
   widget_spectrometer_excitation_emission:
     spinBox_averageing_alignment: 1
     spinBox_averageing_experiment: 20
@@ -70,8 +70,8 @@ excitation_emission:
   widget_xystage_excitation_emission:
     checkBox_homed_x: true
     checkBox_homed_y: true
-    doubleSpinBox_x: 0.0
-    doubleSpinBox_y: 0.0
+    doubleSpinBox_x: 45.0
+    doubleSpinBox_y: 115.0
     spinBox_x_num: 4
     spinBox_x_off_left: 10
     spinBox_x_off_right: 14
@@ -81,44 +81,24 @@ excitation_emission:
 lineEdit_beamsplitter_calibration_file: C:/Users/bauke/OneDrive/Bureaublad/BeamSplitter_Calibrations/BS20WR_210_1_399_nm_2110071001.csv
 transmission:
   widget_file_transmission:
-<<<<<<< HEAD
-    comboBox_substrate: 1
-    lineEdit_directory: C:/Users/tud257183/Desktop/Max/210810_TransmissionBK_B13
-=======
-    comboBox_substrate: 44X44 mm (Quartz)
-    lineEdit_directory: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY
-    lineEdit_filter: None
->>>>>>> cb816465e9a279cd4eecaabee0bcd9771075988e
-    lineEdit_sample: BK3
-    plainTextEdit_comments: Testmeasurement transmission for reals
+    comboBox_substrate: 50X50 mm (Borofloat)
+    lineEdit_directory: C:/Users/tud257183/Desktop/XY Test Data
+    lineEdit_filter: no filter
+    lineEdit_sample: BK4
+    plainTextEdit_comments: 'Testmeasurement transmission '
   widget_spectrometer_transmission:
     spinBox_averageing_alignment: 1
     spinBox_averageing_experiment: 1
-<<<<<<< HEAD
     spinBox_integration_time_alignment: 1000
-    spinBox_integration_time_experiment: 5000
-  widget_xystage_transmission:
-    checkBox_homed_x: true
-    checkBox_homed_y: true
-    doubleSpinBox_x: 0.0
-    doubleSpinBox_y: 20.0
-    spinBox_x_num: 5
-    spinBox_x_off_left: 5
-    spinBox_x_off_right: 5
-    spinBox_y_num: 5
-    spinBox_y_off_bottom: 5
-=======
-    spinBox_integration_time_alignment: 200
     spinBox_integration_time_experiment: 2000
   widget_xystage_transmission:
     checkBox_homed_x: true
     checkBox_homed_y: true
-    doubleSpinBox_x: 40.0
-    doubleSpinBox_y: 30.0
-    spinBox_x_num: 7
+    doubleSpinBox_x: 20.0
+    doubleSpinBox_y: 20.0
+    spinBox_x_num: 10
     spinBox_x_off_left: 5
     spinBox_x_off_right: 5
-    spinBox_y_num: 6
-    spinBox_y_off_bottom: 19
->>>>>>> cb816465e9a279cd4eecaabee0bcd9771075988e
+    spinBox_y_num: 10
+    spinBox_y_off_bottom: 5
     spinBox_y_off_top: 5

@@ -62,28 +62,23 @@ class StateMachine(QObject):
 
     def __init__(self, parent=None):
         super().__init__()
-<<<<<<< HEAD
-        pathstateconfig = Path.home() / 'Repositories/XY_New/statemachine/config_statemachine.yaml'
-=======
+
         self.logger = logging.getLogger('statemachine')
         self.logger.info('init statemachine')
         pathstateconfig = Path(__file__).parent / 'config_statemachine.yaml'
->>>>>>> cb816465e9a279cd4eecaabee0bcd9771075988e
         with pathstateconfig.open() as f:
             self.stateconfig = yaml_safe_load(f)
         self.stateconfig['model'] = self
         self.machine = Machine(**self.stateconfig)
-<<<<<<< HEAD
-        pathconfig = Path.home() / 'Repositories/XY_New/config_main.yaml'
-=======
+
         pathconfig = Path(__file__).parent.parent / 'config_main.yaml'
->>>>>>> cb816465e9a279cd4eecaabee0bcd9771075988e
         with pathconfig.open() as f:
             self.config = yaml_safe_load(f)
         self.experiment = None
         self.settings_ui = None
         self.instruments = {}
         self.measurement_parameters = {}
+        self.position_offsets = {}
         self.timekeeper = None
         self.timeout = 60
         self.wait_signals_experiment = MultipleSignal()
@@ -106,7 +101,6 @@ class StateMachine(QObject):
         self.beamsplitter_fname = None
         self.beamsplitter_wavelengths = None
         self.beamsplitter_integrationtime = None
-        self.position_offsets = {}
         self.startingtime = time.time()
 
     def _init_poll(self):
@@ -493,6 +487,7 @@ class StateMachine(QObject):
             self.position_offsets[param]['offset_bottom'] = off1_mm + bw / 2 + (sse - ss) / 2
             self.position_offsets[param]['offset_top'] = off2_mm + bw / 2 + (sse - ss) / 2
 
+            self.logger.debug(f'position offset  = {self.position_offsets}')
         return positions
 
     # endregion
@@ -562,7 +557,6 @@ class StateMachine(QObject):
         paramdict = {'transmission': 2, 'excitation_emission': 1, 'decay': 1}
         positionsettings.xnum = len(np.unique(self.measurement_parameters['x'][paramdict[self.experiment]:]))
         positionsettings.ynum = len(np.unique(self.measurement_parameters['y'][paramdict[self.experiment]:]))
-        positionsettings.beamwidth = self.position_offsets['beam_width']
         positionsettings.sample_width = self.position_offsets['x']['sample_width']
         positionsettings.sample_width_effective = self.position_offsets['x']['sample_width_effective']
         positionsettings.offset_left = self.position_offsets['x']['offset_left']

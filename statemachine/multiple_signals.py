@@ -1,13 +1,13 @@
 import logging
-
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
 
 class MultipleSignal(QObject):
-    """ class that emits a signal when all desired signals have arrived
+    """
+    Class that emits a signal when all desired signals have arrived
 
-        accepts up to 6 signals, can be easily extended
-        """
+    Accepts up to 6 signals, can be easily extended
+    """
     global_done = pyqtSignal()
 
     def __init__(self, number_of_signals=1):

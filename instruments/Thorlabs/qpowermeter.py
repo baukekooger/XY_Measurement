@@ -16,7 +16,7 @@ class QPowerMeter(PowerMeter, QObject):
     """
     Python interface for the Thorlabs PM100A powermeter as a QObject
 
-    Includes some different measurement functions and signals
+    Includes additional measurement functions and signals.
 
     """
     measurement_complete = pyqtSignal(float)
