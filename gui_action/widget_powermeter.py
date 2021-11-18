@@ -23,10 +23,10 @@ class PowerMeterWidget(QtWidgets.QWidget):
         self.ui.pushButton_zero.clicked.connect(self.powermeter.zero)
 
     def disconnect_signals_slots(self):
-        self.powermeter.measurement_complete.disconnect()
-        self.powermeter.measurement_parameters.disconnect()
-        self.ui.spinBox_wavelength_alignment.editingFinished.disconnect()
-        self.ui.pushButton_zero.clicked.disconnect()
+        self.powermeter.measurement_complete_multiple.disconnect(self.handle_measurement)
+        self.powermeter.measurement_parameters.disconnect(self.update_parameters)
+        self.ui.spinBox_wavelength_alignment.editingFinished.disconnect(self.handle_wavelength)
+        self.ui.pushButton_zero.clicked.disconnect(self.powermeter.zero)
 
     @pyqtSlot(list, list)
     def handle_measurement(self, times, power):

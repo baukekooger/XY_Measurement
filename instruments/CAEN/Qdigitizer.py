@@ -62,9 +62,13 @@ class QDigitizer(CAENlib.Digitizer, QObject):
     @pyqtSlot()
     def connect(self):
         """ Open the digitizer, then apply common initial settings """
-        self.connect_device()
-        self.connected = True
-        self.init_device()
+        try:
+            self.connect_device()
+            self.connected = True
+            self.init_device()
+        except IndexError:
+            self.logger_q_instrument.error('Failed connecting to digitizer, could not find a digitizer')
+            raise ConnectionError('Could not find a digitizer')
 
     @pyqtSlot()
     def disconnect(self):

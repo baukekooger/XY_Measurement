@@ -13,3 +13,5 @@ try:
     df1 = pd.read_csv('C:/Users/bauke/OneDrive/Bureaublad/BeamSplitter_Calibrations/BS20WR_300_350_nm_2109151617.csv')
 except FileNotFoundError as e:
     print('file not found')
+
+

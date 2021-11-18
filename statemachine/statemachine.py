@@ -59,6 +59,10 @@ class StateMachine(QObject):
     calibration_half_signal = pyqtSignal()  # signal emitted halfway during beamsplitter calibration
     calibration_complete_signal = pyqtSignal()  # emitted when beamsplitter calibration complete
     calibration_status = pyqtSignal(str)  # status signal for the completion bar
+    instrument_connect_successful = pyqtSignal()  # emits picked 'page' when all instruments are connected.
+    instrument_connect_failed = pyqtSignal(dict)  # emitted when a connection error is raised at connecting instruments
+    init_instrument_threads = pyqtSignal()
+    enable_main_gui = pyqtSignal(bool)
 
     def __init__(self, parent=None):
         super().__init__()
@@ -66,8 +70,8 @@ class StateMachine(QObject):
         self.logger = logging.getLogger('statemachine')
         self.logger.info('init statemachine')
         pathstateconfig = Path(__file__).parent / 'config_statemachine.yaml'
-        with pathstateconfig.open() as f:
-            self.stateconfig = yaml_safe_load(f)
+        with pathstateconfig.open() as file:
+            self.stateconfig = yaml_safe_load(file)
         self.stateconfig['model'] = self
         self.machine = Machine(**self.stateconfig)
 
@@ -75,6 +79,10 @@ class StateMachine(QObject):
         with pathconfig.open() as f:
             self.config = yaml_safe_load(f)
         self.experiment = None
+        self.calibration = False
+        self.storage_dir_calibration = None
+        self.beamsplitter = None
+        self.calibration_fname = None
         self.settings_ui = None
         self.instruments = {}
         self.measurement_parameters = {}
@@ -84,7 +92,6 @@ class StateMachine(QObject):
         self.wait_signals_experiment = MultipleSignal()
         self._reset_experiment()
         self._init_poll()
-        self._init_xystages()
 
     def _reset_experiment(self):
         self.measurement_duration = 0
@@ -96,26 +103,19 @@ class StateMachine(QObject):
         self.experimentdate = None
         self.is_done = False
         self.storage_dir = None
-        self.storage_dir_calibration = None
-        self.beamsplitter = None
-        self.beamsplitter_fname = None
-        self.beamsplitter_wavelengths = None
-        self.beamsplitter_integrationtime = None
+        self.calibration_dataframe = None
+        self.calibration_position = None
         self.startingtime = time.time()
 
     def _init_poll(self):
+        """
+        Initialze the timer that periodically polls the connected instruments.
+        :return:
+        """
         self.polltime = 0.2
         self.heartbeat = QTimer()
         self.heartbeat.setInterval(int(self.polltime * 1000))
         self.heartbeat.timeout.connect(self._measure_instruments)
-        self.heartbeat_xystage = QTimer()
-        self.heartbeat_xystage.setInterval(int(self.polltime * 1000))
-
-    def _init_xystages(self):
-        self.xstage_serial = None
-        self.ystage_serial = None
-        self.xmax = None
-        self.ymax = None
 
     def _from_state(self, *args):
         self.signalstatechange.emit(f'from state {self.state}')
@@ -124,17 +124,7 @@ class StateMachine(QObject):
         self.signalstatechange.emit(f'finished in state {self.state}')
 
     def _start(self):
-        serial = apt.list_available_devices()[0][1]
-        if serial in [67844567, 67844568]:
-            self.xstage_serial = 67844568
-            self.ystage_serial = 67844567
-            self.xmax = 100
-            self.ymax = 100
-        else:
-            self.xstage_serial = 45951910
-            self.ystage_serial = 45962470
-            self.xmax = 70
-            self.ymax = 160
+        self.logger.info('Mysterious start function called')
 
     def _define_experiment(self, page):
         """ Check which instruments are needed for selected experiment, remove unnecessary instruments """
@@ -148,39 +138,95 @@ class StateMachine(QObject):
             self.instruments.pop(inst)
         for inst in to_add:
             self.instruments[inst] = instrument_parser[inst]()
-            if inst == 'xystage':
-                self.instruments[inst].xstage_serial = self.xstage_serial
-                self.instruments[inst].ystage_serial = self.ystage_serial
-                self.instruments[inst].xmax = self.xmax
-                self.instruments[inst].ymax = self.ymax
-        self.connect_all()
-        self._connect_signals_instruments()
+        self.connect_all(page)
 
-    def _connect_all(self):
+    def _connect_all(self, page):
+        """
+        Connect all the instruments belonging to the experiment.
+
+        If a connectionerror is raised in connecting any of the instruments, send a connection failed signal to the gui
+        and send the connect_failed trigger.
+
+        If all connections succesful, send a signal to the main gui to continue parsing the selected gui page.
+        """
         for inst in self.instruments.keys():
             if self.instruments[inst].connected:
                 self.logger.info(f'{inst} already connected')
             else:
-                self.logger.info(f'connecting {inst}')
-                self.instruments[inst].connect()
-                self.instruments[inst].timeout = self.timeout
+                try:
+                    self.logger.info(f'connecting {inst}')
+                    self.instruments[inst].connect()
+                    self.instruments[inst].timeout = self.timeout
+                except ConnectionError as e:
+                    self.logger.error(f'Failed to connect {inst}')
+                    error = {'instrument': inst, 'error': e}
+                    self.enable_main_gui.emit(False)
+                    self.instrument_connect_failed.emit(error)
+                    self.disconnect_all()
+                    self.enable_main_gui.emit(True)
+                    self.connect_failed()
+                    return
+        self.init_instrument_threads.emit()
+        self.align()
+
+    def _emit_init_gui(self):
+        """
+        Emits a signal to the main application to init the ui. This function is called by the statemachine after
+        the transition from connecting to align state.
+        """
+        self.instrument_connect_successful.emit()
 
     def disconnect_all(self):
+        """ Disconnect all the instruments belonging to the experiment, if they are connected. """
         for inst in self.instruments.keys():
-            self.logger.info(f'disconnecting {inst}')
-            self.instruments[inst].disconnect()
+            if not self.instruments[inst].connected:
+                self.logger.info(f'{inst} already disconnected')
+            else:
+                self.logger.info(f'disconnecting {inst}')
+                self.instruments[inst].disconnect()
 
     def _connect_signals_instruments(self):
-        self.instruments['xystage'].stage_settled.connect(self.measure)
-        if self.experiment == 'transmission':
+        """
+        Connect the relevant instrument signals to statemachine triggers.
+        """
+        self.logger.info('connecting instrument signals to statemachine triggers')
+        if self.calibration:
+            self.instruments['xystage'].stage_settled.connect(self.start_experiment)
+            self.instruments['powermeter'].measurement_done.connect(self.process_data)
+        elif self.experiment == 'transmission':
+            self.instruments['xystage'].stage_settled.connect(self.measure)
             self.instruments['spectrometer'].measurement_done.connect(self.process_data)
         elif self.experiment == 'excitation_emission':
+            self.instruments['xystage'].stage_settled.connect(self.measure)
             self.wait_signals_experiment.number_of_signals = 2
             self.wait_signals_experiment.reset()
             self.instruments['spectrometer'].measurement_done.connect(self.wait_signals_experiment.set_signal_1_done)
             self.instruments['powermeter'].measurement_done.connect(self.wait_signals_experiment.set_signal_2_done)
             self.wait_signals_experiment.global_done.connect(self.process_data)
         elif self.experiment == 'decay':
+            self.instruments['xystage'].stage_settled.connect(self.measure)
+            self.instruments['digitizer'].measurement_done.connect(self.process_data)
+
+    def _disconnect_signals_instruments(self):
+        """
+        Disconnect the relevant signals from the instruments.
+        """
+        self.logger.info('disconnecting instrument signals from statemachine triggers')
+        if self.calibration:
+            self.instruments['xystage'].stage_settled.disconnect(self.start_experiment)
+            self.instruments['powermeter'].measurement_done.disconnect(self.process_data)
+        elif self.experiment == 'transmission':
+            self.instruments['xystage'].stage_settled.connect(self.measure)
+            self.instruments['spectrometer'].measurement_done.connect(self.process_data)
+        elif self.experiment == 'excitation_emission':
+            self.instruments['xystage'].stage_settled.connect(self.measure)
+            self.wait_signals_experiment.number_of_signals = 2
+            self.wait_signals_experiment.reset()
+            self.instruments['spectrometer'].measurement_done.connect(self.wait_signals_experiment.set_signal_1_done)
+            self.instruments['powermeter'].measurement_done.connect(self.wait_signals_experiment.set_signal_2_done)
+            self.wait_signals_experiment.global_done.connect(self.process_data)
+        elif self.experiment == 'decay':
+            self.instruments['xystage'].stage_settled.connect(self.measure)
             self.instruments['digitizer'].measurement_done.connect(self.process_data)
 
     def _align(self):
@@ -195,7 +241,7 @@ class StateMachine(QObject):
         self.heartbeat.start()
 
     def _stop_align(self):
-        """ Stop the repeated timer for reading out instruments. Also shuts down the laser. """
+        """ Stop the repeated timer for reading out instruments. Shut down the laser. """
         self.heartbeat.stop()
         # wait till laser is done measuring
         time.sleep(0.3)
@@ -204,14 +250,16 @@ class StateMachine(QObject):
             self.instruments['laser'].energylevel = 'Off'
 
     def _measure_instruments(self):
+        """ Measure the instruments. They all have a measure method. """
         for inst in self.instruments.keys():
             if not self.instruments[inst].measuring:
                 QTimer.singleShot(0, self.instruments[inst].measure)
 
     def _start_calibration(self):
-        """" starts the calibration routine
-             moves the stage away, reads the calibration parameters and parses these to the instruments. Sets
-             the wavlengths attribute and filename attribute.
+        """"
+        Starts the calibration routine.
+        Move the stage away, read the calibration parameters and parses these to the instruments. Sets the wavelength
+        attribute and filename attribute.
         """
         self.calibration_status.emit('started calibration')
 
@@ -230,7 +278,7 @@ class StateMachine(QObject):
 
         date = time.strftime("%y%m%d%H%M", time.localtime(self.startingtime))
         wl = f'{wlstart}_{wlstep}_{wlstop}_nm'
-        self.beamsplitter_fname = f'{self.storage_dir_calibration}/{self.beamsplitter}_{wl}_{date}.csv'
+        self.calibration_fname = f'{self.storage_dir_calibration}/{self.beamsplitter}_{wl}_{date}.csv'
 
         # parse settings
         self.logger.info('Parsing settings for calibration, turning off shutter')
@@ -277,17 +325,17 @@ class StateMachine(QObject):
             tcurrent = time.time() - tstart
             self._calculate_progress_calibration(wavelength, tcurrent)
         try:
-            df = pd.read_csv(self.beamsplitter_fname)
+            df = pd.read_csv(self.calibration_fname)
             df['Times Position 2 [s]'] = times
             df['Power Position 2 [W]'] = powers
-            df.to_csv(self.beamsplitter_fname, index=False)
+            df.to_csv(self.calibration_fname, index=False)
             self.calibration_complete()
             self.calibration_complete_signal.emit()
             self.logger.info('Calibration of beamsplitter complete')
         except FileNotFoundError:
             df = pd.DataFrame({'Wavelength [nm]': wavelengths, 'Times Position 1 [s]': times,
                                'Power Position 1 [W]': powers})
-            df.to_csv(self.beamsplitter_fname, index=False)
+            df.to_csv(self.calibration_fname, index=False)
             # emit pop up screen signal, do that in main.
             self.calibration_half_signal.emit()
             self.logger.info('First part of beamsplitter calibration complete')
@@ -307,14 +355,29 @@ class StateMachine(QObject):
         with path_settings.open() as f:
             self.settings_ui = yaml_safe_load(f)
         # pick parsing routine
-        if self.experiment == 'transmission':
+        if self.calibration:
+            self._parse_config_calibration()
+        elif self.experiment == 'transmission':
             self._parse_config_transmission()
+            self.start_experiment()
         elif self.experiment == 'excitation_emission':
             self._parse_config_excitation_emission()
+            self.start_experiment()
         elif self.experiment == 'decay':
             self._parse_config_decay()
+            self.start_experiment()
 
-        self.start_experiment()
+    def _parse_config_calibration(self):
+        """ Parse the configuration for beamsplitter calibration """
+        self.logger.info('parsing configuration beamsplitter calibration')
+        self.calibration_status.emit('started calibration')
+        self.measurement_parameters = {}
+        self._parse_excitation_wavelengths()
+        self._parse_lasersettings('Max')
+        self._parse_powermetersettings(3000)
+        self.instruments['shuttercontrol'].disable()
+        self.logger.info('Moving stage away for calibration')
+        self.instruments['xystage'].move_with_wait(0, 0)
 
     def _parse_config_transmission(self):
         """ Parse transmission configuration """
@@ -414,14 +477,22 @@ class StateMachine(QObject):
         self.instruments['spectrometer'].clear_lamp()
         self.logger.info('parsed spectrometer settings')
 
-    def _parse_powermetersettings(self):
+    def _parse_powermetersettings(self, *integrationtime):
+        """
+        Parse the powermeter settings. Set integration time according to spectrometer or according to input.
+        """
+        if integrationtime:
+            self.logger.info('Parsing powermeter settings beamsplitter calibration')
+            self.instruments['powermeter'].prepare_measurement_multiple()
+            self.instruments['powermeter'].integration_time = integrationtime[0]
+            return
         # integration time of powermeter is the same as integration time of spectrometer
+        self.logger.info(f'Parsing powermeter settings {self.experiment}')
         smsettings = self.settings_ui[self.experiment][f'widget_spectrometer_{self.experiment}']
         integration_time_sm = smsettings['spinBox_integration_time_experiment']
         averageing_sm = smsettings['spinBox_averageing_experiment']
         self.instruments['powermeter'].prepare_measurement_multiple()
         self.instruments['powermeter'].integration_time = integration_time_sm * averageing_sm
-        self.logger.info('parsed powermeter settings')
 
     def _parse_connect_spectrometer_powermeter(self):
         """
@@ -431,11 +502,17 @@ class StateMachine(QObject):
         self.instruments['spectrometer'].cache_cleared.connect(self.instruments['powermeter'].measure)
         self.logger.info('connected spectrometer cache cleared to powermeter start measure')
 
-    def _parse_lasersettings(self):
+    def _parse_lasersettings(self, *level):
+        """
+        Parse the laser settings
+        """
+        self.logger.info('parsing laser settings')
         lasersettings = self.settings_ui[self.experiment][f'widget_laser_{self.experiment}']
         self.instruments['laser'].output = True
-        self.instruments['laser'].energylevel = lasersettings['comboBox_energy_level_experiment']
-        self.logger.info('parsed laser settings')
+        if level:
+            self.instruments['laser'].energylevel = level[0]
+        else:
+            self.instruments['laser'].energylevel = lasersettings['comboBox_energy_level_experiment']
 
     def _parse_digitizersettings(self):
         """ Parse the digitizer settings from the ui to the digitizer """
@@ -496,17 +573,36 @@ class StateMachine(QObject):
 
     def _open_file(self):
         # pick open file process
-        if self.experiment == 'transmission':
+        if self.calibration:
+            self._open_file_calibration()
+            self.logger.info('waiting 5 seconds for powermeter to reach equilibrium temperature')
+            self.calibration_status.emit('calibration started, waiting for temperature equilibrium')
+            QTimer.singleShot(5000, self.prepare)
+        elif self.experiment == 'transmission':
             self._open_file_transmission()
+            self.prepare()
         elif self.experiment == 'excitation_emission':
             self._open_file_excitation_emission()
+            self.prepare()
         elif self.experiment == 'decay':
             self._open_file_decay()
-        try:
             self.prepare()
-        except Exception as e:
-            self.abort()
-        # new state
+
+    def _open_file_calibration(self):
+        """ Set the filename for the calibration file and open the dataframe. """
+
+        lasersettings = self.settings_ui['excitation_emission']['widget_laser_excitation_emission']
+        wlstart = lasersettings['spinBox_wavelength_start']
+        wlstop = lasersettings['spinBox_wavelength_stop']
+        wlstep = lasersettings['spinBox_wavelength_step']
+
+        self.startingtime = time.time()
+        date = time.strftime("%y%m%d%H%M", time.localtime(self.startingtime))
+
+        wl = f'{wlstart}_{wlstep}_{wlstop}_nm'
+        self.calibration_fname = f'{self.storage_dir_calibration}/{self.beamsplitter}_{wl}_{date}.csv'
+        self.calibration_position = 1
+        self.calibration_dataframe = pd.DataFrame(columns=['Wavelength [nm]', 'Position', 'Power [W]', 'Time [s]'])
 
     def _open_file_transmission(self):
         self._load_create_file()
@@ -603,9 +699,10 @@ class StateMachine(QObject):
         digitizersettings.data_channel = self.instruments['digitizer'].data_channel
 
     def _write_beamsplitter_calibration(self):
-        """ writes calibration file to main file for automatic processing in matlab
-            checks if file is selected and exists
-            creates folder with attributes, dimensions, variables and data
+        """
+        writes calibration file to main file for automatic processing in matlab
+        checks if file is selected and exists
+        creates folder with attributes, dimensions, variables and data
         """
         fname = self.settings_ui['lineEdit_beamsplitter_calibration_file']
 
@@ -669,17 +766,25 @@ class StateMachine(QObject):
         self.dataset.createDimension('samples', samples)
 
     # endregion
-
     # region prepare measurement
 
     @timed
     def _prepare_measurement(self):
-        if self.experiment == 'transmission':
+        if self.calibration:
+            self._prepare_measurement_calibration()
+            self.measure()
+        elif self.experiment == 'transmission':
             self._prepare_measurement_transmission()
         elif self.experiment == 'excitation_emission':
             self._prepare_measurement_excitation_emission()
         elif self.experiment == 'decay':
             self._prepare_measurement_decay()
+
+    def _prepare_measurement_calibration(self):
+        """ Set the laser and powermeter to the correct wavelength """
+        self._control_shutter()
+        self._prepare_laser()
+        self._prepare_powermeter()
 
     def _prepare_measurement_transmission(self):
         self._prepare_move_stage()
@@ -707,7 +812,7 @@ class StateMachine(QObject):
 
     def _control_shutter(self):
         """ Enable shutter except when a dark measurement is taken. """
-        if self.measurement_index == 0 and self.experiment == 'excitation_emission':
+        if self.measurement_index == 0 and self.experiment == 'excitation_emission' and not self.calibration:
             self.instruments['shuttercontrol'].disable()
             self.logger.info('shutter disabled for dark measurement')
         else:
@@ -746,12 +851,18 @@ class StateMachine(QObject):
         function but must time when the next process starts.
         """
         self.timekeeper = time.time()
-        if self.experiment == 'transmission':
+        if self.calibration:
+            self._measure_calibration()
+        elif self.experiment == 'transmission':
             self._measure_transmission()
         elif self.experiment == 'excitation_emission':
             self._measure_excitation_emission()
         elif self.experiment == 'decay':
             self._measure_decay()
+
+    def _measure_calibration(self):
+        self.logger.info('started measuring power calibration')
+        QTimer.singleShot(0, self.instruments['powermeter'].measure)
 
     def _measure_transmission(self):
         self.logger.info('started measurement transmission')
@@ -777,7 +888,6 @@ class StateMachine(QObject):
         self.measurement_duration += time_measuring
         self.logger.info(f'processing data {self.experiment}, measurement time = {time_measuring}')
         self.write_file()
-        pass
 
     # endregion
 
@@ -786,7 +896,9 @@ class StateMachine(QObject):
     @timed
     def _write_file(self):
         self.logger.info(f'writing data to file')
-        if self.experiment == 'transmission':
+        if self.calibration:
+            self._write_file_calibration()
+        elif self.experiment == 'transmission':
             self._write_file_transmission()
         elif self.experiment == 'excitation_emission':
             self._write_file_excitation_emission()
@@ -795,6 +907,20 @@ class StateMachine(QObject):
 
         self.measurement_index += 1
         self.calculate_progress()
+
+    def _write_file_calibration(self):
+        """ Write the power data to a csv file """
+
+        self.logger.info('writing power to calibration csv')
+        times = self.instruments['powermeter'].last_times
+        powers = self.instruments['powermeter'].last_powers
+        samples = len(times)
+        positions = np.repeat(self.calibration_position, samples)
+        wavelengths = np.repeat(self.measurement_parameters['wl'][self.measurement_index], samples)
+        dataframe = pd.DataFrame({'Wavelength [nm]': wavelengths, 'Position': positions,
+                                  'Power [W]': powers, 'Time [s]': times})
+        self.calibration_dataframe = self.calibration_dataframe.append(dataframe, ignore_index=True)
+        self.calibration_dataframe.to_csv(self.calibration_fname)
 
     def _write_file_transmission(self):
         """
@@ -979,22 +1105,28 @@ class StateMachine(QObject):
     # region calculate progress
 
     def _calculate_progress(self):
-        """Calculates progress (in percent) and Estimated Completion Time.
+        """
+        Calculate progress (in percent) and Estimated Completion Time.
         Uses the average of the preparation + measurement times
 
-        Emits:
+        Emit:
             progress (float): progress in percent
             ect (float): Estimated completion time as UNIX timestamp
         """
-        progress = self.measurement_index / len(self.measurement_parameters['x'])
+        keys = list(self.measurement_parameters.keys())
+        progress = self.measurement_index / len(self.measurement_parameters[keys[0]])
         ect = (self.measurement_duration /
                self.measurement_index *
-               (len(self.measurement_parameters['x']) - self.measurement_index)
+               (len(self.measurement_parameters[keys[0]]) - self.measurement_index)
                )
         self.ect.emit(int(ect))
         self.progress.emit(int(progress * 100))
         self.logger.info(f'Progress Measurement: {progress * 100} %')
-        if progress == 1:
+
+        if progress == 1 and self.calibration_position == 1:
+            self.wait_for_user()
+            self.logger.info('Part one of calibration complete, prompting user')
+        elif progress == 1:
             self.is_done = True
             self.measurement_complete()
             self.logger.info(f'Measurement Completed at: {time.ctime(ect)}')
@@ -1003,35 +1135,53 @@ class StateMachine(QObject):
 
     # endregion
 
-    def _calculate_progress_calibration(self, wavelength, duration):
-        index = np.where(self.beamsplitter_wavelengths == wavelength)[0][0] + 1
-        progress = index / len(self.beamsplitter_wavelengths) * 100
-        ect = duration / index * (len(self.beamsplitter_wavelengths) - index)
-        self.progress.emit(int(progress))
-        self.ect.emit(int(ect))
-        self.logger.info(f'Calibration progress {progress} %, wavelength = {wavelength} nm, ect = {ect}')
+    def _notify_user_calibration(self):
+        """
+        Shut the shutter so the powermeter can be put into position without burning it in the focal point.
+        Emit signal which opens the dialog prompting the user to change the position of the power sensor.
+        Set position attribute to two, reset measurement index.
+        """
+        self.instruments['shuttercontrol'].disable()
+        self.logger.info('First part of beamsplitter calibration complete')
+        self.measurement_index = 0
+        self.calibration_position = 2
+        self.calibration_half_signal.emit()
+        pass
 
     def _return_setexperiment(self):
         self.signal_return_setexperiment.emit()
 
     def _measurement_aborted(self):
+        if not self.calibration:
+            self.dataset.close()
+        else:
+            self.calibration_complete_signal.emit()
         self.instruments['xystage'].stop_motors()
         self.reset_instruments()
-        self.dataset.close()
+        self.calibration = False
         self.is_done = True
-        self.continue_experiment()
+        self.finish_experiment()
         self.return_setexperiment()
 
     def _measurement_completed(self):
-        self.dataset.close()
+        if not self.calibration:
+            self.dataset.close()
+        else:
+            self.calibration_complete_signal.emit()
         self.is_done = True
         self.reset_instruments()
-        self.continue_experiment()
+        self.calibration = False
+        self.finish_experiment()
         self.return_setexperiment()
 
     def reset_instruments(self):
         """ Reset instrument settings for align state. """
-        if self.experiment == 'transmission':
+        if self.calibration:
+            self.instruments['powermeter'].integration_time = 200
+            self.instruments['laser'].energylevel = 'Off'
+            self.instruments['shuttercontrol'].disable()
+            self.logger.info('setting instruments back to alignment/setexperiment settings')
+        elif self.experiment == 'transmission':
             self.instruments['spectrometer'].integrationtime = 100
             self.logger.info('transmission ready, set spectrometer back to shorter integration time')
         elif self.experiment == 'excitation_emission':

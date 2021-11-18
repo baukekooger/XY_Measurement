@@ -218,39 +218,38 @@ class QLaser(QObject):
         self._is_error(e)
         return resp.value
 
-    @staticmethod
-    def _is_error(e):
-        """Checks if e is a number associated with a laser error.
-        Raises the appropriate error for each error value other than e==0 (no error).
+    def _is_error(self, e):
         """
+        Check if e is a number associated with a laser error.
+        Raise the appropriate error for each error value other than e==0 (no error).
+        """
+        message = f'Laser - {LaserError.errorcodes[e]}'
         if e == 0:
             return
-        elif e == 7:
-            raise ConnectionRefusedError(e)
-        elif e in [17, 18]:
-            raise ConnectionError(e)
+        elif e in [7, 17, 18]:
+            self.logger.error(f'{message}')
+            raise ConnectionError(message)
         elif e in [11, 12, 13]:
-            raise RangeError(e)
+            self.logger.warning(f'{message}')
+            raise ValueError(message)
         elif e == 8:
-            raise TimeoutError('Timeout waiting for laser answer')
+            self.logger.error(f'{message}')
+            raise TimeoutError(message)
         else:
+            self.logger.error(f'{message}')
             raise LaserError(e)
 
     def connect(self, connection_type=0, device_name='FT5AOAQM'):
         """
-        connect to laser
+        Connect to laser.
         """
         self.logger.info('connecting to laser')
         path_config = path_lib / 'REMOTECONTROL.CSV'
         c_path = c_char_p(bytes(str(path_config), 'utf-8'))
         c_devicename = c_char_p(bytes(device_name, 'utf-8'))
-        try:
-            self._is_error(self.rcdll.rcConnect2(byref(self.handle), connection_type, c_devicename, c_path))
-            self.connected = True
-            self.logger.info('laser connected')
-        except ConnectionError:
-            # The Laser is already connected to us, nothing to worry about
-            self.logger.warning('Already connected to laser!')
+        self._is_error(self.rcdll.rcConnect2(byref(self.handle), connection_type, c_devicename, c_path))
+        self.connected = True
+        self.logger.info('laser connected')
 
     def disconnect(self):
         """ Turns the laser off and disconnects """

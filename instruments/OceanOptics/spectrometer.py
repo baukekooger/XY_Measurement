@@ -52,7 +52,7 @@ class QSpectrometer(QObject):
             try:
                 self.spec = sb.Spectrometer(sb.list_devices()[0])
             except IndexError as e:
-                raise ConnectionError('No spectrometer found!')
+                raise ConnectionError('No spectrometer found, please check connection')
         else:
             self.spec = spec
         self.min_integrationtime = self.spec.minimum_integration_time_micros / 1000

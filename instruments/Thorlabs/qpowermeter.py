@@ -3,6 +3,9 @@ import time
 import numpy as np
 import pyvisa as visa
 import logging
+
+import pyvisa.errors
+
 from instruments.Thorlabs.powermeters import PowerMeter
 from PyQt5.QtCore import QObject, QMutexLocker, QMutex, pyqtSignal, pyqtSlot
 import math
@@ -39,14 +42,15 @@ class QPowerMeter(PowerMeter, QObject):
     @pyqtSlot()
     def connect(self):
         self.connect_device()
+        if self.sensor['Model'] == 'no sensor':
+            raise ConnectionError('No sensor connected to powermeter')
         self.averageing = 1
         self.integration_time = 200
         self.autorange = True
 
     @property
     def integration_time(self):
-        """ Duration of integration time in [ms] """
-        self.logger_q_instrument.info(f'integration time = {self._integration_time} ms')
+        """ Integration time in [ms] """
         return self._integration_time
 
     @integration_time.setter
@@ -76,7 +80,9 @@ class QPowerMeter(PowerMeter, QObject):
 
     @pyqtSlot()
     def measure_average(self):
-        """ single reading of the powermeter with averaging set close to integration time"""
+        """
+        Single reading of the powermeter with averaging set close to integration time
+        """
         self.measuring = True
         t1 = time.time()
         with(QMutexLocker(self.mutex)):
@@ -90,11 +96,13 @@ class QPowerMeter(PowerMeter, QObject):
 
     @pyqtSlot()
     def measure(self):
-        """ takes multiple single measurements for the duration of integration time
+        """
+        Take multiple single measurements for the duration of integration time
 
-            interpolates these measurements with a fixed number of values based on integration time
-            each reading takes approx 5 ms.
-            """
+        Interpolate these measurements with a fixed number of values based on integration time
+        each reading takes approx 5 ms.
+        """
+        self.logger_q_instrument.info('measuring powermeter')
         self.measuring = True
         t1 = time.perf_counter()
         measurements = []

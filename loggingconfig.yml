@@ -22,9 +22,12 @@ handlers:
     maxBytes: 1_000_000
     encoding: utf-8
 
-
 loggers:
   __main__:
+    level: INFO
+    handlers: [console, file]
+    propagate: no
+  transitions:
     level: INFO
     handlers: [console, file]
     propagate: no

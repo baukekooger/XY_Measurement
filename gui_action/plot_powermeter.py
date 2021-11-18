@@ -35,7 +35,7 @@ class PowerMeterPlotWidget(QtWidgets.QWidget):
         self.powermeter.measurement_complete_multiple.connect(self.plot)
 
     def disconnect_signals_slots(self):
-        self.powermeter.measurement_complete_multiple.disconnect()
+        self.powermeter.measurement_complete_multiple.disconnect(self.plot)
 
     @pyqtSlot(list, list)
     def plot(self, times, power):

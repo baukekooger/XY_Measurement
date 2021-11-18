@@ -24,10 +24,14 @@ class QShutterControl(QObject):
         self.measuring = False
 
     def connect(self, name=None):
-        if not name:
-            name = self.get_port('THORLABS SC10')
-        self.sc = serial.Serial(name, 9600, parity=serial.PARITY_NONE, timeout=0.1)
-        self.connected = True
+        try:
+            if not name:
+                name = self.get_port('THORLABS SC10')
+            self.sc = serial.Serial(name, 9600, parity=serial.PARITY_NONE, timeout=0.1)
+            self.connected = True
+        except NameError as e:
+            self.logger.error('Could not connect to Thorlabs SC10 shuttercontroller')
+            raise ConnectionError('Could not connect to Thorlabs SC10 shuttercontroller')
 
     def disconnect(self):
         if not self.connected:
@@ -60,7 +64,8 @@ class QShutterControl(QObject):
                 self.write_value('ens')
 
     def get_port(self, modelname):
-        """Retrieves the first port the selected modelname is connected to.
+        """
+        Retrieves the first port the selected modelname is connected to.
         Code adapted from https://stackoverflow.com/questions/12090503/listing-available-com-ports-with-python
         and https://stackoverflow.com/questions/16811807/how-to-find-all-serial-devices-com .
 
