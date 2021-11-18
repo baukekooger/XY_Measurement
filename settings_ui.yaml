@@ -32,7 +32,7 @@ decay:
     spinBox_wavelength_step: 25
     spinBox_wavelength_stop: 375
   widget_shuttercontrol_decay:
-    checkBox: true
+    checkBox: false
   widget_xystage_decay:
     checkBox_homed_x: true
     checkBox_homed_y: true

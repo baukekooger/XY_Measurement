@@ -11,14 +11,14 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>XY Setup</string>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout_3">
     <item row="0" column="0">
      <widget class="QStackedWidget" name="stackedWidget">
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="page_intro">
        <layout class="QGridLayout" name="gridLayout_4">
@@ -179,8 +179,8 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>318</width>
-                  <height>412</height>
+                  <width>322</width>
+                  <height>420</height>
                  </rect>
                 </property>
                 <property name="sizePolicy">
@@ -356,7 +356,7 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>686</width>
+                  <width>656</width>
                   <height>537</height>
                  </rect>
                 </property>
@@ -556,8 +556,8 @@
                  <rect>
                   <x>0</x>
                   <y>0</y>
-                  <width>534</width>
-                  <height>537</height>
+                  <width>322</width>
+                  <height>414</height>
                  </rect>
                 </property>
                 <layout class="QGridLayout" name="gridLayout_10">
@@ -748,7 +748,7 @@
      <x>0</x>
      <y>0</y>
      <width>929</width>
-     <height>21</height>
+     <height>26</height>
     </rect>
    </property>
   </widget>

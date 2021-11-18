@@ -83,6 +83,7 @@ class MainWindow(QtWidgets.QMainWindow):
         Initialize the gui when the connection is succesful. Is called when after transitioning from connecting to
         align state.
         """
+        self.set_title()
         self.add_instruments_to_guis()
         self.connect_signals_gui()
         self.connect_position_layout_plot()
@@ -138,6 +139,18 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.stackedWidget_experiment.setEnabled(True)
         self.ui.stackedWidget.setEnabled(True)
 
+    def set_title(self):
+        """ Set the title of the mainwindow. """
+        self.logger.info('setting the title of the mainwindow to the correct experiment')
+        title = 'XY Setup'
+        if self.experiment == 'transmission':
+            title = 'XY Transmission'
+        elif self.experiment == 'excitation_emission':
+            title = 'XY Excitation Emission'
+        elif self.experiment == 'decay':
+            title = 'XY Decay'
+        self.setWindowTitle(title)
+
     def return_home(self):
         # add something that quits all threads from the experiment such that a new experiment can be done
         self.store_ui()
@@ -145,6 +158,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.statemachine.return_home()
         QTimer.singleShot(300, self.disconnect_signals_gui)
         self.ui.stackedWidget.setCurrentIndex(0)
+        self.setWindowTitle('XY Setup')
 
     def alignment_experiment(self):
         # finalize the current statemachine and load the new statemachine.
