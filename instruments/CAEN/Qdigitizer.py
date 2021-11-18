@@ -336,7 +336,7 @@ class QDigitizer(CAENlib.Digitizer, QObject):
     def _compress_single_photon_counts(self):
         """
         Compress single photon counts by the set compression factor for plotting. Do check if chosen compression
-        factor is enough
+        factor is enough.
         """
 
         self.logger_q_instrument.debug(f'compressing single photon counts with {self.compression_factor}')
@@ -359,7 +359,7 @@ class QDigitizer(CAENlib.Digitizer, QObject):
                        f' {additional_compressionfactor} to {totalfactor/self.sample_rate*1_000_000:.3f} {mu}s'
         else:
             self.logger_q_instrument.debug('no additional compression done')
-            times = np.linspace(0, (samples - 1) / self.sample_rate, samples)
+            times = np.linspace(0, (samples - 1)*self.compression_factor / self.sample_rate, samples)
             plotinfo = f'{self.pulse_counter} pulses'
 
         return times, data, plotinfo

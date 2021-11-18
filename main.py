@@ -6,6 +6,7 @@ from yaml import safe_load as yaml_safe_load, dump
 from statemachine.statemachine import StateMachine
 import time
 import datetime
+from os import path
 
 
 class MainWindow(QtWidgets.QMainWindow):
@@ -290,10 +291,13 @@ class MainWindow(QtWidgets.QMainWindow):
         command to the statemachine.
         """
 
+        if not self._directorycheck():
+            return
         if not self._messagebox_substratecheck():
             return
         if not self._homingcheck():
             return
+
 
         self.start_experiment_ui()
         self.statemachine.init_experiment()
@@ -392,6 +396,18 @@ class MainWindow(QtWidgets.QMainWindow):
         file = QtWidgets.QFileDialog.getOpenFileName(self, 'Select Calibration File', '*.csv')[0]
         self.ui.lineEdit_beamsplitter_calibration_file.setText(file)
 
+    def _directorycheck(self):
+        """ Perform a check if the selected file directory exists. """
+        self.logger.info('checking if file directory exists')
+        widgetfile = getattr(self.ui, f'widget_file_{self.experiment}')
+        directory = widgetfile.ui.lineEdit_directory.text()
+        if not path.exists(directory):
+            self.logger.error('selected file directory does not exist')
+            self._messagebox_directorycheck()
+            return False
+        else:
+            return True
+
     def _messagebox_calibrationcheck(self):
         wlstart = self.ui.widget_laser_excitation_emission.ui.spinBox_wavelength_start.value()
         wlstop = self.ui.widget_laser_excitation_emission.ui.spinBox_wavelength_stop.value()
@@ -431,6 +447,18 @@ class MainWindow(QtWidgets.QMainWindow):
         msgbox.setText(f'Calibration completed')
         msgbox.setStandardButtons(QtWidgets.QMessageBox.Ok)
         msgbox.setWindowTitle('Beamsplitter calibration completed')
+        answer = msgbox.exec_()
+        if answer == QtWidgets.QMessageBox.Ok:
+            return True
+        else:
+            return False
+
+    def _messagebox_directorycheck(self):
+        msgbox = QtWidgets.QMessageBox(self)
+        msgbox.setIcon(QtWidgets.QMessageBox.Information)
+        msgbox.setText('Invalid file directory selected, please select a valid directory')
+        msgbox.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        msgbox.setWindowTitle('Invalid Directory')
         answer = msgbox.exec_()
         if answer == QtWidgets.QMessageBox.Ok:
             return True

@@ -209,25 +209,26 @@ class StateMachine(QObject):
 
     def _disconnect_signals_instruments(self):
         """
-        Disconnect the relevant signals from the instruments.
+        Disconnect the relevant signals from the instruments. Called when experiment or calibration is done.
         """
         self.logger.info('disconnecting instrument signals from statemachine triggers')
         if self.calibration:
             self.instruments['xystage'].stage_settled.disconnect(self.start_experiment)
             self.instruments['powermeter'].measurement_done.disconnect(self.process_data)
+            self.calibration = False
         elif self.experiment == 'transmission':
-            self.instruments['xystage'].stage_settled.connect(self.measure)
-            self.instruments['spectrometer'].measurement_done.connect(self.process_data)
+            self.instruments['xystage'].stage_settled.disconnect(self.measure)
+            self.instruments['spectrometer'].measurement_done.disconnect(self.process_data)
         elif self.experiment == 'excitation_emission':
-            self.instruments['xystage'].stage_settled.connect(self.measure)
+            self.instruments['xystage'].stage_settled.disconnect(self.measure)
             self.wait_signals_experiment.number_of_signals = 2
             self.wait_signals_experiment.reset()
-            self.instruments['spectrometer'].measurement_done.connect(self.wait_signals_experiment.set_signal_1_done)
-            self.instruments['powermeter'].measurement_done.connect(self.wait_signals_experiment.set_signal_2_done)
-            self.wait_signals_experiment.global_done.connect(self.process_data)
+            self.instruments['spectrometer'].measurement_done.disconnect(self.wait_signals_experiment.set_signal_1_done)
+            self.instruments['powermeter'].measurement_done.disconnect(self.wait_signals_experiment.set_signal_2_done)
+            self.wait_signals_experiment.global_done.disconnect(self.process_data)
         elif self.experiment == 'decay':
-            self.instruments['xystage'].stage_settled.connect(self.measure)
-            self.instruments['digitizer'].measurement_done.connect(self.process_data)
+            self.instruments['xystage'].stage_settled.disconnect(self.measure)
+            self.instruments['digitizer'].measurement_done.disconnect(self.process_data)
 
     def _align(self):
         """
@@ -255,96 +256,96 @@ class StateMachine(QObject):
             if not self.instruments[inst].measuring:
                 QTimer.singleShot(0, self.instruments[inst].measure)
 
-    def _start_calibration(self):
-        """"
-        Starts the calibration routine.
-        Move the stage away, read the calibration parameters and parses these to the instruments. Sets the wavelength
-        attribute and filename attribute.
-        """
-        self.calibration_status.emit('started calibration')
-
-        path_settings = Path(__file__).parent.parent / 'settings_ui.yaml'
-        with path_settings.open() as f:
-            self.settings_ui = yaml_safe_load(f)
-
-        lasersettings = self.settings_ui['excitation_emission']['widget_laser_excitation_emission']
-        wlstart = lasersettings['spinBox_wavelength_start']
-        wlstop = lasersettings['spinBox_wavelength_stop']
-        wlstep = lasersettings['spinBox_wavelength_step']
-        energylevel = lasersettings['comboBox_energy_level_experiment']
-        powermetersettings = self.settings_ui['excitation_emission']['widget_powermeter_excitation_emission']
-        # integrationtime = powermetersettings['spinBox_integration_time_experiment']
-        self.beamsplitter_integrationtime = 3000
-
-        date = time.strftime("%y%m%d%H%M", time.localtime(self.startingtime))
-        wl = f'{wlstart}_{wlstep}_{wlstop}_nm'
-        self.calibration_fname = f'{self.storage_dir_calibration}/{self.beamsplitter}_{wl}_{date}.csv'
-
-        # parse settings
-        self.logger.info('Parsing settings for calibration, turning off shutter')
-        self.instruments['xystage'].move_with_wait(0, 0)
-        self.logger.info('Moved stage away for calibration')
-        self.instruments['laser'].energylevel = energylevel
-        self.instruments['laser'].output = True
-        self.instruments['powermeter'].integration_time = self.beamsplitter_integrationtime
-        self.instruments['powermeter'].prepare_measurement_multiple()
-        self.instruments['shuttercontrol'].disable()
-        self.beamsplitter_wavelengths = np.arange(wlstart, wlstop + 0.5 * wlstep, wlstep)
-        self.logger.info('waiting 3 seconds for powermeter to reach equilibrium temperature')
-        self.calibration_status.emit('calibration started, waiting for temperature equilibrium')
-        QTimer.singleShot(5000, self.measure_calibration)
-
-    def _continue_calibration(self):
-        """ continues calibration after moving powermeter """
-        self.calibration_status.emit('calibration continued, waiting for temperature equilibrium')
-        self.instruments['shuttercontrol'].disable()
-        self.logger.info('shutter closed, waiting 3 seconds for powermeter to reach equilibrium temperature')
-        QTimer.singleShot(5000, self.measure_calibration)
-
-    def measure_calibration(self):
-        self.logger.info('powermeter equilibrium reached, zero powermeter')
-        self.calibration_status.emit('zeroing powermeter')
-        self.instruments['powermeter'].zero()
-        wavelengths = []
-        times = []
-        powers = []
-        tstart = time.time()
-        self.instruments['shuttercontrol'].enable()
-        for wavelength in self.beamsplitter_wavelengths:
-            # set the new wavelength, wait until laser stable
-            self.instruments['laser'].wavelength = wavelength
-            self.instruments['powermeter'].wavelength = wavelength
-            time.sleep(0.1)
-            while not self.instruments['laser'].is_stable():
-                time.sleep(0.1)
-            # measure the power
-            time_power, power = self.instruments['powermeter'].measure()
-            wavelengths.extend([wavelength] * len(power))
-            powers.extend(power)
-            times.extend(time_power)
-            tcurrent = time.time() - tstart
-            self._calculate_progress_calibration(wavelength, tcurrent)
-        try:
-            df = pd.read_csv(self.calibration_fname)
-            df['Times Position 2 [s]'] = times
-            df['Power Position 2 [W]'] = powers
-            df.to_csv(self.calibration_fname, index=False)
-            self.calibration_complete()
-            self.calibration_complete_signal.emit()
-            self.logger.info('Calibration of beamsplitter complete')
-        except FileNotFoundError:
-            df = pd.DataFrame({'Wavelength [nm]': wavelengths, 'Times Position 1 [s]': times,
-                               'Power Position 1 [W]': powers})
-            df.to_csv(self.calibration_fname, index=False)
-            # emit pop up screen signal, do that in main.
-            self.calibration_half_signal.emit()
-            self.logger.info('First part of beamsplitter calibration complete')
-
-    def _finish_calibration(self):
-        self.instruments['powermeter'].integration_time = 200
-        self.instruments['laser'].energylevel = 'Off'
-        self.instruments['shuttercontrol'].disable()
-        self.logger.info('setting instruments back to alignment/setexperiment settings')
+    # def _start_calibration(self):
+    #     """"
+    #     Starts the calibration routine.
+    #     Move the stage away, read the calibration parameters and parses these to the instruments. Sets the wavelength
+    #     attribute and filename attribute.
+    #     """
+    #     self.calibration_status.emit('started calibration')
+    #
+    #     path_settings = Path(__file__).parent.parent / 'settings_ui.yaml'
+    #     with path_settings.open() as f:
+    #         self.settings_ui = yaml_safe_load(f)
+    #
+    #     lasersettings = self.settings_ui['excitation_emission']['widget_laser_excitation_emission']
+    #     wlstart = lasersettings['spinBox_wavelength_start']
+    #     wlstop = lasersettings['spinBox_wavelength_stop']
+    #     wlstep = lasersettings['spinBox_wavelength_step']
+    #     energylevel = lasersettings['comboBox_energy_level_experiment']
+    #     powermetersettings = self.settings_ui['excitation_emission']['widget_powermeter_excitation_emission']
+    #     # integrationtime = powermetersettings['spinBox_integration_time_experiment']
+    #     self.beamsplitter_integrationtime = 3000
+    #
+    #     date = time.strftime("%y%m%d%H%M", time.localtime(self.startingtime))
+    #     wl = f'{wlstart}_{wlstep}_{wlstop}_nm'
+    #     self.calibration_fname = f'{self.storage_dir_calibration}/{self.beamsplitter}_{wl}_{date}.csv'
+    #
+    #     # parse settings
+    #     self.logger.info('Parsing settings for calibration, turning off shutter')
+    #     self.instruments['xystage'].move_with_wait(0, 0)
+    #     self.logger.info('Moved stage away for calibration')
+    #     self.instruments['laser'].energylevel = energylevel
+    #     self.instruments['laser'].output = True
+    #     self.instruments['powermeter'].integration_time = self.beamsplitter_integrationtime
+    #     self.instruments['powermeter'].prepare_measurement_multiple()
+    #     self.instruments['shuttercontrol'].disable()
+    #     self.beamsplitter_wavelengths = np.arange(wlstart, wlstop + 0.5 * wlstep, wlstep)
+    #     self.logger.info('waiting 3 seconds for powermeter to reach equilibrium temperature')
+    #     self.calibration_status.emit('calibration started, waiting for temperature equilibrium')
+    #     QTimer.singleShot(5000, self.measure_calibration)
+    #
+    # def _continue_calibration(self):
+    #     """ continues calibration after moving powermeter """
+    #     self.calibration_status.emit('calibration continued, waiting for temperature equilibrium')
+    #     self.instruments['shuttercontrol'].disable()
+    #     self.logger.info('shutter closed, waiting 3 seconds for powermeter to reach equilibrium temperature')
+    #     QTimer.singleShot(5000, self.measure_calibration)
+    #
+    # def measure_calibration(self):
+    #     self.logger.info('powermeter equilibrium reached, zero powermeter')
+    #     self.calibration_status.emit('zeroing powermeter')
+    #     self.instruments['powermeter'].zero()
+    #     wavelengths = []
+    #     times = []
+    #     powers = []
+    #     tstart = time.time()
+    #     self.instruments['shuttercontrol'].enable()
+    #     for wavelength in self.beamsplitter_wavelengths:
+    #         # set the new wavelength, wait until laser stable
+    #         self.instruments['laser'].wavelength = wavelength
+    #         self.instruments['powermeter'].wavelength = wavelength
+    #         time.sleep(0.1)
+    #         while not self.instruments['laser'].is_stable():
+    #             time.sleep(0.1)
+    #         # measure the power
+    #         time_power, power = self.instruments['powermeter'].measure()
+    #         wavelengths.extend([wavelength] * len(power))
+    #         powers.extend(power)
+    #         times.extend(time_power)
+    #         tcurrent = time.time() - tstart
+    #         self._calculate_progress_calibration(wavelength, tcurrent)
+    #     try:
+    #         df = pd.read_csv(self.calibration_fname)
+    #         df['Times Position 2 [s]'] = times
+    #         df['Power Position 2 [W]'] = powers
+    #         df.to_csv(self.calibration_fname, index=False)
+    #         self.calibration_complete()
+    #         self.calibration_complete_signal.emit()
+    #         self.logger.info('Calibration of beamsplitter complete')
+    #     except FileNotFoundError:
+    #         df = pd.DataFrame({'Wavelength [nm]': wavelengths, 'Times Position 1 [s]': times,
+    #                            'Power Position 1 [W]': powers})
+    #         df.to_csv(self.calibration_fname, index=False)
+    #         # emit pop up screen signal, do that in main.
+    #         self.calibration_half_signal.emit()
+    #         self.logger.info('First part of beamsplitter calibration complete')
+    #
+    # def _finish_calibration(self):
+    #     self.instruments['powermeter'].integration_time = 200
+    #     self.instruments['laser'].energylevel = 'Off'
+    #     self.instruments['shuttercontrol'].disable()
+    #     self.logger.info('setting instruments back to alignment/setexperiment settings')
 
     # region parse config
 
@@ -475,6 +476,7 @@ class StateMachine(QObject):
         self.instruments['spectrometer'].average_measurements = smsettings['spinBox_averageing_experiment']
         self.instruments['spectrometer'].clear_dark()
         self.instruments['spectrometer'].clear_lamp()
+        self.instruments['spectrometer'].transmission = False
         self.logger.info('parsed spectrometer settings')
 
     def _parse_powermetersettings(self, *integrationtime):
@@ -717,28 +719,23 @@ class StateMachine(QObject):
             return
 
         wavelength = list(df['Wavelength [nm]'])
-        times1 = list(df['Times Position 1 [s]'])
-        power1 = list(df['Power Position 1 [W]'])
-        times2 = list(df['Times Position 2 [s]'])
-        power2 = list(df['Power Position 2 [W]'])
+        position = list(df['Position'])
+        power = list(df['Power [W]'])
+        times = list(df['Time [s]'])
 
         group_beamsplitter = self.dataset.createGroup(f'calibration_beamsplitter')
-        group_beamsplitter.createDimension('powermeasurements', len(times1))
+        group_beamsplitter.createDimension('powermeasurements', len(times))
         wl = group_beamsplitter.createVariable('wavelength', 'f8', 'powermeasurements', fill_value=np.nan)
         wl.units = 'nm'
-        t1 = group_beamsplitter.createVariable('times_1', 'f8', 'powermeasurements', fill_value=np.nan)
-        t1.units = 's'
-        p1 = group_beamsplitter.createVariable('power_1', 'f8', 'powermeasurements', fill_value=np.nan)
-        p1.units = 'W'
-        t2 = group_beamsplitter.createVariable('times_2', 'f8', 'powermeasurements', fill_value=np.nan)
-        t2.units = 's'
-        p2 = group_beamsplitter.createVariable('power_2', 'f8', 'powermeasurements', fill_value=np.nan)
-        p2.units = 'W'
+        pos = group_beamsplitter.createVariable('position', 'f8', 'powermeasurements', fill_value=np.nan)
+        p = group_beamsplitter.createVariable('power', 'f8', 'powermeasurements', fill_value=np.nan)
+        p.units = 'W'
+        t = group_beamsplitter.createVariable('times', 'f8', 'powermeasurements', fill_value=np.nan)
+        t.units = 's'
         wl[:] = wavelength
-        t1[:] = times1
-        p1[:] = power1
-        t2[:] = times2
-        p2[:] = power2
+        pos[:] = position
+        p[:] = power
+        t[:] = times
 
     def _create_dimensions_transmission(self):
         self.dataset.createDimension('xy_position', 2)
@@ -1158,7 +1155,6 @@ class StateMachine(QObject):
             self.calibration_complete_signal.emit()
         self.instruments['xystage'].stop_motors()
         self.reset_instruments()
-        self.calibration = False
         self.is_done = True
         self.finish_experiment()
         self.return_setexperiment()
@@ -1170,7 +1166,6 @@ class StateMachine(QObject):
             self.calibration_complete_signal.emit()
         self.is_done = True
         self.reset_instruments()
-        self.calibration = False
         self.finish_experiment()
         self.return_setexperiment()
 
