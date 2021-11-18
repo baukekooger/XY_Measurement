@@ -10,8 +10,6 @@ states: [
         {'name': 'connecting', 'on_enter': '_connect_all'},
         {'name': 'align', 'on_enter': '_align', 'on_exit': '_stop_align'},
         {'name': 'setExperiment'},
-        {'name': 'calibrateBeamsplitterPosition1', 'on_enter': '_start_calibration'},
-        {'name': 'calibrateBeamsplitterPosition2', 'on_enter': '_continue_calibration', 'on_exit': '_finish_calibration'},
         {'name': 'experiment', 'children': [{'name': 'openFile', 'on_enter': ['_reset_experiment', '_open_file']},
                                             {'name': 'prepareMeasurement', 'on_enter': '_prepare_measurement'},
                                             {'name': 'measuring', 'on_enter': '_measure'},
@@ -19,15 +17,18 @@ states: [
                                             {'name': 'writeFile', 'on_enter': '_write_file'},
                                             {'name': 'calculateProgress', 'on_enter': '_calculate_progress'},
                                             {'name': 'aborted', 'on_enter': '_measurement_aborted'},
-                                            {'name': 'completed', 'on_enter': '_measurement_completed'}], 'on_enter': '_parse_config',
-                                                                                              'on_exit': '_return_setexperiment'}]
+                                            {'name': 'waitForResume', 'on_enter': '_notify_user_calibration'},
+                                            {'name': 'completed', 'on_enter': '_measurement_completed'}],
+         'on_enter': ['_connect_signals_instruments', '_parse_config'],
+         'on_exit': ['_disconnect_signals_instruments', '_return_setexperiment']}]
+
 
 transitions: [
             {'trigger': 'start', 'source': 'initialize', 'dest': 'waitingForExperiment'},
             {'trigger': 'choose_experiment', 'source': 'waitingForExperiment', 'dest': 'defineExperiment'},
             {'trigger': 'connect_all', 'source': 'defineExperiment',
              'dest': 'connecting'},
-            {'trigger': 'align', 'source': 'connecting', 'dest': 'align'},
+            {'trigger': 'align', 'source': 'connecting', 'dest': 'align', 'after':'_emit_init_gui'},
             {'trigger': 'align_experiment', 'source': 'align', 'dest': 'setExperiment'},
             {'trigger': 'align_experiment', 'source': 'setExperiment', 'dest': 'align'},
             {'trigger': 'prepare', 'source': ['experiment_openFile', 'experiment_calculateProgress'],
@@ -40,26 +41,25 @@ transitions: [
              'dest': 'experiment_writeFile'},
             {'trigger': 'calculate_progress', 'source': 'experiment_writeFile',
              'dest': 'experiment_calculateProgress', 'unless': 'is_done'},
+            {'trigger': 'connect_failed', 'source': 'connecting', 'dest': 'waitingForExperiment'},
             {'trigger': 'return_home', 'source': ['align', 'setExperiment'], 'dest': 'waitingForExperiment'},
-            {'trigger': 'continue_experiment', 'source': ['experiment_aborted', 'experiment_completed'], 'dest': 'experiment'},
+            {'trigger': 'finish_experiment', 'source': ['experiment_aborted', 'experiment_completed'], 'dest': 'experiment'},
             {'trigger': 'return_setexperiment', 'source': 'experiment', 'dest': 'setExperiment'},
             {'trigger': 'init_experiment', 'source': 'setExperiment', 'dest': 'experiment'},
+            {'trigger': 'wait_for_user', 'source': 'experiment_calculateProgress', 'dest': 'experiment_waitForResume'},
+            {'trigger': 'continue_experiment', 'source': 'experiment_waitForResume', 'dest': 'experiment_prepareMeasurement'},
             {'trigger': 'start_experiment', 'source': 'experiment', 'dest': 'experiment_openFile'},
             {'trigger': 'measurement_complete', 'source': 'experiment_calculateProgress', 'dest': 'experiment_completed'},
             {'trigger': 'abort', 'source': ['experiment_openFile', 'experiment_prepareMeasurement',
                                             'experiment_measuring', 'experiment_processingData',
-                                            'experiment_writeFile', 'experiment_calculateProgress'],
-                                            'dest': 'experiment_aborted'},
-            {'trigger': 'start_calibration', 'source': 'setExperiment', 'dest': 'calibrateBeamsplitterPosition1'},
-            {'trigger': 'continue_calibration', 'source': 'calibrateBeamsplitterPosition1', 'dest': 'calibrateBeamsplitterPosition2'},
-            {'trigger': 'calibration_complete', 'source': 'calibrateBeamsplitterPosition2', 'dest': 'setExperiment'},
-            {'trigger': 'abort', 'source': ['calibrateBeamsplitterPosition1', 'calibrateBeamsplitterPosition2'],
-            'dest': 'setExperiment'}
-            ]
+                                            'experiment_writeFile', 'experiment_calculateProgress',
+                                            'experiment_waitForResume'],
+                                            'dest': 'experiment_aborted'}]
 
 auto_transitions: False
 initial: 'initialize'
 show_conditions: True
+
 show_state_attributes: True
 queued: True
 #before_state_change: '_from_state'

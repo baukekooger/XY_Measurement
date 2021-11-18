@@ -1,0 +1,73 @@
+2021-11-17 11:18:37,680: logger Qinstrument.Qlaser: file lasers.py: line 45 INFO: init laser
+2021-11-17 11:18:41,048: logger Qinstrument.Qlaser: file lasers.py: line 243 INFO: connecting to laser
+2021-11-17 11:18:41,102: logger Qinstrument.Qlaser: file lasers.py: line 253 WARNING: Already connected to laser!
+2021-11-17 12:10:57,729: logger Qinstrument.Qlaser: file lasers.py: line 45 INFO: init laser
+2021-11-17 12:11:01,840: logger Qinstrument.Qlaser: file lasers.py: line 243 INFO: connecting to laser
+2021-11-17 12:11:01,873: logger Qinstrument.Qlaser: file lasers.py: line 252 ERROR: 7
+2021-11-17 12:15:52,225: logger Qinstrument.Qlaser: file lasers.py: line 45 INFO: init laser
+2021-11-17 12:15:55,679: logger Qinstrument.Qlaser: file lasers.py: line 243 INFO: connecting to laser
+2021-11-17 13:48:08,228: logger Qinstrument.Qlaser: file lasers.py: line 45 INFO: init laser
+2021-11-17 13:48:10,946: logger Qinstrument.Qlaser: file lasers.py: line 243 INFO: connecting to laser
+2021-11-17 13:48:10,952: logger Qinstrument.Qlaser: file lasers.py: line 252 ERROR: Could not connect to laser - 7
+2021-11-17 13:50:23,026: logger Qinstrument.Qlaser: file lasers.py: line 45 INFO: init laser
+2021-11-17 13:50:29,427: logger Qinstrument.Qlaser: file lasers.py: line 243 INFO: connecting to laser
+2021-11-17 13:57:59,874: logger Qinstrument.Qlaser: file lasers.py: line 45 INFO: init laser
+2021-11-17 14:06:28,581: logger Qinstrument.Qlaser: file lasers.py: line 45 INFO: init laser
+2021-11-17 14:06:32,355: logger Qinstrument.Qlaser: file lasers.py: line 243 INFO: connecting to laser
+2021-11-17 14:36:33,256: logger Qinstrument.Qlaser: file lasers.py: line 45 INFO: init laser
+2021-11-17 14:36:35,615: logger Qinstrument.Qlaser: file lasers.py: line 243 INFO: connecting to laser
+2021-11-17 14:38:29,322: logger Qinstrument.Qlaser: file lasers.py: line 45 INFO: init laser
+2021-11-17 14:38:31,714: logger Qinstrument.Qlaser: file lasers.py: line 243 INFO: connecting to laser
+2021-11-17 14:38:31,722: logger Qinstrument.Qlaser: file lasers.py: line 252 ERROR: Could not connect to laser Laser - Failed to connect
+2021-11-17 14:41:47,134: logger Qinstrument.Qlaser: file lasers.py: line 45 INFO: init laser
+2021-11-17 14:41:50,484: logger Qinstrument.Qlaser: file lasers.py: line 246 INFO: connecting to laser
+2021-11-17 14:41:50,493: logger Qinstrument.Qlaser: file lasers.py: line 230 ERROR: Laser - Failed to connect
+2021-11-18 13:22:48,417: logger Qinstrument.Qlaser: file lasers.py: line 45 INFO: init laser
+2021-11-18 13:22:51,715: logger Qinstrument.Qlaser: file lasers.py: line 246 INFO: connecting to laser
+2021-11-18 13:22:51,723: logger Qinstrument.Qlaser: file lasers.py: line 230 ERROR: Laser - Failed to connect
+2021-11-18 15:29:17,808: logger Qinstrument.Qlaser: file lasers.py: line 45 INFO: init laser
+2021-11-18 15:29:20,422: logger Qinstrument.Qlaser: file lasers.py: line 246 INFO: connecting to laser
+2021-11-18 15:29:21,151: logger Qinstrument.Qlaser: file lasers.py: line 252 INFO: laser connected
+2021-11-18 15:29:21,175: logger Qinstrument.Qlaser: file lasers.py: line 214 WARNING: An error occurred during Laser communication, reattempting...
+2021-11-18 15:29:21,277: logger Qinstrument.Qlaser: file lasers.py: line 239 ERROR: Laser - No such device name
+2021-11-18 15:29:21,277: logger Qinstrument.Qlaser: file lasers.py: line 214 WARNING: An error occurred during Laser communication, reattempting...
+2021-11-18 15:29:21,377: logger Qinstrument.Qlaser: file lasers.py: line 239 ERROR: Laser - No such device name
+2021-11-18 15:29:54,748: logger Qinstrument.Qlaser: file lasers.py: line 45 INFO: init laser
+2021-11-18 15:29:57,026: logger Qinstrument.Qlaser: file lasers.py: line 246 INFO: connecting to laser
+2021-11-18 15:29:57,761: logger Qinstrument.Qlaser: file lasers.py: line 252 INFO: laser connected
+2021-11-18 15:29:57,784: logger Qinstrument.Qlaser: file lasers.py: line 214 WARNING: An error occurred during Laser communication, reattempting...
+2021-11-18 15:29:57,885: logger Qinstrument.Qlaser: file lasers.py: line 239 ERROR: Laser - No such device name
+2021-11-18 15:29:57,885: logger Qinstrument.Qlaser: file lasers.py: line 214 WARNING: An error occurred during Laser communication, reattempting...
+2021-11-18 15:29:57,987: logger Qinstrument.Qlaser: file lasers.py: line 239 ERROR: Laser - No such device name
+2021-11-18 15:30:04,973: logger Qinstrument.Qlaser: file lasers.py: line 214 WARNING: An error occurred during Laser communication, reattempting...
+2021-11-18 15:30:04,989: logger Qinstrument.Qlaser: file lasers.py: line 214 WARNING: An error occurred during Laser communication, reattempting...
+2021-11-18 15:30:05,074: logger Qinstrument.Qlaser: file lasers.py: line 239 ERROR: Laser - No such device name
+2021-11-18 15:30:05,074: logger Qinstrument.Qlaser: file lasers.py: line 214 WARNING: An error occurred during Laser communication, reattempting...
+2021-11-18 15:30:05,091: logger Qinstrument.Qlaser: file lasers.py: line 239 ERROR: Laser - No such device name
+2021-11-18 15:30:05,091: logger Qinstrument.Qlaser: file lasers.py: line 214 WARNING: An error occurred during Laser communication, reattempting...
+2021-11-18 15:30:05,176: logger Qinstrument.Qlaser: file lasers.py: line 239 ERROR: Laser - No such device name
+2021-11-18 15:30:05,192: logger Qinstrument.Qlaser: file lasers.py: line 239 ERROR: Laser - No such device name
+2021-11-18 15:30:33,076: logger Qinstrument.Qlaser: file lasers.py: line 214 WARNING: An error occurred during Laser communication, reattempting...
+2021-11-18 15:30:33,094: logger Qinstrument.Qlaser: file lasers.py: line 214 WARNING: An error occurred during Laser communication, reattempting...
+2021-11-18 15:30:33,178: logger Qinstrument.Qlaser: file lasers.py: line 239 ERROR: Laser - No such device name
+2021-11-18 15:30:33,178: logger Qinstrument.Qlaser: file lasers.py: line 214 WARNING: An error occurred during Laser communication, reattempting...
+2021-11-18 15:30:33,195: logger Qinstrument.Qlaser: file lasers.py: line 239 ERROR: Laser - No such device name
+2021-11-18 15:30:33,195: logger Qinstrument.Qlaser: file lasers.py: line 214 WARNING: An error occurred during Laser communication, reattempting...
+2021-11-18 15:30:33,280: logger Qinstrument.Qlaser: file lasers.py: line 239 ERROR: Laser - No such device name
+2021-11-18 15:30:33,296: logger Qinstrument.Qlaser: file lasers.py: line 239 ERROR: Laser - No such device name
+2021-11-18 15:30:41,455: logger Qinstrument.Qlaser: file lasers.py: line 214 WARNING: An error occurred during Laser communication, reattempting...
+2021-11-18 15:30:41,473: logger Qinstrument.Qlaser: file lasers.py: line 214 WARNING: An error occurred during Laser communication, reattempting...
+2021-11-18 15:30:41,557: logger Qinstrument.Qlaser: file lasers.py: line 239 ERROR: Laser - No such device name
+2021-11-18 15:30:41,557: logger Qinstrument.Qlaser: file lasers.py: line 214 WARNING: An error occurred during Laser communication, reattempting...
+2021-11-18 15:30:41,575: logger Qinstrument.Qlaser: file lasers.py: line 239 ERROR: Laser - No such device name
+2021-11-18 15:30:41,575: logger Qinstrument.Qlaser: file lasers.py: line 214 WARNING: An error occurred during Laser communication, reattempting...
+2021-11-18 15:30:41,657: logger Qinstrument.Qlaser: file lasers.py: line 239 ERROR: Laser - No such device name
+2021-11-18 15:30:41,676: logger Qinstrument.Qlaser: file lasers.py: line 239 ERROR: Laser - No such device name
+2021-11-18 15:30:48,096: logger Qinstrument.Qlaser: file lasers.py: line 214 WARNING: An error occurred during Laser communication, reattempting...
+2021-11-18 15:30:48,112: logger Qinstrument.Qlaser: file lasers.py: line 214 WARNING: An error occurred during Laser communication, reattempting...
+2021-11-18 15:30:48,198: logger Qinstrument.Qlaser: file lasers.py: line 239 ERROR: Laser - No such device name
+2021-11-18 15:30:48,198: logger Qinstrument.Qlaser: file lasers.py: line 214 WARNING: An error occurred during Laser communication, reattempting...
+2021-11-18 15:30:48,213: logger Qinstrument.Qlaser: file lasers.py: line 239 ERROR: Laser - No such device name
+2021-11-18 15:30:48,213: logger Qinstrument.Qlaser: file lasers.py: line 214 WARNING: An error occurred during Laser communication, reattempting...
+2021-11-18 15:30:48,299: logger Qinstrument.Qlaser: file lasers.py: line 239 ERROR: Laser - No such device name
+2021-11-18 15:30:48,314: logger Qinstrument.Qlaser: file lasers.py: line 239 ERROR: Laser - No such device name

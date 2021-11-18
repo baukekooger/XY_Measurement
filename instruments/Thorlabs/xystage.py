@@ -1,5 +1,6 @@
 import logging
 from instruments.Thorlabs import apt
+from instruments.Thorlabs.apt.core import APTError
 import time
 from PyQt5.QtCore import QObject, QMutexLocker, QMutex, pyqtSignal, pyqtSlot
 
@@ -23,9 +24,9 @@ class QXYStage(QObject):
         self.timeout = timeout
         self.polltime = polltime
         # Position extremes
-        self.xmax = 150
+        self.xmax = 70
         self.xmin = 0
-        self.ymax = 150
+        self.ymax = 160
         self.ymin = 0
         # XYStage status
         # small stages: xstageserial=67844568, ystageserial=67844567
@@ -42,6 +43,7 @@ class QXYStage(QObject):
     def name(self):
         return type(self).__name__
 
+    @staticmethod
     def list_available_devices(self):
         return apt.list_available_devices()
 
@@ -70,11 +72,15 @@ class QXYStage(QObject):
         self.ystage.move_to(value, blocking=False)
 
     def connect(self):
-        self.xstage = apt.Motor(self.xstage_serial)
-        self.ystage = apt.Motor(self.ystage_serial)
-        self.connected = True
-        self.xhomed = self.xstage.has_homing_been_completed
-        self.yhomed = self.ystage.has_homing_been_completed
+        try:
+            self.xstage = apt.Motor(self.xstage_serial)
+            self.ystage = apt.Motor(self.ystage_serial)
+            self.connected = True
+            self.xhomed = self.xstage.has_homing_been_completed
+            self.yhomed = self.ystage.has_homing_been_completed
+        except APTError as e:
+            self.logger.error(f'Failed to connect stages. {e}')
+            raise ConnectionError(e)
 
     def disconnect(self):
         if not self.connected:
@@ -138,6 +144,7 @@ class QXYStage(QObject):
         self.y = y
         while not self.settled():
             time.sleep(0.1)
+
 
     @pyqtSlot()
     @pyqtSlot(float, float)

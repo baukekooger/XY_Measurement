@@ -62,9 +62,13 @@ class QDigitizer(CAENlib.Digitizer, QObject):
     @pyqtSlot()
     def connect(self):
         """ Open the digitizer, then apply common initial settings """
-        self.connect_device()
-        self.connected = True
-        self.init_device()
+        try:
+            self.connect_device()
+            self.connected = True
+            self.init_device()
+        except IndexError:
+            self.logger_q_instrument.error('Failed connecting to digitizer, could not find a digitizer')
+            raise ConnectionError('Could not find a digitizer')
 
     @pyqtSlot()
     def disconnect(self):
@@ -332,7 +336,7 @@ class QDigitizer(CAENlib.Digitizer, QObject):
     def _compress_single_photon_counts(self):
         """
         Compress single photon counts by the set compression factor for plotting. Do check if chosen compression
-        factor is enough
+        factor is enough.
         """
 
         self.logger_q_instrument.debug(f'compressing single photon counts with {self.compression_factor}')
@@ -355,7 +359,7 @@ class QDigitizer(CAENlib.Digitizer, QObject):
                        f' {additional_compressionfactor} to {totalfactor/self.sample_rate*1_000_000:.3f} {mu}s'
         else:
             self.logger_q_instrument.debug('no additional compression done')
-            times = np.linspace(0, (samples - 1) / self.sample_rate, samples)
+            times = np.linspace(0, (samples - 1)*self.compression_factor / self.sample_rate, samples)
             plotinfo = f'{self.pulse_counter} pulses'
 
         return times, data, plotinfo

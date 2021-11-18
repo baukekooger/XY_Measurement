@@ -24,10 +24,14 @@ class PowerMeter:
         self.measuring = False
 
     def connect_device(self):
-        self.pm = visa.ResourceManager().open_resource(self.name)
-        self.connected = True
-        # Set spectrometer to power mode
-        self.pm.write('conf:pow')
+        try:
+            self.pm = visa.ResourceManager().open_resource(self.name)
+            self.connected = True
+            # Set spectrometer to power mode
+            self.pm.write('conf:pow')
+        except pyvisa.errors.VisaIOError as error:
+            self.logger_instrument.error('Could not connect powermeter')
+            raise ConnectionError('No powermeter found')
 
     @property
     def wavelength(self):
