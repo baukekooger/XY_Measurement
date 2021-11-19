@@ -185,7 +185,21 @@ class StateMachine(QObject):
                 self.logger.info(f'disconnecting {inst}')
                 self.instruments[inst].disconnect()
 
-    def _connect_signals_instruments(self):
+    def _connect_signals_align(self):
+        """ Connect instrument signals to each other for alignment. """
+        if self.experiment == 'excitation_emission':
+            self.logger.info('connecting laser wavelength to powermeter wavelength')
+            self.instruments['laser'].wavelength_signal.connect(self.instruments['powermeter'].set_wavelength)
+            # emit the wavelength by calling the property
+            _ = self.instruments['laser'].wavelength
+
+    def _disconnect_signals_align(self):
+        """ Disconnect instrument signals from the align state. """
+        if self.experiment == 'excitation_emission':
+            self.logger.info('disconnecting laser wavelength to powermeter wavelength')
+            self.instruments['laser'].wavelength_signal.disconnect(self.instruments['powermeter'].set_wavelength)
+
+    def _connect_signals_experiment(self):
         """
         Connect the relevant instrument signals to statemachine triggers.
         """
@@ -207,7 +221,7 @@ class StateMachine(QObject):
             self.instruments['xystage'].stage_settled.connect(self.measure)
             self.instruments['digitizer'].measurement_done.connect(self.process_data)
 
-    def _disconnect_signals_instruments(self):
+    def _disconnect_signals_experiment(self):
         """
         Disconnect the relevant signals from the instruments. Called when experiment or calibration is done.
         """
@@ -235,6 +249,7 @@ class StateMachine(QObject):
         Start the repeated timer for reading out instruments. For decay, set the digitizer readout mode to timed to
         make the readout time-efficient
         """
+        self._connect_signals_align()
         if self.experiment == 'decay':
             self.instruments['digitizer'].polltime = self.polltime
             self.instruments['digitizer'].pulses_per_measurement = math.ceil(self.polltime * 101)
@@ -242,6 +257,7 @@ class StateMachine(QObject):
         self.heartbeat.start()
 
     def _stop_align(self):
+        self._disconnect_signals_align()
         """ Stop the repeated timer for reading out instruments. Shut down the laser. """
         self.heartbeat.stop()
         # wait till laser is done measuring

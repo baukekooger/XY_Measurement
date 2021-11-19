@@ -54,6 +54,7 @@ class SpectrometerPlotWidget(QtWidgets.QWidget):
         self.ln, = self.ax.plot(self.spectrometer.wavelengths, intensities, animated=True)
         self.ax.set_ylabel('counts')
         self.ax.set_xlabel('wavelength [nm]')
+        self.ax.set_title(f"Spectrometer {self.spectrometer.spec.model + ' ' + self.spectrometer.spec.serial_number}")
         self.bm = BlitManager(self.canvas, [self.ln])
         time.sleep(0.1)
 

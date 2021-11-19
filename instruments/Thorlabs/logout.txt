@@ -38,3 +38,22 @@
 2021-11-18 14:08:18,526: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 119 INFO: powermeter completed,  time with all measurements 0.208, number of measurements = 1
 2021-11-18 14:08:32,731: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 105 INFO: measuring powermeter
 2021-11-18 14:08:32,935: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 119 INFO: powermeter completed,  time with all measurements 0.203, number of measurements = 35
+2021-11-19 10:44:09,763: logger ínstrument.PowerMeter: file powermeters.py: line 20 INFO: init PowerMeter
+2021-11-19 10:44:09,769: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 35 INFO: init QPowerMeter
+2021-11-19 10:44:09,769: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 59 INFO: setting integration time to 200 ms
+2021-11-19 10:44:12,426: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 59 INFO: setting integration time to 200 ms
+2021-11-19 10:50:39,766: logger ínstrument.PowerMeter: file powermeters.py: line 20 INFO: init PowerMeter
+2021-11-19 10:50:39,767: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 35 INFO: init QPowerMeter
+2021-11-19 10:50:39,767: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 59 INFO: setting integration time to 200 ms
+2021-11-19 10:50:42,393: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 59 INFO: setting integration time to 200 ms
+2021-11-19 10:51:29,261: logger ínstrument.PowerMeter: file powermeters.py: line 20 INFO: init PowerMeter
+2021-11-19 10:51:29,261: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 35 INFO: init QPowerMeter
+2021-11-19 10:51:29,261: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 59 INFO: setting integration time to 200 ms
+2021-11-19 10:51:32,946: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 59 INFO: setting integration time to 200 ms
+2021-11-19 11:04:37,677: logger ínstrument.PowerMeter: file powermeters.py: line 20 INFO: init PowerMeter
+2021-11-19 11:04:37,677: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 35 INFO: init QPowerMeter
+2021-11-19 11:04:37,677: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 59 INFO: setting integration time to 200 ms
+2021-11-19 11:05:18,509: logger ínstrument.PowerMeter: file powermeters.py: line 20 INFO: init PowerMeter
+2021-11-19 11:05:18,509: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 35 INFO: init QPowerMeter
+2021-11-19 11:05:18,510: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 59 INFO: setting integration time to 200 ms
+2021-11-19 11:05:21,422: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 59 INFO: setting integration time to 200 ms

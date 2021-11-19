@@ -41,7 +41,12 @@ class PowerMeter:
 
     @wavelength.setter
     def wavelength(self, value):
+        self.logger_instrument.info(f'setting the powermeter wavelength to {value}')
         self.pm.write(f'sense:corr:wav {value}')
+
+    def set_wavelength(self, value):
+        """ Callable to set the wavelength. """
+        self.wavelength = value
 
     @property
     def averageing(self):
@@ -73,12 +78,24 @@ class PowerMeter:
 
     @property
     def sensor(self):
+        """ Return information about the connected sensor. """
         sensorinfo = self.pm.query('syst:sens:idn?').strip().split(',')
         model = sensorinfo[0]
         sn = sensorinfo[1]
         caldate = sensorinfo[2]
         sensor = {'Model': model, 'Serial_Number': sn, 'Calibration_Date': caldate}
         return sensor
+
+    @property
+    def device(self):
+        """ Return the powermeter model. """
+        info = self.pm.query('*IDN?').strip().split(',')
+        brand = info[0]
+        model = info[1]
+        sn = info[2]
+        firmware = info[3]
+        device_info = {'Brand': brand, 'Model': model, 'Serial_Number': sn, 'Firmware_Version': firmware}
+        return device_info
 
     def read_power(self):
         power = self.pm.query_ascii_values('read?')[0]

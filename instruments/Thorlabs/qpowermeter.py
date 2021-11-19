@@ -123,7 +123,6 @@ class QPowerMeter(PowerMeter, QObject):
         self.measurement_complete_multiple.emit(self.last_times, self.last_powers)
         self.measurement_done.emit()
         self.measuring = False
-        self.emit_parameters()
         return self.last_times, self.last_powers
 
     @pyqtSlot()
@@ -141,12 +140,6 @@ class QPowerMeter(PowerMeter, QObject):
         with(QMutexLocker(self.mutex)):
             self.reset_default()
         self.measuring = False
-
-    @pyqtSlot()
-    def emit_parameters(self):
-        wavelength = int(self.wavelength)
-        integration_time = int(self.integration_time)
-        self.measurement_parameters.emit(wavelength, integration_time)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.disconnect()

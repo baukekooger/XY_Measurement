@@ -53,6 +53,8 @@ class PowerMeterPlotWidget(QtWidgets.QWidget):
         self.line, = self.ax.plot(self.log_time, 1000 * self.log_power[-2001:-1], animated=True)
         self.ax.set_ylabel('power [mW]')
         self.ax.set_xlabel('time [s]')
+        self.ax.set_title(f"Power Meter {self.powermeter.device['Model']} - Sensor Model "
+                          f"{self.powermeter.sensor['Model']}")
         self.ax.invert_xaxis()
         self.blitmanager = BlitManager(self.canvas, [self.line])
         time.sleep(0.1)

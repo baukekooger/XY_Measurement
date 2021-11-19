@@ -37,6 +37,7 @@ class QLaser(QObject):
     """
 
     measurement_complete = pyqtSignal(float, str, float, bool, bool)
+    wavelength_signal = pyqtSignal(int)
 
     def __init__(self, waittime=0.05, polltime=0.1, timeout=10, parent=None):
         super().__init__(parent=parent)
@@ -66,6 +67,9 @@ class QLaser(QObject):
         dev = "MidiOPG:31"
         reg = "WaveLength"
         wavelength = self._get_register_double(dev, reg)
+        if wavelength:
+            wavelength = int(wavelength)
+            self.wavelength_signal.emit(wavelength)
         return wavelength
 
     @wavelength.setter
@@ -85,6 +89,7 @@ class QLaser(QObject):
         dev = "MidiOPG:31"
         reg = "WaveLength"
         self._set_register_double(dev, reg, wl)
+        self.wavelength_signal.emit(wl)
         #        #TODO Set motor to calibrated position from maximal intensity
         #        dev = "PBP2:35"
         #        reg = "Motor position"

@@ -19,8 +19,8 @@ states: [
                                             {'name': 'aborted', 'on_enter': '_measurement_aborted'},
                                             {'name': 'waitForResume', 'on_enter': '_notify_user_calibration'},
                                             {'name': 'completed', 'on_enter': '_measurement_completed'}],
-         'on_enter': ['_connect_signals_instruments', '_parse_config'],
-         'on_exit': ['_disconnect_signals_instruments', '_return_setexperiment']}]
+         'on_enter': ['_connect_signals_experiment', '_parse_config'],
+         'on_exit': ['_disconnect_signals_experiment', '_return_setexperiment']}]
 
 
 transitions: [

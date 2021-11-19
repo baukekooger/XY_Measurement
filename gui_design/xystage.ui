@@ -98,7 +98,7 @@
                 </property>
                 <property name="minimumSize">
                  <size>
-                  <width>100</width>
+                  <width>120</width>
                   <height>0</height>
                  </size>
                 </property>
@@ -149,7 +149,7 @@
                 </property>
                 <property name="minimumSize">
                  <size>
-                  <width>100</width>
+                  <width>120</width>
                   <height>0</height>
                  </size>
                 </property>
@@ -194,7 +194,7 @@
                 </property>
                 <property name="minimumSize">
                  <size>
-                  <width>100</width>
+                  <width>120</width>
                   <height>0</height>
                  </size>
                 </property>
@@ -236,7 +236,7 @@
                 </property>
                 <property name="minimumSize">
                  <size>
-                  <width>100</width>
+                  <width>120</width>
                   <height>0</height>
                  </size>
                 </property>
@@ -284,7 +284,7 @@
                 </property>
                 <property name="minimumSize">
                  <size>
-                  <width>100</width>
+                  <width>120</width>
                   <height>0</height>
                  </size>
                 </property>
@@ -326,7 +326,7 @@
                 </property>
                 <property name="minimumSize">
                  <size>
-                  <width>100</width>
+                  <width>120</width>
                   <height>0</height>
                  </size>
                 </property>
@@ -450,12 +450,15 @@
                 </property>
                 <property name="minimumSize">
                  <size>
-                  <width>55</width>
+                  <width>75</width>
                   <height>0</height>
                  </size>
                 </property>
                 <property name="text">
-                 <string>100.00 mm</string>
+                 <string>0.00 mm</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
                 </property>
                </widget>
               </item>
@@ -547,12 +550,15 @@ background-color: rgb(202, 0, 3);
                 </property>
                 <property name="minimumSize">
                  <size>
-                  <width>55</width>
+                  <width>75</width>
                   <height>0</height>
                  </size>
                 </property>
                 <property name="text">
-                 <string>100.00 mm</string>
+                 <string>0.00 mm</string>
+                </property>
+                <property name="alignment">
+                 <set>Qt::AlignCenter</set>
                 </property>
                </widget>
               </item>

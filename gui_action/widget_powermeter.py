@@ -17,15 +17,10 @@ class PowerMeterWidget(QtWidgets.QWidget):
 
     def connect_signals_slots(self):
         self.powermeter.measurement_complete_multiple.connect(self.handle_measurement)
-        self.powermeter.measurement_parameters.connect(self.update_parameters)
-        self.powermeter.emit_parameters()
-        self.ui.spinBox_wavelength_alignment.editingFinished.connect(self.handle_wavelength)
         self.ui.pushButton_zero.clicked.connect(self.powermeter.zero)
 
     def disconnect_signals_slots(self):
         self.powermeter.measurement_complete_multiple.disconnect(self.handle_measurement)
-        self.powermeter.measurement_parameters.disconnect(self.update_parameters)
-        self.ui.spinBox_wavelength_alignment.editingFinished.disconnect(self.handle_wavelength)
         self.ui.pushButton_zero.clicked.disconnect(self.powermeter.zero)
 
     @pyqtSlot(list, list)
@@ -45,15 +40,15 @@ class PowerMeterWidget(QtWidgets.QWidget):
         else:
             self.ui.label_power_value_unit.setText(f'zeroing required')
 
-    @pyqtSlot(int, int)
-    def update_parameters(self, wavelength, integration_time):
-        self.ui.label_indicator_wavelength_alignment.setText(f'{wavelength} nm')
-
-    @pyqtSlot()
-    def handle_wavelength(self):
-        wavelength = self.ui.spinBox_wavelength_alignment.value()
-        self.powermeter.wavelength = wavelength
-        QTimer.singleShot(0, self.powermeter.emit_parameters)
+    # @pyqtSlot(int, int)
+    # def update_parameters(self, wavelength, integration_time):
+    #     self.ui.label_indicator_wavelength_alignment.setText(f'{wavelength} nm')
+    #
+    # @pyqtSlot()`
+    # def handle_wavelength(self):
+    #     wavelength = self.ui.spinBox_wavelength_alignment.value()
+    #     self.powermeter.wavelength = wavelength
+    #     QTimer.singleShot(0, self.powermeter.emit_parameters)
 
     # def closeEvent(self, event):
     #     self.powermeter.disconnect()
