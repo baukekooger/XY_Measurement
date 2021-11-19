@@ -426,22 +426,23 @@ class StateMachine(QObject):
     def _parse_xypositions(self):
         """ Parse position settings from the ui to make the position measurement parameters. """
         self.logger.info('parse position settings')
+        lightsource = 'lamp' if self.experiment == 'transmission' else 'laser'
         substrate = self.settings_ui[self.experiment][f'widget_file_{self.experiment}']['comboBox_substrate']
-        subtratesettings = self.config['substrates'][substrate]
+        substratesettings = self.config['substrates'][substrate]
         xysettings = self.settings_ui[self.experiment][f'widget_xystage_{self.experiment}']
         x_num = xysettings['spinBox_x_num']
         x_off_left = xysettings['spinBox_x_off_left']
         x_off_right = xysettings['spinBox_x_off_right']
-        x_start = subtratesettings[f'x_start_{self.experiment}']
-        width_sample = subtratesettings['whse']
-        width_sample_usable = subtratesettings['ws']
+        x_start = substratesettings[f'x_{lightsource}'] + substratesettings['dfhx']
+        width_sample = substratesettings['whse']
+        width_sample_usable = substratesettings['ws']
         x = self._define_positions(x_num, x_off_left, x_off_right, x_start, width_sample, width_sample_usable, 'x')
         y_num = xysettings['spinBox_y_num']
         y_off_bottom = xysettings['spinBox_y_off_bottom']
         y_off_top = xysettings['spinBox_y_off_top']
-        y_start = subtratesettings[f'y_start_{self.experiment}']
-        height_sample = subtratesettings['hhse']
-        height_sample_usable = subtratesettings['hs']
+        y_start = substratesettings[f'y_{lightsource}'] + substratesettings['dfhy']
+        height_sample = substratesettings['hhse']
+        height_sample_usable = substratesettings['hs']
         y = self._define_positions(y_num, y_off_bottom, y_off_top, y_start, height_sample, height_sample_usable, 'y')
         self.measurement_parameters = {}
         self._add_measurement_parameter('x', x)

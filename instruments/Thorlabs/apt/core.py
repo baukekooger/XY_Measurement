@@ -1,6 +1,5 @@
-from . import _APTAPI
-from . import _error_codes
-
+from instruments.Thorlabs.apt import _APTAPI
+from instruments.Thorlabs.apt import _error_codes
 
 import ctypes
 import ctypes.util

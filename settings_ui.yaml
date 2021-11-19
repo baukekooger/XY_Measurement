@@ -81,7 +81,7 @@ lineEdit_beamsplitter_calibration_file: C:/Users/bauke/OneDrive/Bureaublad/BeamS
 transmission:
   widget_file_transmission:
     comboBox_substrate: 50X50 mm (Borofloat)
-    lineEdit_directory: ''
+    lineEdit_directory: C:/Users/bauke/OneDrive/Bureaublad
     lineEdit_filter: NoFilzle
     lineEdit_sample: TestDizzle
     plainTextEdit_comments: JOSHIZZLE
@@ -91,10 +91,10 @@ transmission:
     spinBox_integration_time_alignment: 100
     spinBox_integration_time_experiment: 200
   widget_xystage_transmission:
-    checkBox_homed_x: false
-    checkBox_homed_y: false
-    doubleSpinBox_x: 0.0
-    doubleSpinBox_y: 0.0
+    checkBox_homed_x: true
+    checkBox_homed_y: true
+    doubleSpinBox_x: 20.0
+    doubleSpinBox_y: 48.0
     spinBox_x_num: 2
     spinBox_x_off_left: 0
     spinBox_x_off_right: 0

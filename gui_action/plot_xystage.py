@@ -73,8 +73,9 @@ class XYStagePlotWidget(QtWidgets.QWidget):
             hs = self.config['substrates'][self.substrate]['hs']  # height sample
             dfhx = self.config['substrates'][self.substrate]['dfhx']  # distance from holder x
             dfhy = self.config['substrates'][self.substrate]['dfhy']  # distance from holder y
-            lightsource_x = self.config['substrates'][self.substrate][f'lightsource_x_{self.experiment}']
-            lightsource_y = self.config['substrates'][self.substrate][f'lightsource_y_{self.experiment}']
+            lightsource = 'lamp' if self.experiment == 'transmission' else 'laser'
+            lightsource_x = self.config['substrates'][self.substrate][f'x_{lightsource}']
+            lightsource_y = self.config['substrates'][self.substrate][f'y_{lightsource}']
 
             self.holder_patch.set_xy((x, y))
             self.holder_patch.set_width(-who)
@@ -98,8 +99,10 @@ class XYStagePlotWidget(QtWidgets.QWidget):
         hs = self.config['substrates'][self.substrate]['hs']  # height sample
         dfhx = self.config['substrates'][self.substrate]['dfhx']  # distance from holder x
         dfhy = self.config['substrates'][self.substrate]['dfhy']  # distance from holder y
-        lightsource_x = self.config['substrates'][self.substrate][f'lightsource_x_{self.experiment}']
-        lightsource_y = self.config['substrates'][self.substrate][f'lightsource_y_{self.experiment}']
+
+        lightsource = 'lamp' if self.experiment == 'transmission' else 'laser'
+        lightsource_x = self.config['substrates'][self.substrate][f'x_{lightsource}']
+        lightsource_y = self.config['substrates'][self.substrate][f'y_{lightsource}']
 
         self.holder_patch = self.ax.add_patch(Rectangle((x, y), -who, -hho, fc='black'))
         self.holder_sample_edge_patch = self.ax.add_patch(Rectangle((x - dfhx + 1.5, y - dfhy + 1.5),
@@ -127,8 +130,9 @@ class XYStagePlotWidget(QtWidgets.QWidget):
         hho = 100
         whse = self.config['substrates'][self.substrate]['whse']  # width holder sample edge
         hhse = self.config['substrates'][self.substrate]['hhse']  # height holder sample edge
-        lightsource_x = self.config['substrates'][self.substrate][f'lightsource_x_{self.experiment}']
-        lightsource_y = self.config['substrates'][self.substrate][f'lightsource_y_{self.experiment}']
+        lightsource = 'lamp' if self.experiment == 'transmission' else 'laser'
+        lightsource_x = self.config['substrates'][self.substrate][f'x_{lightsource}']
+        lightsource_y = self.config['substrates'][self.substrate][f'y_{lightsource}']
         if not self.zoom:
             self.zoom = True
             self.zoombutton.setText('zoom out')

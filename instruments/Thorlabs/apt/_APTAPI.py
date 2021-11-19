@@ -51,6 +51,7 @@ DC_PROFILEMODE_SCURVE = 2
 DC_JS_DIRSENSE_POS = 1
 DC_JS_DIRSENSE_NEG = 2
 
+
 def set_ctypes_argtypes(lib):
     c_long = ctypes.c_long
     c_long_p = ctypes.POINTER(ctypes.c_long)
@@ -68,7 +69,7 @@ def set_ctypes_argtypes(lib):
     lib.GetNumHWUnitsEx.restype = c_long
     lib.GetHWSerialNumEx.argtypes = [c_long, c_long, c_long_p]
     lib.GetHWSerialNumEx.restype = c_long
-    lib.GetHWInfo.argtypes = [c_long, c_char_p, c_long, c_char_p, c_long, 
+    lib.GetHWInfo.argtypes = [c_long, c_char_p, c_long, c_char_p, c_long,
             c_char_p, c_long]
     lib.GetHWInfo.restype = c_long
     lib.InitHWDevice.argtypes = [c_long]
@@ -99,7 +100,7 @@ def set_ctypes_argtypes(lib):
     lib.MOT_GetVelParamLimits.restype = c_long
     lib.MOT_SetHomeParams.argtypes = [c_long, c_long, c_long, c_float, c_float]
     lib.MOT_SetHomeParams.restype = c_long
-    lib.MOT_GetHomeParams.argtypes = [c_long, c_long_p, c_long_p, c_float_p, 
+    lib.MOT_GetHomeParams.argtypes = [c_long, c_long_p, c_long_p, c_float_p,
             c_float_p]
     lib.MOT_GetHomeParams.restype = c_long
     lib.MOT_GetStatusBits.argtypes = [c_long, c_long_p]
@@ -112,10 +113,10 @@ def set_ctypes_argtypes(lib):
     lib.MOT_SetMotorParams.restype = c_long
     lib.MOT_GetMotorParams.argtypes = [c_long, c_long_p, c_long_p]
     lib.MOT_GetMotorParams.restype = c_long
-    lib.MOT_SetStageAxisInfo.argtypes = [c_long, c_float, c_float, c_long, 
+    lib.MOT_SetStageAxisInfo.argtypes = [c_long, c_float, c_float, c_long,
             c_float]
     lib.MOT_SetStageAxisInfo.restype = c_long
-    lib.MOT_GetStageAxisInfo.argtypes = [c_long, c_float_p, c_float_p, 
+    lib.MOT_GetStageAxisInfo.argtypes = [c_long, c_float_p, c_float_p,
             c_long_p, c_float_p]
     lib.MOT_GetStageAxisInfo.restype = c_long
     lib.MOT_SetHWLimSwitches.argtypes = [c_long, c_long, c_long]
@@ -124,7 +125,7 @@ def set_ctypes_argtypes(lib):
     lib.MOT_GetHWLimSwitches.restype = c_long
     lib.MOT_SetPIDParams.argtypes = [c_long, c_long, c_long, c_long, c_long]
     lib.MOT_SetPIDParams.restype = c_long
-    lib.MOT_GetPIDParams.argtypes = [c_long, c_long_p, c_long_p, c_long_p, 
+    lib.MOT_GetPIDParams.argtypes = [c_long, c_long_p, c_long_p, c_long_p,
             c_long_p]
     lib.MOT_GetPIDParams.restype = c_long
     lib.MOT_GetPosition.argtypes = [c_long, c_float_p]
@@ -144,25 +145,25 @@ def set_ctypes_argtypes(lib):
     lib.MOT_SetDCCurrentLoopParams.argtypes = [c_long, c_long, c_long, c_long,
             c_long, c_long]
     lib.MOT_SetDCCurrentLoopParams.restype = c_long
-    lib.MOT_GetDCCurrentLoopParams.argtypes = [c_long, c_long_p, c_long_p, 
+    lib.MOT_GetDCCurrentLoopParams.argtypes = [c_long, c_long_p, c_long_p,
             c_long_p, c_long_p, c_long_p]
     lib.MOT_GetDCCurrentLoopParams.restype = c_long
-    lib.MOT_SetDCPositionLoopParams.argtypes = [c_long, c_long, c_long, 
+    lib.MOT_SetDCPositionLoopParams.argtypes = [c_long, c_long, c_long,
             c_long, c_long, c_long, c_long, c_long, c_long, c_long]
     lib.MOT_SetDCPositionLoopParams.restype = c_long
-    lib.MOT_GetDCPositionLoopParams.argtypes = [c_long, c_long_p, c_long_p, 
-            c_long_p, c_long_p, c_long_p, c_long_p, c_long_p, c_long_p, 
+    lib.MOT_GetDCPositionLoopParams.argtypes = [c_long, c_long_p, c_long_p,
+            c_long_p, c_long_p, c_long_p, c_long_p, c_long_p, c_long_p,
             c_long_p]
     lib.MOT_GetDCPositionLoopParams.restype = c_long
-    lib.MOT_SetDCMotorOutputParams.argtypes = [c_long, c_float, c_float, 
+    lib.MOT_SetDCMotorOutputParams.argtypes = [c_long, c_float, c_float,
             c_float, c_float]
     lib.MOT_SetDCMotorOutputParams.restype = c_long
-    lib.MOT_GetDCMotorOutputParams.argtypes = [c_long, c_float_p, c_float_p, 
+    lib.MOT_GetDCMotorOutputParams.argtypes = [c_long, c_float_p, c_float_p,
             c_float_p, c_float_p]
     lib.MOT_GetDCMotorOutputParams.restype = c_long
     lib.MOT_SetDCTrackSettleParams.argtypes = [c_long, c_long, c_long, c_long]
     lib.MOT_SetDCTrackSettleParams.restype = c_long
-    lib.MOT_GetDCTrackSettleParams.argtypes = [c_long, c_long_p, c_long_p, 
+    lib.MOT_GetDCTrackSettleParams.argtypes = [c_long, c_long_p, c_long_p,
             c_long_p]
     lib.MOT_GetDCTrackSettleParams.restype = c_long
     lib.MOT_SetDCProfileModeParams.argtypes = [c_long, c_long, c_float]
@@ -172,12 +173,12 @@ def set_ctypes_argtypes(lib):
     lib.MOT_SetDCJoystickParams.argtypes = [c_long, c_float, c_float, c_float,
             c_float, c_long]
     lib.MOT_SetDCJoystickParams.restype = c_long
-    lib.MOT_GetDCJoystickParams.argtypes = [c_long, c_float_p, c_float_p, 
+    lib.MOT_GetDCJoystickParams.argtypes = [c_long, c_float_p, c_float_p,
             c_float_p, c_float_p, c_long_p]
     lib.MOT_GetDCJoystickParams.restype = c_long
-    lib.MOT_SetDCSettledCurrentLoopParams.argtypes = [c_long, c_long, c_long, 
+    lib.MOT_SetDCSettledCurrentLoopParams.argtypes = [c_long, c_long, c_long,
             c_long, c_long, c_long]
     lib.MOT_SetDCSettledCurrentLoopParams.restype = c_long
-    lib.MOT_GetDCSettledCurrentLoopParams.argtypes = [c_long, c_long_p, 
+    lib.MOT_GetDCSettledCurrentLoopParams.argtypes = [c_long, c_long_p,
             c_long_p, c_long_p, c_long_p, c_long_p]
     lib.MOT_GetDCSettledCurrentLoopParams.restype = c_long
