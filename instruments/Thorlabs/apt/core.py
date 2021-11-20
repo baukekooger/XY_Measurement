@@ -1349,7 +1349,6 @@ class Motor(object):
             set_dc_settled_current_loop_parameters)
     """DC settled current loop: fast forward"""
 
-
 def _load_library():
     """
     Loads the APT.dll shared library. Calls APTInit.

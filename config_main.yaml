@@ -67,8 +67,8 @@ instrument_pages: {
 substrates: {
     # borofloat 50X50
     50X50 mm (Borofloat): {
-        x_lamp: 10,          # x position when avantes lamp lightsource is centered on corner of sampleholder
-        y_lamp: -4.7,        # y position when avantes lamp lightsource is centered on corner of sampleholder
+        x_lamp: 11,          # x position when avantes lamp lightsource is centered on corner of sampleholder
+        y_lamp: -5.5,        # y position when avantes lamp lightsource is centered on corner of sampleholder
         x_laser: 12,         # x position when avantes laser lightsource is centered on corner of sampleholder
         y_laser: 87,         # y position when avantes laser lightsource is centered on corner of sampleholder
         whse: 51,            # width holder sample edge
@@ -81,7 +81,7 @@ substrates: {
     44X44 mm (Quartz): {
         name: 'Quartz 44 x 44 mm',
         x_lamp: 10,          # x position when avantes lamp lightsource is centered on corner of sampleholder
-        y_lamp: -4.7,        # y position when avantes lamp lightsource is centered on corner of sampleholder
+        y_lamp: -5.3,        # y position when avantes lamp lightsource is centered on corner of sampleholder
         x_laser: 12,         # x position when avantes laser lightsource is centered on corner of sampleholder
         y_laser: 87,         # y position when avantes laser lightsource is centered on corner of sampleholder
         whse: 45,            # width holder sample edge

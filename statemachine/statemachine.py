@@ -272,97 +272,6 @@ class StateMachine(QObject):
             if not self.instruments[inst].measuring:
                 QTimer.singleShot(0, self.instruments[inst].measure)
 
-    # def _start_calibration(self):
-    #     """"
-    #     Starts the calibration routine.
-    #     Move the stage away, read the calibration parameters and parses these to the instruments. Sets the wavelength
-    #     attribute and filename attribute.
-    #     """
-    #     self.calibration_status.emit('started calibration')
-    #
-    #     path_settings = Path(__file__).parent.parent / 'settings_ui.yaml'
-    #     with path_settings.open() as f:
-    #         self.settings_ui = yaml_safe_load(f)
-    #
-    #     lasersettings = self.settings_ui['excitation_emission']['widget_laser_excitation_emission']
-    #     wlstart = lasersettings['spinBox_wavelength_start']
-    #     wlstop = lasersettings['spinBox_wavelength_stop']
-    #     wlstep = lasersettings['spinBox_wavelength_step']
-    #     energylevel = lasersettings['comboBox_energy_level_experiment']
-    #     powermetersettings = self.settings_ui['excitation_emission']['widget_powermeter_excitation_emission']
-    #     # integrationtime = powermetersettings['spinBox_integration_time_experiment']
-    #     self.beamsplitter_integrationtime = 3000
-    #
-    #     date = time.strftime("%y%m%d%H%M", time.localtime(self.startingtime))
-    #     wl = f'{wlstart}_{wlstep}_{wlstop}_nm'
-    #     self.calibration_fname = f'{self.storage_dir_calibration}/{self.beamsplitter}_{wl}_{date}.csv'
-    #
-    #     # parse settings
-    #     self.logger.info('Parsing settings for calibration, turning off shutter')
-    #     self.instruments['xystage'].move_with_wait(0, 0)
-    #     self.logger.info('Moved stage away for calibration')
-    #     self.instruments['laser'].energylevel = energylevel
-    #     self.instruments['laser'].output = True
-    #     self.instruments['powermeter'].integration_time = self.beamsplitter_integrationtime
-    #     self.instruments['powermeter'].prepare_measurement_multiple()
-    #     self.instruments['shuttercontrol'].disable()
-    #     self.beamsplitter_wavelengths = np.arange(wlstart, wlstop + 0.5 * wlstep, wlstep)
-    #     self.logger.info('waiting 3 seconds for powermeter to reach equilibrium temperature')
-    #     self.calibration_status.emit('calibration started, waiting for temperature equilibrium')
-    #     QTimer.singleShot(5000, self.measure_calibration)
-    #
-    # def _continue_calibration(self):
-    #     """ continues calibration after moving powermeter """
-    #     self.calibration_status.emit('calibration continued, waiting for temperature equilibrium')
-    #     self.instruments['shuttercontrol'].disable()
-    #     self.logger.info('shutter closed, waiting 3 seconds for powermeter to reach equilibrium temperature')
-    #     QTimer.singleShot(5000, self.measure_calibration)
-    #
-    # def measure_calibration(self):
-    #     self.logger.info('powermeter equilibrium reached, zero powermeter')
-    #     self.calibration_status.emit('zeroing powermeter')
-    #     self.instruments['powermeter'].zero()
-    #     wavelengths = []
-    #     times = []
-    #     powers = []
-    #     tstart = time.time()
-    #     self.instruments['shuttercontrol'].enable()
-    #     for wavelength in self.beamsplitter_wavelengths:
-    #         # set the new wavelength, wait until laser stable
-    #         self.instruments['laser'].wavelength = wavelength
-    #         self.instruments['powermeter'].wavelength = wavelength
-    #         time.sleep(0.1)
-    #         while not self.instruments['laser'].is_stable():
-    #             time.sleep(0.1)
-    #         # measure the power
-    #         time_power, power = self.instruments['powermeter'].measure()
-    #         wavelengths.extend([wavelength] * len(power))
-    #         powers.extend(power)
-    #         times.extend(time_power)
-    #         tcurrent = time.time() - tstart
-    #         self._calculate_progress_calibration(wavelength, tcurrent)
-    #     try:
-    #         df = pd.read_csv(self.calibration_fname)
-    #         df['Times Position 2 [s]'] = times
-    #         df['Power Position 2 [W]'] = powers
-    #         df.to_csv(self.calibration_fname, index=False)
-    #         self.calibration_complete()
-    #         self.calibration_complete_signal.emit()
-    #         self.logger.info('Calibration of beamsplitter complete')
-    #     except FileNotFoundError:
-    #         df = pd.DataFrame({'Wavelength [nm]': wavelengths, 'Times Position 1 [s]': times,
-    #                            'Power Position 1 [W]': powers})
-    #         df.to_csv(self.calibration_fname, index=False)
-    #         # emit pop up screen signal, do that in main.
-    #         self.calibration_half_signal.emit()
-    #         self.logger.info('First part of beamsplitter calibration complete')
-    #
-    # def _finish_calibration(self):
-    #     self.instruments['powermeter'].integration_time = 200
-    #     self.instruments['laser'].energylevel = 'Off'
-    #     self.instruments['shuttercontrol'].disable()
-    #     self.logger.info('setting instruments back to alignment/setexperiment settings')
-
     # region parse config
 
     def _parse_config(self):
@@ -566,9 +475,16 @@ class StateMachine(QObject):
         bw = 3.5
         off1_mm = (ss - bw) * off1 / (100 + off2)
         off2_mm = (ss - bw) * off2 / (100 + off1)
-        positions = [(sse + off1_mm - off2_mm) / 2 + start]
-        positions = np.linspace((sse - ss + bw) / 2 + off1_mm + start,
-                                sse - (sse - ss + bw) / 2 - off2_mm + start, num) if num > 1 else positions
+        span = ss - bw - off1_mm - off2_mm
+        self.logger.info(f'off1 = {off1_mm}, off2 = {off2_mm}, span = {span}')
+
+        # need the left offset from x and the top offset from y
+        offset = off1 if param == 'x' else off2
+
+        positions = [(sse + offset) / 2]
+        positions = np.linspace(0, span, num) if num > 1 else positions
+        positions = positions + start + bw/2 + offset
+
         # write settings to dictionary for later retrieval offset here are with respect to sample outer edge
         self.position_offsets[param] = {}
         self.position_offsets['beam_width'] = 3.5

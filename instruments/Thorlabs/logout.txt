@@ -57,3 +57,6 @@
 2021-11-19 11:05:18,509: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 35 INFO: init QPowerMeter
 2021-11-19 11:05:18,510: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 59 INFO: setting integration time to 200 ms
 2021-11-19 11:05:21,422: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 59 INFO: setting integration time to 200 ms
+2021-11-19 15:45:47,391: logger Qinstrument.QXYStage: file xystage.py: line 21 INFO: init QXYStage
+2021-11-19 15:45:50,300: logger Qinstrument.QXYStage: file xystage.py: line 82 ERROR: Failed to connect stages. Could not initialize device: Invalid error code.
+2021-11-19 15:47:23,796: logger Qinstrument.QXYStage: file xystage.py: line 21 INFO: init QXYStage
