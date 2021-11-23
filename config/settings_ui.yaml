@@ -19,31 +19,33 @@ decay:
     spinBox_single_photon_treshold_alignment: 785
     spinBox_single_photon_treshold_experiment: 785
   widget_file_decay:
+    comboBox_bandpass_filter: none
+    comboBox_longpass_filter: none
+    comboBox_nd_filter: none
     comboBox_substrate: 50X50 mm (Borofloat)
     lineEdit_directory: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY
-    lineEdit_filter: 680 nm bandpass
-    lineEdit_sample: Test
-    plainTextEdit_comments: Averageing Example
+    lineEdit_sample: ''
+    plainTextEdit_comments: ''
   widget_laser_decay:
     checkBox_stable: true
     comboBox_energy_level_experiment: Max
     spinBox_wavelength_alignment: 375
-    spinBox_wavelength_start: 325
-    spinBox_wavelength_step: 25
+    spinBox_wavelength_start: 200
+    spinBox_wavelength_step: 1
     spinBox_wavelength_stop: 375
   widget_shuttercontrol_decay:
-    checkBox: true
+    checkBox: false
   widget_xystage_decay:
     checkBox_homed_x: true
     checkBox_homed_y: true
-    doubleSpinBox_x: 0.0
-    doubleSpinBox_y: 0.0
-    spinBox_x_num: 2
-    spinBox_x_off_left: 5
-    spinBox_x_off_right: 5
-    spinBox_y_num: 2
-    spinBox_y_off_bottom: 5
-    spinBox_y_off_top: 5
+    doubleSpinBox_x: 70.0
+    doubleSpinBox_y: 100.0
+    spinBox_x_num: 1
+    spinBox_x_off_left: 0
+    spinBox_x_off_right: 0
+    spinBox_y_num: 1
+    spinBox_y_off_bottom: 0
+    spinBox_y_off_top: 0
 excitation_emission:
   widget_file_excitation_emission:
     comboBox_bandpass_filter: none
