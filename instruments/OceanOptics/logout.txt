@@ -1,2 +1,0 @@
-2021-11-17 11:08:59,424: logger QInstrument.QSpectrometer: file spectrometer.py: line 25 INFO: init QSpectrometer
-2021-11-19 10:27:50,189: logger QInstrument.QSpectrometer: file spectrometer.py: line 25 INFO: init QSpectrometer

@@ -79,11 +79,15 @@ class PowerMeter:
     @property
     def sensor(self):
         """ Return information about the connected sensor. """
-        sensorinfo = self.pm.query('syst:sens:idn?').strip().split(',')
-        model = sensorinfo[0]
-        sn = sensorinfo[1]
-        caldate = sensorinfo[2]
-        sensor = {'Model': model, 'Serial_Number': sn, 'Calibration_Date': caldate}
+        try:
+            sensorinfo = self.pm.query('syst:sens:idn?').strip().split(',')
+            model = sensorinfo[0]
+            sn = sensorinfo[1]
+            caldate = sensorinfo[2]
+            sensor = {'Model': model, 'Serial_Number': sn, 'Calibration_Date': caldate}
+        except pyvisa.errors.VisaIOError as e:
+            self.logger_instrument.error(f'Error querying sensor - try power cycling PM100A : {e}')
+            raise ConnectionError
         return sensor
 
     @property
@@ -212,7 +216,7 @@ if __name__ == '__main__':
     import yaml
     import logging.config
     import logging.handlers
-    pathlogging = Path(__file__).parent.parent.parent / 'loggingconfig.yml'
+    pathlogging = Path(__file__).parent.parent.parent / 'logging/loggingconfig_testing.yml'
     with pathlogging.open() as f:
         config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)

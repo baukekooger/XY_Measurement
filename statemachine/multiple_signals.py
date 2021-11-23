@@ -4,54 +4,87 @@ from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
 class MultipleSignal(QObject):
     """
-    Class that emits a signal when all desired signals have arrived
+    Class that emits a signal when all signals connected to it have emitted. Used when waiting for instruments from
+    multiple threads.
 
-    Accepts up to 6 signals, can be easily extended
+    Instantiate the class with a name and list of signal names. Connect the actual instrument signals to these signals.
+
+    The reset method can be used to return all the signals state to unset.
     """
     global_done = pyqtSignal()
 
-    def __init__(self, number_of_signals=1):
+    def __init__(self, name: str = 'no_name', signals: list[str] = None):
         super().__init__()
-        self.signals_done = [False for _ in range(6)]
-        self.number_of_signals = number_of_signals
+        self.logger = logging.getLogger('statemachine')
+        self.logger.info(f'init multiple signal {name}')
+        self.name = name
+        self.signals = self.init_signals(signals)
 
-    @pyqtSlot()
-    def set_signal_1_done(self):
-        self.signals_done[0] = True
-        self.check_global_done()
+    def init_signals(self, signals: list[str]) -> dict:
+        """
+        Initialize the signals as a dictionary with the key the signal names as given in the constructor.
 
-    @pyqtSlot()
-    def set_signal_2_done(self):
-        self.signals_done[1] = True
-        self.check_global_done()
+        :returns: Dictionary of SingleSignal instances
+        """
+        sigdict = {}
+        for signal in signals:
+            sigdict[signal] = SingleSignal(signal)
+            sigdict[signal].check_signals.connect(self.check_signals)
+        return sigdict
 
-    @pyqtSlot()
-    def set_signal_3_done(self):
-        self.signals_done[2] = True
-        self.check_global_done()
+    def check_signals(self):
+        """ Check the state of all connected single signals and emit when all are True. """
+        for key, signal in self.signals.items():
+            if not signal.state:
+                return
+        self.logger.info(f'multiple signal {self.name} emitting global done')
+        self.global_done.emit()
 
-    @pyqtSlot()
-    def set_signal_4_done(self):
-        self.signals_done[1] = True
-        self.check_global_done()
-
-    @pyqtSlot()
-    def set_signal_5_done(self):
-        self.signals_done[1] = True
-        self.check_global_done()
-
-    @pyqtSlot()
-    def set_signal_6_done(self):
-        self.signals_done[1] = True
-        self.check_global_done()
-
-    @pyqtSlot()
-    def check_global_done(self):
-        if sum(self.signals_done) == self.number_of_signals:
-            logging.info('all signals received - measurements done - emitting global done')
-            self.global_done.emit()
-
-    @pyqtSlot()
     def reset(self):
-        self.signals_done = [False for _ in range(6)]
-        logging.info('all measurement signals reset')
+        """ Set the state of all single signals to False. """
+        for key, signal in self.signals.items():
+            signal.reset()
+
+    def __repr__(self):
+        signals = list(self.signals.keys())
+        return f'Multiple Signal Object With the following signals: {signals}'
+
+
+class SingleSignal(QObject):
+    """
+     Class having only a single signal. Instances of this class are added to multiplesignal to enable
+     waiting for multiple signals.
+
+     Single signals have a state attribute which is set True when the instrument connected to it emits to this single
+     signal. This single signal then emits to the multiple signal object which checks the state of all single signals.
+     """
+    check_signals = pyqtSignal()
+
+    def __init__(self, name):
+        super().__init__()
+        self.logger = logging.getLogger('statemachine')
+        self.logger.info(f'init single signal {name}')
+        self.name = name
+        self.state = False
+
+    @pyqtSlot()
+    def set_state(self):
+        self.state = True
+        self.logger.info(f'single signal {self.name} emitting')
+        self.check_signals.emit()
+
+    def reset(self):
+        self.state = False
+
+
+if __name__ == '__main__':
+    # set up logging if file called directly
+    from pathlib import Path
+    import yaml
+    import logging.config
+    import logging.handlers
+
+    pathlogging = Path(__file__).parent.parent / 'logging/loggingconfig.yml'
+    with pathlogging.open() as f:
+        config = yaml.safe_load(f.read())
+        logging.config.dictConfig(config)

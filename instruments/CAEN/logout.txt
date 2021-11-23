@@ -1,2 +1,0 @@
-2021-11-17 11:11:10,146: logger Qinstrument.QDigitizer: file Qdigitizer.py: line 30 INFO: init QDigitizer
-2021-11-17 11:15:37,936: logger Qinstrument.QDigitizer: file Qdigitizer.py: line 30 INFO: init QDigitizer

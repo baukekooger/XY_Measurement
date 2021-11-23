@@ -30,6 +30,7 @@ class PowerMeterPlotWidget(QtWidgets.QWidget):
         self.time = []
         self.blitmanager = None
         self.line = None
+        self.annotation = None
 
     def connect_signals_slots(self):
         self.powermeter.measurement_complete_multiple.connect(self.plot)
@@ -37,26 +38,28 @@ class PowerMeterPlotWidget(QtWidgets.QWidget):
     def disconnect_signals_slots(self):
         self.powermeter.measurement_complete_multiple.disconnect(self.plot)
 
-    @pyqtSlot(list, list)
-    def plot(self, times, power):
+    @pyqtSlot(list, list, str)
+    def plot(self, times, power, plotinfo):
         self.log_power = np.append(self.log_power, power)
 
         if not self.blitmanager:
-            self.init_blitmanager()
+            self.init_blitmanager(plotinfo)
         else:
             self.line.set_ydata(1000*self.log_power[-2001:-1])
-            # self.ax.invert_xaxis()
+            self.annotation.set_text(plotinfo)
         self.blitmanager.update()
 
-    def init_blitmanager(self):
+    def init_blitmanager(self, plotinfo):
         self.blitmanager = None
         self.line, = self.ax.plot(self.log_time, 1000 * self.log_power[-2001:-1], animated=True)
+        self.annotation = self.ax.annotate(plotinfo, (0, 1), xycoords="axes fraction", xytext=(10, -10),
+                                           textcoords="offset points", ha="left", va="top", animated=True)
         self.ax.set_ylabel('power [mW]')
         self.ax.set_xlabel('time [s]')
         self.ax.set_title(f"Power Meter {self.powermeter.device['Model']} - Sensor Model "
                           f"{self.powermeter.sensor['Model']}")
         self.ax.invert_xaxis()
-        self.blitmanager = BlitManager(self.canvas, [self.line])
+        self.blitmanager = BlitManager(self.canvas, [self.line, self.annotation])
         time.sleep(0.1)
 
     def reset_log(self):
@@ -77,7 +80,7 @@ if __name__ == '__main__':
     import yaml
     import logging.config
     import logging.handlers
-    pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
+    pathlogging = Path(__file__).parent.parent / 'logging/loggingconfig_testing.yml'
     with pathlogging.open() as f:
         config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)

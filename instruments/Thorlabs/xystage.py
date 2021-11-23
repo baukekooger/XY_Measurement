@@ -9,7 +9,6 @@ class QXYStage(QObject):
     """
     Python implementation of XY stages as a QObject.
     Wraps thorlabs apt dll and provides additional functionality
-
     """
     measurement_complete = pyqtSignal(float, float)
     stage_settled = pyqtSignal()
@@ -140,11 +139,11 @@ class QXYStage(QObject):
 
     @pyqtSlot(float, float)
     def move_with_wait(self, x, y):
+        """ Move and block execution while doing so """
         self.x = x
         self.y = y
         while not self.settled():
             time.sleep(0.1)
-
 
     @pyqtSlot()
     @pyqtSlot(float, float)
@@ -180,7 +179,7 @@ if __name__ == '__main__':
     import yaml
     import logging.config
     import logging.handlers
-    pathlogging = Path(__file__).parent.parent.parent / 'loggingconfig.yml'
+    pathlogging = Path(__file__).parent.parent.parent / 'logging/loggingconfig_testing.yml'
     with pathlogging.open() as f:
         config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)

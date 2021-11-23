@@ -22,17 +22,17 @@ decay:
     comboBox_substrate: 50X50 mm (Borofloat)
     lineEdit_directory: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY
     lineEdit_filter: 680 nm bandpass
-    lineEdit_sample: B13
+    lineEdit_sample: Test
     plainTextEdit_comments: Averageing Example
   widget_laser_decay:
     checkBox_stable: true
     comboBox_energy_level_experiment: Max
     spinBox_wavelength_alignment: 375
-    spinBox_wavelength_start: 375
+    spinBox_wavelength_start: 325
     spinBox_wavelength_step: 25
     spinBox_wavelength_stop: 375
   widget_shuttercontrol_decay:
-    checkBox: false
+    checkBox: true
   widget_xystage_decay:
     checkBox_homed_x: true
     checkBox_homed_y: true
@@ -46,26 +46,28 @@ decay:
     spinBox_y_off_top: 5
 excitation_emission:
   widget_file_excitation_emission:
+    comboBox_bandpass_filter: none
+    comboBox_longpass_filter: none
+    comboBox_nd_filter: none
     comboBox_substrate: 50X50 mm (Borofloat)
     lineEdit_directory: C:/Users/bauke/OneDrive/Bureaublad/TestfilesXY
-    lineEdit_filter: Test
     lineEdit_sample: Test
-    plainTextEdit_comments: Film
+    plainTextEdit_comments: Whatever
   widget_laser_excitation_emission:
     checkBox_stable: true
     comboBox_energy_level_experiment: Max
-    spinBox_wavelength_alignment: 370
-    spinBox_wavelength_start: 330
-    spinBox_wavelength_step: 10
-    spinBox_wavelength_stop: 350
+    spinBox_wavelength_alignment: 375
+    spinBox_wavelength_start: 200
+    spinBox_wavelength_step: 1
+    spinBox_wavelength_stop: 375
   widget_powermeter_excitation_emission: {}
   widget_shuttercontrol_excitation_emission:
     checkBox: false
   widget_spectrometer_excitation_emission:
     spinBox_averageing_alignment: 1
     spinBox_averageing_experiment: 1
-    spinBox_integration_time_alignment: 30
-    spinBox_integration_time_experiment: 30
+    spinBox_integration_time_alignment: 500
+    spinBox_integration_time_experiment: 500
   widget_xystage_excitation_emission:
     checkBox_homed_x: true
     checkBox_homed_y: true
@@ -77,27 +79,29 @@ excitation_emission:
     spinBox_y_num: 1
     spinBox_y_off_bottom: 0
     spinBox_y_off_top: 0
-lineEdit_beamsplitter_calibration_file: C:/Users/bauke/OneDrive/Bureaublad/BeamSplitter_Calibrations/BS20WR_330_10_350_nm_2111181547.csv
+lineEdit_beamsplitter_calibration_file: C:/Users/bauke/OneDrive/Bureaublad/BeamSplitter_Calibrations/BS20WR_300_10_350_nm_2111231119.csv
 transmission:
   widget_file_transmission:
+    comboBox_bandpass_filter: none
+    comboBox_longpass_filter: 430 nm - Semrock FF01-430/LP-25
+    comboBox_nd_filter: OD 1.0 -  Thorlabs NDUVW10B
     comboBox_substrate: 50X50 mm (Borofloat)
     lineEdit_directory: C:/Users/bauke/OneDrive/Bureaublad
-    lineEdit_filter: No fizzle
-    lineEdit_sample: BK3
-    plainTextEdit_comments: JOSHIZZLE MYDIZZLEEE
+    lineEdit_sample: TestFilters
+    plainTextEdit_comments: Yo biatch
   widget_spectrometer_transmission:
     spinBox_averageing_alignment: 1
     spinBox_averageing_experiment: 1
-    spinBox_integration_time_alignment: 500
-    spinBox_integration_time_experiment: 4000
+    spinBox_integration_time_alignment: 200
+    spinBox_integration_time_experiment: 10000
   widget_xystage_transmission:
     checkBox_homed_x: true
     checkBox_homed_y: true
     doubleSpinBox_x: 0.0
-    doubleSpinBox_y: 45.0
-    spinBox_x_num: 10
-    spinBox_x_off_left: 4
-    spinBox_x_off_right: 4
-    spinBox_y_num: 10
-    spinBox_y_off_bottom: 4
-    spinBox_y_off_top: 4
+    doubleSpinBox_y: 0.0
+    spinBox_x_num: 2
+    spinBox_x_off_left: 0
+    spinBox_x_off_right: 0
+    spinBox_y_num: 2
+    spinBox_y_off_bottom: 0
+    spinBox_y_off_top: 0

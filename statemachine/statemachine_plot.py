@@ -23,7 +23,7 @@ class PlotStateMachine:
         with pathconfig.open() as f:
             self.config = yaml_safe_load(f)
         self.is_done = False
-        path_settings = Path(__file__).parent.parent / 'settings_ui.yaml'
+        path_settings = Path(__file__).parent.parent / 'config/settings_ui.yaml'
         with path_settings.open() as f:
             self.settings_ui = yaml_safe_load(f)
 

@@ -75,7 +75,7 @@ class StateMachine(QObject):
         self.stateconfig['model'] = self
         self.machine = Machine(**self.stateconfig)
 
-        pathconfig = Path(__file__).parent.parent / 'config_main.yaml'
+        pathconfig = Path(__file__).parent.parent / 'config/config_main.yaml'
         with pathconfig.open() as f:
             self.config = yaml_safe_load(f)
         self.experiment = None
@@ -89,7 +89,8 @@ class StateMachine(QObject):
         self.position_offsets = {}
         self.timekeeper = None
         self.timeout = 60
-        self.wait_signals_experiment = MultipleSignal()
+        self.wait_signals_prepare_measurement = None
+        self.wait_signals_measurement = None
         self._reset_experiment()
         self._init_poll()
 
@@ -211,14 +212,28 @@ class StateMachine(QObject):
             self.instruments['xystage'].stage_settled.connect(self.measure)
             self.instruments['spectrometer'].measurement_done.connect(self.process_data)
         elif self.experiment == 'excitation_emission':
-            self.instruments['xystage'].stage_settled.connect(self.measure)
-            self.wait_signals_experiment.number_of_signals = 2
-            self.wait_signals_experiment.reset()
-            self.instruments['spectrometer'].measurement_done.connect(self.wait_signals_experiment.set_signal_1_done)
-            self.instruments['powermeter'].measurement_done.connect(self.wait_signals_experiment.set_signal_2_done)
-            self.wait_signals_experiment.global_done.connect(self.process_data)
+            self.wait_signals_prepare_measurement = MultipleSignal(name='prepare measurement',
+                                                                   signals=['xystage', 'laser'])
+            self.instruments['xystage'].stage_settled.connect(
+                self.wait_signals_prepare_measurement.signals['xystage'].set_state)
+            self.instruments['laser'].laser_stable.connect(
+                self.wait_signals_prepare_measurement.signals['laser'].set_state)
+            self.wait_signals_prepare_measurement.global_done.connect(self.measure)
+            self.wait_signals_measurement = MultipleSignal(name='measurement',
+                                                           signals=['spectrometer', 'powermeter'])
+            self.instruments['spectrometer'].measurement_done.connect(
+                self.wait_signals_measurement.signals['spectrometer'].set_state)
+            self.instruments['powermeter'].measurement_done.connect(
+                self.wait_signals_measurement.signals['powermeter'].set_state)
+            self.wait_signals_measurement.global_done.connect(self.process_data)
         elif self.experiment == 'decay':
-            self.instruments['xystage'].stage_settled.connect(self.measure)
+            self.wait_signals_prepare_measurement = MultipleSignal(name='prepare measurement',
+                                                                   signals=['xystage', 'laser'])
+            self.instruments['xystage'].stage_settled.connect(
+                self.wait_signals_prepare_measurement.signals['xystage'].set_state)
+            self.instruments['laser'].laser_stable.connect(
+                self.wait_signals_prepare_measurement.signals['laser'].set_state)
+            self.wait_signals_prepare_measurement.global_done.connect(self.measure)
             self.instruments['digitizer'].measurement_done.connect(self.process_data)
 
     def _disconnect_signals_experiment(self):
@@ -234,15 +249,26 @@ class StateMachine(QObject):
             self.instruments['xystage'].stage_settled.disconnect(self.measure)
             self.instruments['spectrometer'].measurement_done.disconnect(self.process_data)
         elif self.experiment == 'excitation_emission':
-            self.instruments['xystage'].stage_settled.disconnect(self.measure)
-            self.wait_signals_experiment.number_of_signals = 2
-            self.wait_signals_experiment.reset()
-            self.instruments['spectrometer'].measurement_done.disconnect(self.wait_signals_experiment.set_signal_1_done)
-            self.instruments['powermeter'].measurement_done.disconnect(self.wait_signals_experiment.set_signal_2_done)
-            self.wait_signals_experiment.global_done.disconnect(self.process_data)
+            self.instruments['xystage'].stage_settled.disconnect(
+                self.wait_signals_prepare_measurement.signals['xystage'].set_state)
+            self.instruments['laser'].laser_stable.disconnect(
+                self.wait_signals_prepare_measurement.signals['laser'].set_state)
+            self.wait_signals_prepare_measurement.global_done.disconnect(self.measure)
+            self.instruments['spectrometer'].measurement_done.disconnect(
+                self.wait_signals_measurement.signals['spectrometer'].set_state)
+            self.instruments['powermeter'].measurement_done.disconnect(
+                self.wait_signals_measurement.signals['powermeter'].set_state)
+            self.wait_signals_measurement.global_done.disconnect(self.process_data)
+            self.wait_signals_prepare_measurement = None
+            self.wait_signals_measurement = None
         elif self.experiment == 'decay':
-            self.instruments['xystage'].stage_settled.disconnect(self.measure)
-            self.instruments['digitizer'].measurement_done.disconnect(self.process_data)
+            self.instruments['xystage'].stage_settled.disconnect(
+                self.wait_signals_prepare_measurement.signals['xystage'].set_state)
+            self.instruments['laser'].laser_stable.disconnect(
+                self.wait_signals_prepare_measurement.signals['laser'].set_state)
+            self.wait_signals_prepare_measurement.global_done.disconnect(self.measure)
+            self.wait_signals_prepare_measurement = None
+            self.instruments['digitizer'].measurement_done.connect(self.process_data)
 
     def _align(self):
         """
@@ -277,7 +303,7 @@ class StateMachine(QObject):
     def _parse_config(self):
         # read in the ui settings
         self.logger.info('parsing instrument configuration started')
-        path_settings = Path(__file__).parent.parent / 'settings_ui.yaml'
+        path_settings = Path(__file__).parent.parent / 'config/settings_ui.yaml'
         with path_settings.open() as f:
             self.settings_ui = yaml_safe_load(f)
         # pick parsing routine
@@ -354,6 +380,7 @@ class StateMachine(QObject):
         height_sample_usable = substratesettings['hs']
         y = self._define_positions(y_num, y_off_bottom, y_off_top, y_start, height_sample, height_sample_usable, 'y')
         self.measurement_parameters = {}
+        self.logger.info(f'x = {x}, y = {y}')
         self._add_measurement_parameter('x', x)
         self._add_measurement_parameter('y', y)
 
@@ -382,7 +409,7 @@ class StateMachine(QObject):
     def _add_dark_measurement(self):
         # adds location to take a dark spectrum
         dark_lamp_x = np.array(20)
-        dark_lamp_y = np.array(75)
+        dark_lamp_y = np.array(68)
         self.measurement_parameters['x'] = np.hstack((dark_lamp_x, self.measurement_parameters['x']))
         self.measurement_parameters['y'] = np.hstack((dark_lamp_y, self.measurement_parameters['y']))
         if 'wl' in self.measurement_parameters.keys():
@@ -472,27 +499,35 @@ class StateMachine(QObject):
         for writing these offsets to the file
         """
         # sse is sample size including edge of sample hodler, ss is visible part only
-        bw = 3.5
+        bw = 4
         off1_mm = (ss - bw) * off1 / (100 + off2)
         off2_mm = (ss - bw) * off2 / (100 + off1)
         span = ss - bw - off1_mm - off2_mm
         self.logger.info(f'off1 = {off1_mm}, off2 = {off2_mm}, span = {span}')
 
         # need the left offset from x and the top offset from y
-        offset = off1 if param == 'x' else off2
 
-        positions = [(sse + offset) / 2]
-        positions = np.linspace(0, span, num) if num > 1 else positions
-        positions = positions + start + bw/2 + offset
+        if num == 1:
+            if param == 'x':
+                positions = np.array([(ss + off1_mm - off2_mm) / 2])
+            else:
+                positions = np.array([(ss - off1_mm + off2_mm) / 2])
+            positions = positions + start
+        else:
+            positions = np.linspace(0, span, num)
+            offset = off1_mm if param == 'x' else off2_mm
+            positions = positions + start + bw / 2 + offset
+
+        self.logger.debug(f'positions = {positions}')
 
         # write settings to dictionary for later retrieval offset here are with respect to sample outer edge
         self.position_offsets[param] = {}
-        self.position_offsets['beam_width'] = 3.5
+        self.position_offsets['beam_width'] = 4
         if param == 'x':
             self.position_offsets[param]['sample_width'] = sse
             self.position_offsets[param]['sample_width_effective'] = ss
-            self.position_offsets[param]['offset_left'] = off1_mm + bw/2 + (sse-ss)/2
-            self.position_offsets[param]['offset_right'] = off2_mm + bw/2 + (sse-ss)/2
+            self.position_offsets[param]['offset_left'] = off1_mm + bw / 2 + (sse - ss) / 2
+            self.position_offsets[param]['offset_right'] = off2_mm + bw / 2 + (sse - ss) / 2
         elif param == 'y':
             self.position_offsets[param]['sample_height'] = sse
             self.position_offsets[param]['sample_height_effective'] = ss
@@ -571,7 +606,9 @@ class StateMachine(QObject):
         fname = f'{storage_dir}/{sample}_{self.experiment}_{self.experimentdate}'
         comment = filesettings['plainTextEdit_comments']
         substrate = filesettings['comboBox_substrate']
-        filterset = filesettings['lineEdit_filter']
+        ndfilter = filesettings['comboBox_nd_filter']
+        longpassfilter = filesettings['comboBox_longpass_filter']
+        bandpassfilter = filesettings['comboBox_bandpass_filter']
 
         self.dataset = Dataset(f'{fname}.hdf5', 'w', format='NETCDF4')
 
@@ -580,7 +617,9 @@ class StateMachine(QObject):
         gensettings.sample = sample
         gensettings.comment = comment
         gensettings.substrate = substrate
-        gensettings.filter = filterset
+        gensettings.filter_nd = ndfilter
+        gensettings.filter_longpass = longpassfilter
+        gensettings.filter_bandpass = bandpassfilter
 
     def _write_positionsettings(self):
         positionsettings = self.dataset.createGroup(f'settings/xystage')
@@ -720,23 +759,26 @@ class StateMachine(QObject):
         self._prepare_move_stage()
 
     def _prepare_measurement_excitation_emission(self):
+        self.wait_signals_prepare_measurement.reset()
         self._control_shutter()
-        self._prepare_laser()
         self._prepare_powermeter()
+        self._prepare_laser()
         self._prepare_move_stage()
 
     def _prepare_measurement_decay(self):
+        self.wait_signals_prepare_measurement.reset()
         self._control_shutter()
+        self._prepare_digitizer()
         self._prepare_laser()
         self._prepare_move_stage()
-        self._prepare_digitizer()
 
     def _prepare_move_stage(self):
         """ Move the stages to the new position. """
         try:
             x = self.measurement_parameters['x'][self.measurement_index]
             y = self.measurement_parameters['y'][self.measurement_index]
-            self.instruments['xystage'].move_with_wait(x, y)
+            self.logger.info(f'moving stages to x = {x}, y = {y}')
+            QTimer.singleShot(0, lambda xval=x, yval=y: self.instruments['xystage'].move_with_wait(xval, yval))
         except IndexError:
             raise IndexError
 
@@ -760,16 +802,9 @@ class StateMachine(QObject):
         self.instruments['digitizer'].clear_measurement()
 
     def _prepare_laser(self):
-        """ Set the laser to the new wavelength and check until stable. """
-        self.laserstable = False
+        """ Set the laser to the new wavelength. """
         wl = self.measurement_parameters['wl'][self.measurement_index]
-        self.instruments['laser'].wavelength = wl
-        # shit to check if power stable
-        time.sleep(0.1)
-        while not self.instruments['laser'].is_stable():
-            time.sleep(0.1)
-        self.laserstable = True
-        self.logger.info(f'laser power stable at {wl} nm')
+        QTimer.singleShot(0, lambda wavlength=wl: self.instruments['laser'].set_wavelength_wait_stable(wl))
 
     # endregion
 
@@ -786,29 +821,80 @@ class StateMachine(QObject):
         elif self.experiment == 'transmission':
             self._measure_transmission()
         elif self.experiment == 'excitation_emission':
+            self.wait_signals_measurement.reset()
             self._measure_excitation_emission()
         elif self.experiment == 'decay':
             self._measure_decay()
 
     def _measure_calibration(self):
-        self.logger.info('started measuring power calibration')
-        QTimer.singleShot(0, self.instruments['powermeter'].measure)
+        """ Measure the powermeter and pass the plotinfo to the powermeter for plotting. """
+        wlnum = len(self.measurement_parameters['wl'])
+        wl = self.measurement_parameters['wl'][self.measurement_index]
+        self.logger.info(f'Started measuring power calibration. '
+                         f'Wavelength {self.measurement_index + 1} of {wlnum} - ({wl} nm)')
+        plotinfo = f'Power Calibration at Position {self.calibration_position}, ' \
+                   f'wavelength {self.measurement_index + 1} of {wlnum} ({wl} nm)'
+        QTimer.singleShot(0, lambda pi=plotinfo: self.instruments['powermeter'].measure(plotinfo))
 
     def _measure_transmission(self):
-        self.logger.info('started measurement transmission')
-        QTimer.singleShot(0, self.instruments['spectrometer'].measure)
+        """
+        Measure the spectrometer.
+        The first measurement is a dark measurement, the second one a lamp measurement. The next spectra are all
+        transmission spectra, so set the spectrometer transmission attribute to true.
+        """
+        if self.measurement_index == 0:
+            self.logger.info('Measuring dark spectrum transmission experiment')
+            plotinfo = f'Dark Spectrum Experiment'
+            QTimer.singleShot(0, lambda pi=plotinfo: self.instruments['spectrometer'].measure_dark(pi))
+        elif self.measurement_index == 1:
+            self.logger.info('Measuring lamp spectrum transmission experiment')
+            plotinfo = f'Lamp Spectrum Experiment'
+            QTimer.singleShot(0, lambda pi=plotinfo: self.instruments['spectrometer'].measure_lamp(pi))
+        else:
+            x_inx, y_iny = self._variable_index()
+            xnum = len(np.unique(self.measurement_parameters['x'][2:]))
+            ynum = len(np.unique(self.measurement_parameters['y'][2:]))
+            self.logger.info(f'Transmission Spectrum. X = {x_inx + 1} of {xnum}, Y = {y_iny + 1} of {ynum}')
+            plotinfo = f'Transmission Spectrum - X = {x_inx + 1} of {xnum}, Y = {y_iny + 1} of {ynum}'
+            self.instruments['spectrometer'].transmission = True
+            QTimer.singleShot(0, lambda pi=plotinfo: self.instruments['spectrometer'].measure(pi))
 
     def _measure_excitation_emission(self):
-        """ starts the spectrometer measurement. 'Cache cleared' signal of spectrometer
-            is connected to powermeter start measurement
         """
-        self.logger.info('started measurement excitation emission')
-        self.wait_signals_experiment.reset()
-        QTimer.singleShot(0, self.instruments['spectrometer'].measure)
+        Measure the spectrometer. 'Cache cleared' signal of spectrometer
+        is connected to the powermeter such that power measurement starts when cache is cleared.
+
+        First measurement is a dark measurement.
+        """
+        if self.measurement_index == 0:
+            self.logger.info('Measuring dark spectrum excitation emission experiment')
+            plotinfo = 'Dark Spectrum'
+            QTimer.singleShot(0, lambda pi=plotinfo: self.instruments['spectrometer'].measure_dark(pi))
+        else:
+            x_inx, y_iny, wl_inwl = self._variable_index()
+            xnum = len(np.unique(self.measurement_parameters['x'][1:]))
+            ynum = len(np.unique(self.measurement_parameters['y'][1:]))
+            wlnum = len(np.unique(self.measurement_parameters['wl'][1:]))
+            wl = self.measurement_parameters['wl'][self.measurement_index]
+            self.logger.info(f'Measuring spectrum excitation emission experiment. X = {x_inx + 1} of {xnum}, '
+                             f'Y = {y_iny + 1} of {ynum}\nWavelength = {wl_inwl + 1} of {wlnum} ({wl} nm)')
+            plotinfo = f'Spectrum minus dark at X = {x_inx + 1} of {xnum}, Y = {y_iny + 1} of {ynum}, ' \
+                       f'Wavelength = {wl_inwl + 1} of {wlnum} ({wl} nm)'
+            QTimer.singleShot(0, lambda pi=plotinfo: self.instruments['spectrometer'].measure(pi))
 
     def _measure_decay(self):
-        self.logger.info(f'started decay measurement')
-        QTimer.singleShot(0, self.instruments['digitizer'].measure)
+        """ Call the measure function of the digitizer with relevant plotinfo. """
+        x_inx, y_iny, wl_inwl = self._variable_index()
+        xnum = len(np.unique(self.measurement_parameters['x'][1:]))
+        ynum = len(np.unique(self.measurement_parameters['y'][1:]))
+        wlnum = len(np.unique(self.measurement_parameters['wl'][1:]))
+        wl = self.measurement_parameters['wl'][self.measurement_index]
+
+        self.logger.info(f'Measuring Decay Spectrum. X = {x_inx + 1} of {xnum}, '
+                         f'Y = {y_iny + 1} of {ynum}\nWavelength = {wl_inwl + 1} of {wlnum} ({wl} nm)')
+        plotinfo = f'X = {x_inx + 1} of {xnum}, Y = {y_iny + 1} of {ynum}, ' \
+                   f'Wavelength = {wl_inwl + 1} of {wlnum} ({wl} nm)'
+        QTimer.singleShot(0, lambda pi=plotinfo: self.instruments['digitizer'].measure(pi))
 
     # endregion
 
@@ -1134,7 +1220,7 @@ if __name__ == '__main__':
     import logging.config
     import logging.handlers
 
-    pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
+    pathlogging = Path(__file__).parent.parent / 'logging/loggingconfig_testing.yml'
     with pathlogging.open() as f:
         config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)

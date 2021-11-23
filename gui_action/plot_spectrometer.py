@@ -6,7 +6,6 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 import matplotlib.pyplot as plt
 import time
 import logging
-import random
 import numpy as np
 from instruments.OceanOptics.spectrometer import QSpectrometer
 
@@ -24,38 +23,72 @@ class SpectrometerPlotWidget(QtWidgets.QWidget):
         self.canvas = FigureCanvas(self.figure)
         layout.addWidget(self.canvas)
         self.setLayout(layout)
-        self.bm = None
-        self.ln = None
+        self.blitmanager = None
+        self.line = None
+        self.annotation = None
+        self.darkspectrum = []
+        self.lampspectrum = []
+        self.transmission = False
 
     def connect_signals_slots(self):
         self.spectrometer.measurement_complete.connect(self.plot)
+        self.spectrometer.clear_darkspectrum_plot.connect(self.clear_dark)
+        self.spectrometer.clear_lampspectrum_plot.connect(self.clear_lamp)
 
     def disconnect_signals_slots(self):
-        self.spectrometer.measurement_complete.disconnect()
+        self.spectrometer.measurement_complete.disconnect(self.plot)
+        self.spectrometer.clear_darkspectrum_plot.disconnect(self.clear_dark)
+        self.spectrometer.clear_lampspectrum_plot.disconnect(self.clear_lamp)
 
-    @pyqtSlot(np.ndarray, list)
-    def plot(self, intensities, times):
-        """"plots graph using blitmanager for increased performance"""
-        if not self.bm:
-            self.init_blitmanager(intensities)
-        if self.spectrometer.transmission:
-            transmission = (intensities - self.spectrometer.dark)/(self.spectrometer.lamp - self.spectrometer.dark)
+    @pyqtSlot(np.ndarray, str)
+    def plot(self, intensities, plotinfo):
+        """
+        Plot spectrum and set graph annotation. Plot raw spectra, spectra with dark spectrum removed or
+        transmission spectrum based on spectrometer settings.
+
+        Plots using a blitmanager for increased performance.
+        """
+        if not self.blitmanager:
+            self.init_blitmanager(intensities, plotinfo)
+
+        self.transmission = True if 'Transmission' in plotinfo and any(self.darkspectrum) \
+                                    and any(self.lampspectrum) else False
+
+        if self.transmission:
+            self.logger_plot.info('plotting transmission spectrum')
+            divideby = self.lampspectrum - self.darkspectrum
+            divideby[divideby <= 0] = 1
+            transmission = (intensities - self.darkspectrum)/divideby
             np.clip(transmission, 0, 1, transmission)
-            self.ln.set_ydata(transmission)
-        elif any(self.spectrometer.dark):
-            minusdark = intensities - self.spectrometer.dark
-            self.ln.set_ydata(minusdark)
+            self.line.set_ydata(transmission)
+            self.annotation.set_text(plotinfo)
+        elif any(self.darkspectrum):
+            self.logger_plot.info('plotting spectrum minus dark spectrum')
+            minusdark = intensities - self.darkspectrum
+            self.line.set_ydata(minusdark)
+            self.annotation.set_text(plotinfo)
         else:
-            self.ln.set_ydata(intensities)
-        self.bm.update()
+            self.line.set_ydata(intensities)
+            self.annotation.set_text(plotinfo)
+        self.blitmanager.update()
+        if 'Dark Spectrum' in plotinfo and 'minus' not in plotinfo:
+            self.logger_plot.info('setting dark spectrum plot')
+            self.darkspectrum = intensities
+        elif 'Lamp Spectrum' in plotinfo:
+            self.logger_plot.info('setting lamp spectrum plot')
+            self.lampspectrum = intensities
 
-    def init_blitmanager(self, intensities):
-        self.bm = None
-        self.ln, = self.ax.plot(self.spectrometer.wavelengths, intensities, animated=True)
+    def init_blitmanager(self, intensities, plotinfo):
+        self.logger_plot.info(f'Initializing blitmanager spectrometerplot with data '
+                              f'= {intensities} and plotinfo = {plotinfo}')
+        self.blitmanager = None
+        self.line, = self.ax.plot(self.spectrometer.wavelengths, intensities, animated=True)
+        self.annotation = self.ax.annotate(plotinfo, (0, 1), xycoords="axes fraction", xytext=(10, -10),
+                                           textcoords="offset points", ha="left", va="top", animated=True)
         self.ax.set_ylabel('counts')
         self.ax.set_xlabel('wavelength [nm]')
         self.ax.set_title(f"Spectrometer {self.spectrometer.spec.model + ' ' + self.spectrometer.spec.serial_number}")
-        self.bm = BlitManager(self.canvas, [self.ln])
+        self.blitmanager = BlitManager(self.canvas, [self.line, self.annotation])
         time.sleep(0.1)
 
     @pyqtSlot()
@@ -65,8 +98,18 @@ class SpectrometerPlotWidget(QtWidgets.QWidget):
 
         Function called from main.py as the button for it is in the main ui.
         """
-        if self.bm:
-            self.bm.redraw_canvas_spectrometer()
+        if self.blitmanager:
+            self.blitmanager.redraw_canvas_spectrometer()
+
+    @pyqtSlot()
+    def clear_dark(self):
+        self.logger_plot.info('clearing dark spectrum plot')
+        self.darkspectrum = []
+
+    @pyqtSlot()
+    def clear_lamp(self):
+        self.logger_plot.info('clearing lamp spectrum plot')
+        self.lampspectrum = []
 
 
 if __name__ == '__main__':
@@ -75,7 +118,7 @@ if __name__ == '__main__':
     import yaml
     import logging.config
     import logging.handlers
-    pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
+    pathlogging = Path(__file__).parent.parent / 'logging/loggingconfig_testing.yml'
     with pathlogging.open() as f:
         config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)
