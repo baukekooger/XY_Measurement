@@ -6442,3 +6442,506 @@ Wavelength = 3 of 3 (375 nm)
 2021-11-23 13:59:57,148: logger Qinstrument.Qlaser: file lasers.py: line 262 INFO: disconnecting from laser
 2021-11-23 13:59:57,201: logger statemachine: file statemachine.py: line 186 INFO: disconnecting shuttercontrol
 2021-11-23 13:59:57,254: logger statemachine: file statemachine.py: line 186 INFO: disconnecting powermeter
+2021-11-23 15:26:55,910: logger __main__: file main.py: line 17 INFO: Init mainwindow
+2021-11-23 15:26:56,249: logger plot.Spectrometer: file plot_spectrometer.py: line 18 INFO: init spectrometer plotwindow
+2021-11-23 15:26:56,249: logger QInstrument.QSpectrometer: file spectrometer.py: line 27 INFO: init QSpectrometer
+2021-11-23 15:26:56,289: logger gui.XYStageWidget: file widget_xystage.py: line 15 INFO: init xystage widget
+2021-11-23 15:26:56,299: logger Qinstrument.QXYStage: file xystage.py: line 20 INFO: init QXYStage
+2021-11-23 15:26:56,300: logger gui.file: file widget_file.py: line 12 INFO: init filewidget ui
+2021-11-23 15:26:56,302: logger gui.SpectrometerWidget: file widget_spectrometer.py: line 14 INFO: init spectrometer widget ui
+2021-11-23 15:26:56,305: logger QInstrument.QSpectrometer: file spectrometer.py: line 27 INFO: init QSpectrometer
+2021-11-23 15:26:56,305: logger plot.XYStage: file plot_xystage.py: line 24 INFO: init plotwindow XYStage (position indicator)
+2021-11-23 15:26:56,305: logger Qinstrument.QXYStage: file xystage.py: line 20 INFO: init QXYStage
+2021-11-23 15:26:56,345: logger plot.Spectrometer: file plot_spectrometer.py: line 18 INFO: init spectrometer plotwindow
+2021-11-23 15:26:56,345: logger QInstrument.QSpectrometer: file spectrometer.py: line 27 INFO: init QSpectrometer
+2021-11-23 15:26:56,364: logger plot.PowerMeter: file plot_powermeter.py: line 18 INFO: init powermeter plot
+2021-11-23 15:26:56,365: logger ínstrument.PowerMeter: file powermeters.py: line 20 INFO: init PowerMeter
+2021-11-23 15:26:56,365: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 35 INFO: init QPowerMeter
+2021-11-23 15:26:56,366: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 59 INFO: setting integration time to 200 ms
+2021-11-23 15:26:56,388: logger gui.file: file widget_file.py: line 12 INFO: init filewidget ui
+2021-11-23 15:26:56,390: logger gui.XYStageWidget: file widget_xystage.py: line 15 INFO: init xystage widget
+2021-11-23 15:26:56,393: logger Qinstrument.QXYStage: file xystage.py: line 20 INFO: init QXYStage
+2021-11-23 15:26:56,394: logger plot.XYStage: file plot_xystage.py: line 24 INFO: init plotwindow XYStage (position indicator)
+2021-11-23 15:26:56,394: logger Qinstrument.QXYStage: file xystage.py: line 20 INFO: init QXYStage
+2021-11-23 15:26:56,428: logger gui.SpectrometerWidget: file widget_spectrometer.py: line 14 INFO: init spectrometer widget ui
+2021-11-23 15:26:56,431: logger QInstrument.QSpectrometer: file spectrometer.py: line 27 INFO: init QSpectrometer
+2021-11-23 15:26:56,432: logger gui.PowerMeter: file widget_powermeter.py: line 13 INFO: init powermeter widget ui
+2021-11-23 15:26:56,434: logger ínstrument.PowerMeter: file powermeters.py: line 20 INFO: init PowerMeter
+2021-11-23 15:26:56,434: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 35 INFO: init QPowerMeter
+2021-11-23 15:26:56,434: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 59 INFO: setting integration time to 200 ms
+2021-11-23 15:26:56,435: logger gui.Laser: file widget_laser.py: line 13 INFO: init laser widget ui
+2021-11-23 15:26:56,439: logger Qinstrument.Qlaser: file lasers.py: line 47 INFO: init laser
+2021-11-23 15:26:56,441: logger gui.ShutterControlWidget: file widget_shuttercontrol.py: line 12 INFO: init shuttercontrol widget ui
+2021-11-23 15:26:56,443: logger Qinstrument.QShutterControl: file shuttercontrollers.py: line 15 INFO: init QShutterControl
+2021-11-23 15:26:56,448: logger plot.digitizer: file plot_digitizer.py: line 18 INFO: init plotwindow digitizter
+2021-11-23 15:26:56,448: logger Qinstrument.QDigitizer: file Qdigitizer.py: line 30 INFO: init QDigitizer
+2021-11-23 15:26:56,471: logger gui.ShutterControlWidget: file widget_shuttercontrol.py: line 12 INFO: init shuttercontrol widget ui
+2021-11-23 15:26:56,473: logger Qinstrument.QShutterControl: file shuttercontrollers.py: line 15 INFO: init QShutterControl
+2021-11-23 15:26:56,473: logger gui.Digitizer: file widget_digitizer.py: line 20 INFO: init digitizer widget ui
+2021-11-23 15:26:56,481: logger Qinstrument.QDigitizer: file Qdigitizer.py: line 30 INFO: init QDigitizer
+2021-11-23 15:26:56,481: logger gui.file: file widget_file.py: line 12 INFO: init filewidget ui
+2021-11-23 15:26:56,484: logger gui.Laser: file widget_laser.py: line 13 INFO: init laser widget ui
+2021-11-23 15:26:56,491: logger Qinstrument.Qlaser: file lasers.py: line 47 INFO: init laser
+2021-11-23 15:26:56,492: logger gui.XYStageWidget: file widget_xystage.py: line 15 INFO: init xystage widget
+2021-11-23 15:26:56,496: logger Qinstrument.QXYStage: file xystage.py: line 20 INFO: init QXYStage
+2021-11-23 15:26:56,496: logger plot.XYStage: file plot_xystage.py: line 24 INFO: init plotwindow XYStage (position indicator)
+2021-11-23 15:26:56,497: logger Qinstrument.QXYStage: file xystage.py: line 20 INFO: init QXYStage
+2021-11-23 15:26:56,550: logger statemachine: file statemachine.py: line 71 INFO: init statemachine
+2021-11-23 15:26:56,609: logger statemachine: file statemachine.py: line 128 INFO: Mysterious start function called
+2021-11-23 15:26:56,609: logger transitions.core: file core.py: line 1108 INFO: Executed callback '_start'
+2021-11-23 15:26:56,610: logger transitions.core: file core.py: line 131 INFO: Finished processing state initialize exit callbacks.
+2021-11-23 15:26:56,613: logger transitions.core: file core.py: line 125 INFO: Finished processing state waitingForExperiment enter callbacks.
+2021-11-23 15:26:56,613: logger __main__: file main.py: line 39 INFO: connecting main ui button and statemachine signals
+2021-11-23 15:26:57,712: logger __main__: file main.py: line 65 INFO: picked experiment page 0
+2021-11-23 15:26:57,712: logger transitions.core: file core.py: line 131 INFO: Finished processing state waitingForExperiment exit callbacks.
+2021-11-23 15:26:57,713: logger Qinstrument.QXYStage: file xystage.py: line 20 INFO: init QXYStage
+2021-11-23 15:26:57,714: logger QInstrument.QSpectrometer: file spectrometer.py: line 27 INFO: init QSpectrometer
+2021-11-23 15:26:57,717: logger transitions.core: file core.py: line 1108 INFO: Executed callback '_define_experiment'
+2021-11-23 15:26:57,717: logger transitions.core: file core.py: line 125 INFO: Finished processing state defineExperiment enter callbacks.
+2021-11-23 15:26:57,718: logger transitions.core: file core.py: line 131 INFO: Finished processing state defineExperiment exit callbacks.
+2021-11-23 15:26:57,718: logger statemachine: file statemachine.py: line 158 INFO: connecting xystage
+2021-11-23 15:26:57,780: logger statemachine: file statemachine.py: line 158 INFO: connecting spectrometer
+2021-11-23 15:26:57,869: logger transitions.core: file core.py: line 1108 INFO: Executed callback '_connect_all'
+2021-11-23 15:26:57,870: logger transitions.core: file core.py: line 125 INFO: Finished processing state connecting enter callbacks.
+2021-11-23 15:26:57,871: logger transitions.core: file core.py: line 131 INFO: Finished processing state connecting exit callbacks.
+2021-11-23 15:26:57,874: logger transitions.core: file core.py: line 1108 INFO: Executed callback '_align'
+2021-11-23 15:26:57,874: logger transitions.core: file core.py: line 125 INFO: Finished processing state align enter callbacks.
+2021-11-23 15:26:57,874: logger __main__: file main.py: line 144 INFO: setting the title of the mainwindow to the correct experiment
+2021-11-23 15:26:58,070: logger transitions.core: file core.py: line 1108 INFO: Executed callback '_emit_init_gui'
+2021-11-23 15:26:58,071: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:26:58,073: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:26:58,208: logger plot.Blitmanager: file plot_blitmanager.py: line 24 INFO: init blitmanager
+2021-11-23 15:26:58,588: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:26:58,588: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:26:59,087: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.500 seconds
+2021-11-23 15:26:59,087: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:26:59,089: logger plot.Spectrometer: file plot_spectrometer.py: line 82 INFO: Initializing blitmanager spectrometerplot with data = [2439. 2434. 2436. ... 2435. 2439. 2437.] and plotinfo = Raw Data
+2021-11-23 15:26:59,093: logger plot.Blitmanager: file plot_blitmanager.py: line 24 INFO: init blitmanager
+2021-11-23 15:26:59,289: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:26:59,290: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:26:59,587: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:00,087: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:27:00,087: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:27:00,587: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.500 seconds
+2021-11-23 15:27:00,587: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:27:00,718: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:27:00,718: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:01,087: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:01,586: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:27:01,587: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:27:02,087: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.500 seconds
+2021-11-23 15:27:02,087: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:27:02,139: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:27:02,139: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:02,586: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:03,087: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:27:03,087: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:27:03,587: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.500 seconds
+2021-11-23 15:27:03,587: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:27:03,755: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:27:03,755: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:04,087: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:04,586: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:27:04,586: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:27:05,086: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.500 seconds
+2021-11-23 15:27:05,087: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:27:05,186: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:27:05,186: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:05,586: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:06,086: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:27:06,086: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:27:06,586: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.500 seconds
+2021-11-23 15:27:06,586: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:27:06,605: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:27:06,605: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:07,086: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:27:07,087: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:27:07,586: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.500 seconds
+2021-11-23 15:27:07,586: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:27:07,613: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:27:07,613: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:08,086: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:27:08,087: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:27:08,586: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.499 seconds
+2021-11-23 15:27:08,586: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:27:08,639: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:27:08,639: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:08,900: logger plot.Blitmanager: file plot_blitmanager.py: line 64 INFO: redrawn canvas spectrometer
+2021-11-23 15:27:09,086: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:09,586: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:27:09,586: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:27:10,085: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.499 seconds
+2021-11-23 15:27:10,086: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:27:10,257: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:27:10,257: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:10,585: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:11,086: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:27:11,087: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:27:11,585: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.498 seconds
+2021-11-23 15:27:11,586: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:27:11,677: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:27:11,678: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:12,085: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:12,585: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:27:12,586: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:27:13,085: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.499 seconds
+2021-11-23 15:27:13,085: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:27:13,098: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:27:13,098: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:13,586: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:27:13,586: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:27:13,872: logger plot.Blitmanager: file plot_blitmanager.py: line 64 INFO: redrawn canvas spectrometer
+2021-11-23 15:27:14,085: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.500 seconds
+2021-11-23 15:27:14,086: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:27:14,113: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:27:14,114: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:14,586: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:27:14,586: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:27:15,086: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.500 seconds
+2021-11-23 15:27:15,086: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:27:15,131: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:27:15,131: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:15,585: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:27:15,585: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:27:16,085: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.500 seconds
+2021-11-23 15:27:16,085: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:27:16,144: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:27:16,145: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:16,585: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:17,085: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:27:17,086: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:27:17,585: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.500 seconds
+2021-11-23 15:27:17,585: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:27:17,769: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:27:17,769: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:18,084: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:27:18,585: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:27:18,585: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:27:19,085: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.500 seconds
+2021-11-23 15:27:19,085: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:27:19,157: logger transitions.core: file core.py: line 1108 INFO: Executed callback '_stop_align'
+2021-11-23 15:27:19,157: logger transitions.core: file core.py: line 131 INFO: Finished processing state align exit callbacks.
+2021-11-23 15:27:19,158: logger transitions.core: file core.py: line 125 INFO: Finished processing state setExperiment enter callbacks.
+2021-11-23 15:27:19,476: logger statemachine: file statemachine.py: line 186 INFO: disconnecting xystage
+2021-11-23 15:27:25,293: logger statemachine: file statemachine.py: line 186 INFO: disconnecting spectrometer
+2021-11-23 15:29:54,754: logger __main__: file main.py: line 17 INFO: Init mainwindow
+2021-11-23 15:29:55,031: logger plot.Spectrometer: file plot_spectrometer.py: line 18 INFO: init spectrometer plotwindow
+2021-11-23 15:29:55,031: logger QInstrument.QSpectrometer: file spectrometer.py: line 27 INFO: init QSpectrometer
+2021-11-23 15:29:55,102: logger gui.XYStageWidget: file widget_xystage.py: line 15 INFO: init xystage widget
+2021-11-23 15:29:55,110: logger Qinstrument.QXYStage: file xystage.py: line 20 INFO: init QXYStage
+2021-11-23 15:29:55,110: logger gui.file: file widget_file.py: line 12 INFO: init filewidget ui
+2021-11-23 15:29:55,111: logger gui.SpectrometerWidget: file widget_spectrometer.py: line 14 INFO: init spectrometer widget ui
+2021-11-23 15:29:55,114: logger QInstrument.QSpectrometer: file spectrometer.py: line 27 INFO: init QSpectrometer
+2021-11-23 15:29:55,115: logger plot.XYStage: file plot_xystage.py: line 24 INFO: init plotwindow XYStage (position indicator)
+2021-11-23 15:29:55,115: logger Qinstrument.QXYStage: file xystage.py: line 20 INFO: init QXYStage
+2021-11-23 15:29:55,164: logger plot.Spectrometer: file plot_spectrometer.py: line 18 INFO: init spectrometer plotwindow
+2021-11-23 15:29:55,164: logger QInstrument.QSpectrometer: file spectrometer.py: line 27 INFO: init QSpectrometer
+2021-11-23 15:29:55,194: logger plot.PowerMeter: file plot_powermeter.py: line 18 INFO: init powermeter plot
+2021-11-23 15:29:55,194: logger ínstrument.PowerMeter: file powermeters.py: line 20 INFO: init PowerMeter
+2021-11-23 15:29:55,195: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 35 INFO: init QPowerMeter
+2021-11-23 15:29:55,195: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 59 INFO: setting integration time to 200 ms
+2021-11-23 15:29:55,224: logger gui.file: file widget_file.py: line 12 INFO: init filewidget ui
+2021-11-23 15:29:55,225: logger gui.XYStageWidget: file widget_xystage.py: line 15 INFO: init xystage widget
+2021-11-23 15:29:55,228: logger Qinstrument.QXYStage: file xystage.py: line 20 INFO: init QXYStage
+2021-11-23 15:29:55,228: logger plot.XYStage: file plot_xystage.py: line 24 INFO: init plotwindow XYStage (position indicator)
+2021-11-23 15:29:55,228: logger Qinstrument.QXYStage: file xystage.py: line 20 INFO: init QXYStage
+2021-11-23 15:29:55,284: logger gui.SpectrometerWidget: file widget_spectrometer.py: line 14 INFO: init spectrometer widget ui
+2021-11-23 15:29:55,286: logger QInstrument.QSpectrometer: file spectrometer.py: line 27 INFO: init QSpectrometer
+2021-11-23 15:29:55,287: logger gui.PowerMeter: file widget_powermeter.py: line 13 INFO: init powermeter widget ui
+2021-11-23 15:29:55,288: logger ínstrument.PowerMeter: file powermeters.py: line 20 INFO: init PowerMeter
+2021-11-23 15:29:55,288: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 35 INFO: init QPowerMeter
+2021-11-23 15:29:55,288: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 59 INFO: setting integration time to 200 ms
+2021-11-23 15:29:55,288: logger gui.Laser: file widget_laser.py: line 13 INFO: init laser widget ui
+2021-11-23 15:29:55,292: logger Qinstrument.Qlaser: file lasers.py: line 47 INFO: init laser
+2021-11-23 15:29:55,398: logger gui.ShutterControlWidget: file widget_shuttercontrol.py: line 12 INFO: init shuttercontrol widget ui
+2021-11-23 15:29:55,400: logger Qinstrument.QShutterControl: file shuttercontrollers.py: line 15 INFO: init QShutterControl
+2021-11-23 15:29:55,405: logger plot.digitizer: file plot_digitizer.py: line 18 INFO: init plotwindow digitizter
+2021-11-23 15:29:55,405: logger Qinstrument.QDigitizer: file Qdigitizer.py: line 30 INFO: init QDigitizer
+2021-11-23 15:29:55,437: logger gui.ShutterControlWidget: file widget_shuttercontrol.py: line 12 INFO: init shuttercontrol widget ui
+2021-11-23 15:29:55,437: logger Qinstrument.QShutterControl: file shuttercontrollers.py: line 15 INFO: init QShutterControl
+2021-11-23 15:29:55,438: logger gui.Digitizer: file widget_digitizer.py: line 20 INFO: init digitizer widget ui
+2021-11-23 15:29:55,445: logger Qinstrument.QDigitizer: file Qdigitizer.py: line 30 INFO: init QDigitizer
+2021-11-23 15:29:55,445: logger gui.file: file widget_file.py: line 12 INFO: init filewidget ui
+2021-11-23 15:29:55,446: logger gui.Laser: file widget_laser.py: line 13 INFO: init laser widget ui
+2021-11-23 15:29:55,449: logger Qinstrument.Qlaser: file lasers.py: line 47 INFO: init laser
+2021-11-23 15:29:55,449: logger gui.XYStageWidget: file widget_xystage.py: line 15 INFO: init xystage widget
+2021-11-23 15:29:55,452: logger Qinstrument.QXYStage: file xystage.py: line 20 INFO: init QXYStage
+2021-11-23 15:29:55,453: logger plot.XYStage: file plot_xystage.py: line 24 INFO: init plotwindow XYStage (position indicator)
+2021-11-23 15:29:55,453: logger Qinstrument.QXYStage: file xystage.py: line 20 INFO: init QXYStage
+2021-11-23 15:29:55,521: logger statemachine: file statemachine.py: line 71 INFO: init statemachine
+2021-11-23 15:29:55,640: logger statemachine: file statemachine.py: line 128 INFO: Mysterious start function called
+2021-11-23 15:29:55,640: logger transitions.core: file core.py: line 1108 INFO: Executed callback '_start'
+2021-11-23 15:29:55,640: logger transitions.core: file core.py: line 131 INFO: Finished processing state initialize exit callbacks.
+2021-11-23 15:29:55,640: logger transitions.core: file core.py: line 125 INFO: Finished processing state waitingForExperiment enter callbacks.
+2021-11-23 15:29:55,641: logger __main__: file main.py: line 39 INFO: connecting main ui button and statemachine signals
+2021-11-23 15:29:57,903: logger __main__: file main.py: line 65 INFO: picked experiment page 0
+2021-11-23 15:29:57,904: logger transitions.core: file core.py: line 131 INFO: Finished processing state waitingForExperiment exit callbacks.
+2021-11-23 15:29:57,904: logger Qinstrument.QXYStage: file xystage.py: line 20 INFO: init QXYStage
+2021-11-23 15:29:57,904: logger QInstrument.QSpectrometer: file spectrometer.py: line 27 INFO: init QSpectrometer
+2021-11-23 15:29:57,904: logger transitions.core: file core.py: line 1108 INFO: Executed callback '_define_experiment'
+2021-11-23 15:29:57,904: logger transitions.core: file core.py: line 125 INFO: Finished processing state defineExperiment enter callbacks.
+2021-11-23 15:29:57,904: logger transitions.core: file core.py: line 131 INFO: Finished processing state defineExperiment exit callbacks.
+2021-11-23 15:29:57,905: logger statemachine: file statemachine.py: line 158 INFO: connecting xystage
+2021-11-23 15:29:57,954: logger statemachine: file statemachine.py: line 158 INFO: connecting spectrometer
+2021-11-23 15:29:58,036: logger transitions.core: file core.py: line 1108 INFO: Executed callback '_connect_all'
+2021-11-23 15:29:58,036: logger transitions.core: file core.py: line 125 INFO: Finished processing state connecting enter callbacks.
+2021-11-23 15:29:58,036: logger transitions.core: file core.py: line 131 INFO: Finished processing state connecting exit callbacks.
+2021-11-23 15:29:58,037: logger transitions.core: file core.py: line 1108 INFO: Executed callback '_align'
+2021-11-23 15:29:58,037: logger transitions.core: file core.py: line 125 INFO: Finished processing state align enter callbacks.
+2021-11-23 15:29:58,037: logger __main__: file main.py: line 144 INFO: setting the title of the mainwindow to the correct experiment
+2021-11-23 15:29:58,233: logger transitions.core: file core.py: line 1108 INFO: Executed callback '_emit_init_gui'
+2021-11-23 15:29:58,264: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:29:58,266: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:29:58,349: logger plot.Blitmanager: file plot_blitmanager.py: line 24 INFO: init blitmanager
+2021-11-23 15:29:58,776: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:29:58,777: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:29:59,273: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.496 seconds
+2021-11-23 15:29:59,273: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:29:59,274: logger plot.Spectrometer: file plot_spectrometer.py: line 82 INFO: Initializing blitmanager spectrometerplot with data = [2439. 2431. 2435. ... 2437. 2439. 2435.] and plotinfo = Raw Data
+2021-11-23 15:29:59,275: logger plot.Blitmanager: file plot_blitmanager.py: line 24 INFO: init blitmanager
+2021-11-23 15:29:59,457: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:29:59,457: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:29:59,771: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:00,269: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:00,269: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:00,767: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.498 seconds
+2021-11-23 15:30:00,767: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:00,874: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:00,874: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:01,263: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:01,762: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:01,762: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:02,258: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.497 seconds
+2021-11-23 15:30:02,259: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:02,281: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:02,281: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:02,756: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:02,756: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:03,253: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.497 seconds
+2021-11-23 15:30:03,253: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:03,298: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:03,299: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:03,751: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:03,751: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:04,248: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.498 seconds
+2021-11-23 15:30:04,248: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:04,303: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:04,303: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:04,745: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:05,244: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:05,244: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:05,741: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.497 seconds
+2021-11-23 15:30:05,741: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:05,897: logger plot.Blitmanager: file plot_blitmanager.py: line 64 INFO: redrawn canvas spectrometer
+2021-11-23 15:30:05,928: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:05,929: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:06,238: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:06,736: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:06,736: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:07,233: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.498 seconds
+2021-11-23 15:30:07,233: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:07,374: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:07,375: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:07,731: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:08,228: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:08,228: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:08,726: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.498 seconds
+2021-11-23 15:30:08,726: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:08,755: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:08,755: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:09,224: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:09,224: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:09,720: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.497 seconds
+2021-11-23 15:30:09,721: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:09,794: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:09,795: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:10,218: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:10,717: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:10,718: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:11,213: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.495 seconds
+2021-11-23 15:30:11,213: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:11,373: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:11,373: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:11,711: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:12,208: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:12,208: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:12,705: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.497 seconds
+2021-11-23 15:30:12,706: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:12,793: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:12,794: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:13,203: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:13,701: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:13,701: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:14,198: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.497 seconds
+2021-11-23 15:30:14,198: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:14,210: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:14,211: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:14,696: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:14,696: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:15,193: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.497 seconds
+2021-11-23 15:30:15,193: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:15,213: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:15,214: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:15,690: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:15,690: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:16,187: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.497 seconds
+2021-11-23 15:30:16,187: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:16,228: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:16,228: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:16,685: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:16,685: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:17,183: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.498 seconds
+2021-11-23 15:30:17,183: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:17,235: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:17,235: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:17,680: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:18,178: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:18,178: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:18,675: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.497 seconds
+2021-11-23 15:30:18,675: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:18,851: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:18,851: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:19,172: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:19,670: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:19,670: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:20,167: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.498 seconds
+2021-11-23 15:30:20,167: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:20,277: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:20,278: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:20,665: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:21,162: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:21,162: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:21,659: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.497 seconds
+2021-11-23 15:30:21,660: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:21,684: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:21,684: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:22,157: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:22,157: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:22,655: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.498 seconds
+2021-11-23 15:30:22,655: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:22,691: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:22,691: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:23,152: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:23,153: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:23,649: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.497 seconds
+2021-11-23 15:30:23,649: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:23,703: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:23,703: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:24,147: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:24,645: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:24,645: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:25,142: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.497 seconds
+2021-11-23 15:30:25,142: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:25,330: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:25,330: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:25,639: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:26,137: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:26,137: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:26,634: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.497 seconds
+2021-11-23 15:30:26,634: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:26,733: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:26,733: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:27,131: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:27,630: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:27,630: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:28,126: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.497 seconds
+2021-11-23 15:30:28,127: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:28,152: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:28,152: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:28,624: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:28,624: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:29,122: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.497 seconds
+2021-11-23 15:30:29,122: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:29,170: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:29,170: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:29,619: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:30,117: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:30,117: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:30,614: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.498 seconds
+2021-11-23 15:30:30,614: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:30,785: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:30,785: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:31,111: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:31,609: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:31,609: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:32,106: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.497 seconds
+2021-11-23 15:30:32,106: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:32,201: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:32,201: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:32,604: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:33,101: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:33,101: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:33,599: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.498 seconds
+2021-11-23 15:30:33,599: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:33,612: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:33,613: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:34,096: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:34,096: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:34,593: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.497 seconds
+2021-11-23 15:30:34,594: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:34,628: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:34,628: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:35,091: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:35,092: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:35,589: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.497 seconds
+2021-11-23 15:30:35,589: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:35,627: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:35,628: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:36,086: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:36,086: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:36,584: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.497 seconds
+2021-11-23 15:30:36,584: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:36,647: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:36,647: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:37,081: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:37,365: logger transitions.core: file core.py: line 1108 INFO: Executed callback '_stop_align'
+2021-11-23 15:30:37,365: logger transitions.core: file core.py: line 131 INFO: Finished processing state align exit callbacks.
+2021-11-23 15:30:37,365: logger transitions.core: file core.py: line 125 INFO: Finished processing state waitingForExperiment enter callbacks.
+2021-11-23 15:30:37,579: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:37,579: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:37,664: logger plot.Spectrometer: file plot_spectrometer.py: line 111 INFO: clearing lamp spectrum plot
+2021-11-23 15:30:37,664: logger plot.Spectrometer: file plot_spectrometer.py: line 106 INFO: clearing dark spectrum plot
+2021-11-23 15:30:38,076: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.498 seconds
+2021-11-23 15:30:38,076: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data
+2021-11-23 15:30:38,182: logger __main__: file main.py: line 65 INFO: picked experiment page 1
+2021-11-23 15:30:38,182: logger transitions.core: file core.py: line 131 INFO: Finished processing state waitingForExperiment exit callbacks.
+2021-11-23 15:30:38,182: logger Qinstrument.Qlaser: file lasers.py: line 47 INFO: init laser
+2021-11-23 15:30:38,183: logger Qinstrument.QShutterControl: file shuttercontrollers.py: line 15 INFO: init QShutterControl
+2021-11-23 15:30:38,183: logger ínstrument.PowerMeter: file powermeters.py: line 20 INFO: init PowerMeter
+2021-11-23 15:30:38,183: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 35 INFO: init QPowerMeter
+2021-11-23 15:30:38,183: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 59 INFO: setting integration time to 200 ms
+2021-11-23 15:30:38,183: logger transitions.core: file core.py: line 1108 INFO: Executed callback '_define_experiment'
+2021-11-23 15:30:38,183: logger transitions.core: file core.py: line 125 INFO: Finished processing state defineExperiment enter callbacks.
+2021-11-23 15:30:38,184: logger transitions.core: file core.py: line 131 INFO: Finished processing state defineExperiment exit callbacks.
+2021-11-23 15:30:38,184: logger statemachine: file statemachine.py: line 155 INFO: xystage already connected
+2021-11-23 15:30:38,184: logger statemachine: file statemachine.py: line 155 INFO: spectrometer already connected
+2021-11-23 15:30:38,184: logger statemachine: file statemachine.py: line 158 INFO: connecting laser
+2021-11-23 15:30:38,184: logger Qinstrument.Qlaser: file lasers.py: line 252 INFO: connecting to laser
+2021-11-23 15:30:38,571: logger Qinstrument.Qlaser: file lasers.py: line 258 INFO: laser connected
+2021-11-23 15:30:38,571: logger statemachine: file statemachine.py: line 158 INFO: connecting shuttercontrol
+2021-11-23 15:30:39,182: logger statemachine: file statemachine.py: line 158 INFO: connecting powermeter
+2021-11-23 15:30:39,347: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 59 INFO: setting integration time to 200 ms
+2021-11-23 15:30:39,347: logger transitions.core: file core.py: line 1108 INFO: Executed callback '_connect_all'
+2021-11-23 15:30:39,347: logger transitions.core: file core.py: line 125 INFO: Finished processing state connecting enter callbacks.
+2021-11-23 15:30:39,347: logger transitions.core: file core.py: line 131 INFO: Finished processing state connecting exit callbacks.
+2021-11-23 15:30:39,347: logger statemachine: file statemachine.py: line 192 INFO: connecting laser wavelength to powermeter wavelength
+2021-11-23 15:30:39,351: logger transitions.core: file core.py: line 1108 INFO: Executed callback '_align'
+2021-11-23 15:30:39,351: logger ínstrument.PowerMeter: file powermeters.py: line 44 INFO: setting the powermeter wavelength to 375
+2021-11-23 15:30:39,351: logger transitions.core: file core.py: line 125 INFO: Finished processing state align enter callbacks.
+2021-11-23 15:30:39,352: logger __main__: file main.py: line 144 INFO: setting the title of the mainwindow to the correct experiment
+2021-11-23 15:30:39,369: logger transitions.core: file core.py: line 1108 INFO: Executed callback '_emit_init_gui'
+2021-11-23 15:30:39,544: logger QInstrument.QSpectrometer: file spectrometer.py: line 147 INFO: measuring a spectrum with spectrometer
+2021-11-23 15:30:39,545: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 107 INFO: measuring powermeter
+2021-11-23 15:30:39,545: logger Qinstrument.QShutterControl: file shuttercontrollers.py: line 49 INFO: measuring shutter status
+2021-11-23 15:30:39,545: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:39,546: logger Qinstrument.Qlaser: file lasers.py: line 279 INFO: Measuring laser...
+2021-11-23 15:30:39,553: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:39,560: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:39,568: logger QInstrument.QSpectrometer: file spectrometer.py: line 116 INFO: spectrometer cache not cleared, requesting measurement
+2021-11-23 15:30:39,593: logger plot.Blitmanager: file plot_blitmanager.py: line 24 INFO: init blitmanager
+2021-11-23 15:30:39,745: logger Qinstrument.QPowerMeter: file qpowermeter.py: line 124 INFO: powermeter completed,  time with all measurements 0.200, number of measurements = 34
+2021-11-23 15:30:39,746: logger ínstrument.PowerMeter: file powermeters.py: line 44 INFO: setting the powermeter wavelength to 375
+2021-11-23 15:30:40,066: logger QInstrument.QSpectrometer: file spectrometer.py: line 121 INFO: spectrometer cache cleared
+2021-11-23 15:30:40,066: logger QInstrument.QSpectrometer: file spectrometer.py: line 125 INFO: spectrometer measurment started
+2021-11-23 15:30:40,563: logger QInstrument.QSpectrometer: file spectrometer.py: line 138 INFO: spectrometer done in 0.498 seconds
+2021-11-23 15:30:40,563: logger QInstrument.QSpectrometer: file spectrometer.py: line 158 INFO: Spectrometer plotinfo = Raw Data

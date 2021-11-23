@@ -83,8 +83,8 @@ lineEdit_beamsplitter_calibration_file: C:/Users/bauke/OneDrive/Bureaublad/BeamS
 transmission:
   widget_file_transmission:
     comboBox_bandpass_filter: none
-    comboBox_longpass_filter: 430 nm - Semrock FF01-430/LP-25
-    comboBox_nd_filter: OD 1.0 -  Thorlabs NDUVW10B
+    comboBox_longpass_filter: none
+    comboBox_nd_filter: none
     comboBox_substrate: 50X50 mm (Borofloat)
     lineEdit_directory: C:/Users/bauke/OneDrive/Bureaublad
     lineEdit_sample: TestFilters
