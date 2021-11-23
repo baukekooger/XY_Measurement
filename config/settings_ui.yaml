@@ -88,22 +88,22 @@ transmission:
     comboBox_longpass_filter: none
     comboBox_nd_filter: none
     comboBox_substrate: 50X50 mm (Borofloat)
-    lineEdit_directory: C:/Users/bauke/OneDrive/Bureaublad
+    lineEdit_directory: C:/Users/tud257183/Desktop/XY Test Data
     lineEdit_sample: TestFilters
     plainTextEdit_comments: Yo biatch
   widget_spectrometer_transmission:
     spinBox_averageing_alignment: 1
     spinBox_averageing_experiment: 1
     spinBox_integration_time_alignment: 200
-    spinBox_integration_time_experiment: 10000
+    spinBox_integration_time_experiment: 3000
   widget_xystage_transmission:
     checkBox_homed_x: true
     checkBox_homed_y: true
     doubleSpinBox_x: 0.0
     doubleSpinBox_y: 0.0
     spinBox_x_num: 2
-    spinBox_x_off_left: 0
-    spinBox_x_off_right: 0
+    spinBox_x_off_left: 50
+    spinBox_x_off_right: 50
     spinBox_y_num: 2
-    spinBox_y_off_bottom: 0
-    spinBox_y_off_top: 0
+    spinBox_y_off_bottom: 50
+    spinBox_y_off_top: 50

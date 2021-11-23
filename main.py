@@ -9,7 +9,12 @@ import datetime
 from os import path
 
 
-class MainWindow(QtWidgets.QMainWindow):
+class XYSetup(QtWidgets.QMainWindow):
+    """
+    XY Setup
+
+    Control class for the XY Spectroscopy Setup.
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -35,7 +40,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.filedir_calibration = None
 
     def connect_signals(self):
-        """ Connect signals of the main UI and the statemachine """
+        """ Connect signals of the main UI and the statemachine. """
+
         self.logger.info('connecting main ui button and statemachine signals')
         self.ui.pushButton_transmission.clicked.connect(lambda state, page=0: self.choose_experiment(page))
         self.ui.pushButton_excitation_emission.clicked.connect(lambda state, page=1: self.choose_experiment(page))
@@ -73,6 +79,7 @@ class MainWindow(QtWidgets.QMainWindow):
         Initialize instrument threads and the main gui.
         Called from statemachine if connection to instruments succesful, before the state change to align.
         """
+        self.logger.info('initializing threads and moving instruments to threads')
         self.define_threads()
         self.move_to_threads()
         self.start_threads()
@@ -83,6 +90,7 @@ class MainWindow(QtWidgets.QMainWindow):
         Initialize the gui when the connection is succesful. Is called when after transitioning from connecting to
         align state.
         """
+        self.logger.info('initializing main gui')
         self.set_title()
         self.add_instruments_to_guis()
         self.connect_signals_gui()
@@ -93,7 +101,11 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.stackedWidget_experiment.setCurrentIndex(self.page)
 
     def define_threads(self):
+        """
+        Define a QThread for each instrument belonging to the experiment as defined in the config.main file.
+        """
         instruments_threads = self.config['instruments'][self.experiment]
+        self.logger.info(f'defining threads for the following instruments: {instruments_threads}')
         to_quit = [inst for inst in self.threads.keys() if (inst not in instruments_threads)]
         to_add = [inst for inst in instruments_threads if (inst not in self.threads.keys())]
         for inst in to_quit:
@@ -102,23 +114,30 @@ class MainWindow(QtWidgets.QMainWindow):
             self.threads[inst] = QThread()
 
     def move_to_threads(self):
+        """ Move the instruments to their threads. """
+        self.logger.info('moving instruments to threads')
         for inst in self.threads.keys():
             if not self.threads[inst].isRunning():
                 self.statemachine.instruments[inst].moveToThread(self.threads[inst])
 
     def start_threads(self):
+        """ Start the instrument threads. """
+        self.logger.info('starting instrument threads')
         for _, thread in self.threads.items():
             if not thread.isRunning():
                 thread.start()
 
     def add_instruments_to_guis(self):
-        # adds the threaded instruments from the statemachine to the relevant widgets
+        """ Add the threaded instruments to their respective widget or plot gui elements. """
+        self.logger.info('adding threaded instruments to gui elements')
         for widget, inst in self.config['widgets'][self.experiment].items():
             if 'file' not in widget:
                 widget_set = getattr(self.ui, widget)
                 setattr(widget_set, inst, self.statemachine.instruments[inst])
 
     def connect_signals_gui(self):
+        """ Connect the threaded instrument signals to gui widget or plot elements. """
+        self.logger.info('connecting signals to gui elements')
         for widget, inst in self.config['widgets'][self.experiment].items():
             widget_set = getattr(self.ui, widget)
             widget_set.connect_signals_slots()
@@ -126,13 +145,18 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.ui.pushButton_fit_plots_to_screen.clicked.connect(widget_set.fit_plots)
 
     def disconnect_signals_gui(self):
-        # disconnects the signals from the guis so they don't get doubly connected when rechoosing experiment
+        """
+        Disconnect the threaded instrument signals from the gui widget or plot element
+        to prevent double connections if another experiment is chosen
+        """
+        self.logger.info('disconnecting signals from gui elements')
         for widget, inst in self.config['widgets'][self.experiment].items():
             widget_set = getattr(self.ui, widget)
             widget_set.disconnect_signals_slots()
         self.ui.pushButton_fit_plots_to_screen.clicked.disconnect()
 
     def quit_all_threads(self):
+        """ Quit all threads. """
         self.statemachineThread.quit()
         for _, thread in self.threads.items():
             thread.quit()
@@ -141,7 +165,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def set_title(self):
         """ Set the title of the mainwindow. """
-        self.logger.info('setting the title of the mainwindow to the correct experiment')
+        self.logger.info(f'setting the title of the mainwindow to the correct experiment ({self.experiment})')
         title = 'XY Setup'
         if self.experiment == 'transmission':
             title = 'XY Transmission'
@@ -152,24 +176,34 @@ class MainWindow(QtWidgets.QMainWindow):
         self.setWindowTitle(title)
 
     def return_home(self):
-        # add something that quits all threads from the experiment such that a new experiment can be done
+        """
+        Return to the starting screen.
+
+        Store the ui and call return home on the statemachine. Also disconnect signals from the gui.
+        """
+        self.logger.info('return home button pressed')
         self.store_ui()
-        # self.alignment_experiment_gui()
         self.statemachine.return_home()
         QTimer.singleShot(300, self.disconnect_signals_gui)
         self.ui.stackedWidget.setCurrentIndex(0)
         self.setWindowTitle('XY Setup')
 
     def alignment_experiment(self):
-        # finalize the current statemachine and load the new statemachine.
+        """
+        Switch between aligning mode and setting the experiment.
+
+        Call the state machine align experiment, store the ui and change the gui appearance.
+        """
+        self.logger.info('alignment experiment button pressed')
         self.statemachine.align_experiment()
         self.store_ui()
         self.handle_position_layout_plot()
         self.alignment_experiment_gui()
 
     def alignment_experiment_gui(self):
-        # sets the correct instrument widget page and adjusts size policy to
-        # the new page based on the current state of the statemachine.
+        """ Set the gui to the alignment or set experiment layout based on the current state of the statemachine. """
+
+        self.logger.info(f'changing the gui to current state ({self.statemachine.state})')
         stateconfig = self.config['instrument_pages'][self.statemachine.state]
         for inst in self.config['widgets'][self.experiment].keys():
             # changes only the instrument input widgets as they are all stacked widgets
@@ -189,7 +223,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.pushButton_beamsplitter_calibration.setText(stateconfig['text_button_beamsplitter'])
 
     def store_ui(self):
-        # writes widget settings for current experiment to file, overwrites previous settings for that experiment
+        """ Store the ui settings in the settings_ui.yml file. """
+        self.logger.info('storing user interface in settinge_ui.yml')
         with open('config/settings_ui.yaml') as file:
             settings = yaml_safe_load(file)
         settings[self.experiment] = {}
@@ -229,7 +264,8 @@ class MainWindow(QtWidgets.QMainWindow):
             dump(settings, file)
 
     def fill_ui(self):
-        # fills the user interface with the last values known for that experiment
+        """ Fill the ui from a yml file. """
+        self.logger.info('reading the user interface settings from settings_ui.yml')
         with open('config/settings_ui.yaml') as file:
             settings = yaml_safe_load(file)
         try:
@@ -252,12 +288,14 @@ class MainWindow(QtWidgets.QMainWindow):
         except (AttributeError, KeyError) as e:
             print(f"Can't load UI, UI configuration has been modified. {e}")
 
-    @pyqtSlot(bool)
-    def set_spectrometeraxes(self, set_transmissionaxes):
-        self.ui.widget_spectrometerplot_transmission.set_transmissionaxes = set_transmissionaxes
-
     def connect_position_layout_plot(self):
-        # signals from xy stage widget
+        """
+        Connect signals from the XYStage widget to plotting function of the XYPlot widget
+
+        - Connect substrate changed signal from file widget to XYPlotwidget
+        - Initialize the layout plot
+        """
+        self.logger.info('connecting the signals from the XYstage widget to XYplotwidget')
         widget = getattr(self.ui, f'widget_xystage_{self.experiment}')
         widget.ui.spinBox_x_num.valueChanged.connect(self.handle_position_layout_plot)
         widget.ui.spinBox_y_num.valueChanged.connect(self.handle_position_layout_plot)
@@ -265,12 +303,16 @@ class MainWindow(QtWidgets.QMainWindow):
         widget.ui.spinBox_x_off_right.valueChanged.connect(self.handle_position_layout_plot)
         widget.ui.spinBox_y_off_bottom.valueChanged.connect(self.handle_position_layout_plot)
         widget.ui.spinBox_y_off_top.valueChanged.connect(self.handle_position_layout_plot)
-        # signal from file widget (substrate change)
         widgetfile = getattr(self.ui, f'widget_file_{self.experiment}')
         widgetfile.ui.comboBox_substrate.currentTextChanged.connect(self.handle_substrate_layout)
         self.init_layout_plot()
 
     def handle_position_layout_plot(self):
+        """
+        Handle to emit all the XYstage widget settings to the XYPlot widget
+        when one of the XYstage widget changes
+        """
+        self.logger.info('positions plot handle called')
         widget = getattr(self.ui, f'widget_xystage_{self.experiment}')
         xnum = widget.ui.spinBox_x_num.value()
         ynum = widget.ui.spinBox_y_num.value()
@@ -282,7 +324,8 @@ class MainWindow(QtWidgets.QMainWindow):
         widgetplot.plot_layout(xnum, ynum, x_off_left, x_off_right, y_off_bottom, y_off_top)
 
     def init_layout_plot(self):
-        # sets the substrate and experiment attribute of the layout plot after choosing a measurement
+        """ Set the experiment and the substrate in the XYPlot widget. """
+        self.logger.info('setting experiment and substrate in XYPlot widget')
         widgetplot = getattr(self.ui, f'widget_xystageplot_{self.experiment}')
         widgetplot.experiment = self.experiment
         widgetfile = getattr(self.ui, f'widget_file_{self.experiment}')
@@ -291,6 +334,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @pyqtSlot(str)
     def handle_substrate_layout(self, substrate):
+        """
+        Prompt the user that the substrate setting has changed and that they shall
+        check it is mounted correctly by popping up a messagebox.
+        """
+        self.logger.info('substrate changed, notifiying user with messagebox')
         QtWidgets.QMessageBox.information(self, 'substrateholder changed', f'Changing substrateholder to '
                                         f'{substrate}, please make sure the substrateholder is mounted correctly')
         widgetplot = getattr(self.ui, f'widget_xystageplot_{self.experiment}')
@@ -300,22 +348,29 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def start_experiment(self):
         """
-        Perform checks if the automated measurement routine may be started.
-        If allowed, call the UI change and start the automated measurement routine by giving the init experiment
-        command to the statemachine.
-        """
+        Start the automated measurement routine.
 
+        - Perform checks if the automated measurement routine may be started.
+        - Change the ui to experiment mode and call the statemachine init experiment trigger.
+        """
+        self.logger.info('start experiment button pressed, doing checks')
         if not self._directorycheck():
             return
         if not self._messagebox_substratecheck():
             return
         if not self._homingcheck():
             return
-
+        self.logger.info('start checks passed, changing ui and starting experiment')
         self.start_experiment_ui()
         QTimer.singleShot(200, self.statemachine.init_experiment)
 
     def start_experiment_ui(self):
+        """
+        Disable most of the ui for the automated experiment routine.
+
+        -Store the ui settings in settings.yml
+        """
+        self.logger.info('setting the ui for experiment mode')
         self.store_ui()
         self.ui.pushButton_start_experiment.setText('Stop')
         self.ui.pushButton_alignment_experiment.setDisabled(True)
@@ -326,6 +381,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _messagebox_substratecheck(self):
         """ Make a messagebox which asks the user if the correct substrateholder is selected. """
+        self.logger.info('showing messagebox substratecheck')
         widgetfile = getattr(self.ui, f'widget_file_{self.experiment}')
         substratename = widgetfile.ui.comboBox_substrate.currentText()
         msgbox = QtWidgets.QMessageBox(self)
@@ -355,6 +411,7 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def _messagebox_homingcheck(self):
         """ Make a messagebox informing the user the motors are not homed. """
+        self.logger.info('showing messagebox motors not homed')
         msgbox = QtWidgets.QMessageBox(self)
         msgbox.setIcon(QtWidgets.QMessageBox.Information)
         msgbox.setText(f'Motors not homed, please wait for homing to complete.')
@@ -365,33 +422,35 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def new_beamsplitter_calibration(self):
         """
-        Perform check if calibration can be started.
-        Ask for user input on file name and store ui settings
-        Call statemachine start of calibration procedure
+        Start a beamsplitter calibration
+        - Perform check if calibration can be started.
+        - Ask for user input on file name and store ui settings
+        - Call statemachine start of calibration trigger
         """
 
+        self.logger.info('new calibration button pressed, performing checks')
         if not self._homingcheck():
             return
         if not self._messagebox_substratecheck():
             return
         if not self._messagebox_calibrationcheck():
             return
-        beamsplitters = ['BS20WR', 'Other Type']
-        self.statemachine.beamsplitter, ok = QtWidgets.QInputDialog.getItem(self, 'beamsplitter',
-                                        'please choose beamsplitter type or edit if type not available', beamsplitters)
-        if not ok:
+        if not self._messagebox_beamsplitter():
             return
-        self.statemachine.storage_dir_calibration = str(QtWidgets.QFileDialog.getExistingDirectory(self,
-                                                                                                   "Select Directory"))
+        self.statemachine.storage_dir_calibration = \
+            str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory"))
         if not self.statemachine.storage_dir_calibration:
             return
         QtWidgets.QMessageBox.information(self, 'move powermeter', 'place powermeter in first position'
                                                                    '(in line with laser beam)')
+        self.logger.info('checks passed, starting calibration procedure')
         self.start_experiment_ui()
         self.statemachine.calibration = True
         QTimer.singleShot(0, self.statemachine.init_experiment)
 
     def beamsplitter_calibration_half(self):
+        """ Reset the progress bar, continue calibration if ok is clicked. """
+        self.logger.info('beamsplitter calibration halfway')
         self.reset_progress()
         if not self._messagebox_calibrationhalfway():
             self.beamsplitter_calibration_complete()
@@ -400,12 +459,16 @@ class MainWindow(QtWidgets.QMainWindow):
             QTimer.singleShot(0, self.statemachine.continue_experiment)
 
     def beamsplitter_calibration_complete(self):
+        """ Calibration complete, reset ui and show popup. """
+        self.logger.info('calibration completed, resetting ui')
         self.reset_setexperiment()
         self.reset_progress()
         self.ui.lineEdit_beamsplitter_calibration_file.setText(self.statemachine.calibration_fname)
         self._messagebox_calibrationcomplete()
 
     def select_beamsplitter_calibration_file(self):
+        """ Select an existing beamsplitter calibration file. """
+        self.logger.info('selecting existing calibration file')
         file = QtWidgets.QFileDialog.getOpenFileName(self, 'Select Calibration File', '*.csv')[0]
         self.ui.lineEdit_beamsplitter_calibration_file.setText(file)
 
@@ -421,7 +484,26 @@ class MainWindow(QtWidgets.QMainWindow):
         else:
             return True
 
+    def _inputdialog_beamsplitter(self):
+        """
+        Show messagebox prompting the user to choose which beamsplitter is installed.
+
+        Set the beamsplitter attribute of the statemachine.
+        """
+        self.logger.info('showing inputdialog beamsplitter')
+        beamsplitters = ['BS20WR', 'BSW26R', 'Fused Silica', 'Other Type']
+        self.statemachine.beamsplitter, ok = \
+            QtWidgets.QInputDialog.getItem(self, 'beamsplitter',
+                                           'please choose beamsplitter type or edit if type not available',
+                                           beamsplitters)
+        return ok
+
     def _messagebox_calibrationcheck(self):
+        """
+        Popup messagebox prompting the user to check if the settings for the beamsplitter
+        calibration are correct.
+        """
+        self.logger.info('showing messagebox calibration settings check')
         wlstart = self.ui.widget_laser_excitation_emission.ui.spinBox_wavelength_start.value()
         wlstop = self.ui.widget_laser_excitation_emission.ui.spinBox_wavelength_stop.value()
         wlstep = self.ui.widget_laser_excitation_emission.ui.spinBox_wavelength_step.value()
@@ -441,6 +523,11 @@ class MainWindow(QtWidgets.QMainWindow):
             return False
 
     def _messagebox_calibrationhalfway(self):
+        """
+        Messagebox informing the user the calibration is halfway and prompting
+        them to move powermeter to position 2.
+        """
+        self.logger.info('messagebox calibration halfway')
         msgbox = QtWidgets.QMessageBox(self)
         msgbox.setIcon(QtWidgets.QMessageBox.Information)
         msgbox.setText(f'Calibration measurement at position 1 done. Move powermeter to '
@@ -455,6 +542,8 @@ class MainWindow(QtWidgets.QMainWindow):
             return False
 
     def _messagebox_calibrationcomplete(self):
+        """ Messagebox prompting the user the calibration procedure is completed. """
+        self.logger.info('messagebox calibration complete')
         msgbox = QtWidgets.QMessageBox(self)
         msgbox.setIcon(QtWidgets.QMessageBox.Information)
         msgbox.setText(f'Calibration completed')
@@ -467,6 +556,8 @@ class MainWindow(QtWidgets.QMainWindow):
             return False
 
     def _messagebox_directorycheck(self):
+        """ Messagebox prompting the user the selected file directory does not exist. """
+        self.logger.info('messagebox directorycheck')
         msgbox = QtWidgets.QMessageBox(self)
         msgbox.setIcon(QtWidgets.QMessageBox.Information)
         msgbox.setText('Invalid file directory selected, please select a valid directory')
@@ -480,8 +571,11 @@ class MainWindow(QtWidgets.QMainWindow):
 
     @pyqtSlot(dict)
     def _messagebox_failedconnection(self, errordict):
+        """ Messagebox prompting the user connection between an instrument failed. """
         instrument = errordict['instrument']
         errormessage = errordict['error']
+        self.logger.info(f'messagebox failed connection concerning instrument: '
+                         f'{instrument}, errormessage: {errormessage}')
         msgbox = QtWidgets.QMessageBox(self)
         msgbox.setIcon(QtWidgets.QMessageBox.Warning)
         msgbox.setText(f"Error connecing to {instrument}. \nErrormessage: {errormessage}. \nFor the selected "
@@ -494,6 +588,11 @@ class MainWindow(QtWidgets.QMainWindow):
         msgbox.exec_()
 
     def abort_experiment(self):
+        """
+        Abort the currently running experiment
+        - Disable remaining enabled ui buttons, reset progress bar and call statemachine abort trigger.
+        """
+        self.logger.info('stop button pushed')
         self.ui.stackedWidget_experiment.setDisabled(True)
         self.ui.pushButton_start_experiment.setDisabled(True)
         self.ui.pushButton_alignment_experiment.setDisabled(True)
@@ -502,6 +601,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.statemachine.abort()
 
     def reset_setexperiment(self):
+        """ Reset the ui to a state where it is ready to start a new experiment. """
+        self.logger.info('resetting ui to setExperiment state')
         self.ui.pushButton_start_experiment.disconnect()
         self.ui.pushButton_start_experiment.clicked.connect(self.start_experiment)
         self.ui.pushButton_start_experiment.setText('Start')
@@ -510,30 +611,37 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.pushButton_start_experiment.setEnabled(True)
         self.ui.pushButton_return.setEnabled(True)
 
-    def experiment_finished(self):
-        print('the experiment has finished')
-        self.ui.pushButton_return.setEnabled(True)
-
     def closeEvent(self, event):
+        """
+        Close event, called when closing the application.
+        - Disable the main widget
+        - Send abort signal to statemachine to disconnect all signals.
+        - Disconnect all instruments (this takes time, hence the disabling of the widget)
+        - Quit all threads.
+        """
+
+        self.logger.info('close event called')
         self.ui.centralwidget.setDisabled(True)
-        # QtWidgets.QMessageBox.information(self, 'Closing Application', 'Disconnecting all instruments, '
-        #                                                                'closing application')
         if self.statemachine.state == 'align':
             self.alignment_experiment()
             time.sleep(self.statemachine.polltime)
         self.statemachine.abort()
         self.statemachine.disconnect_all()
         self.quit_all_threads()
-        print('done closing')
+        self.logger.info('close event finished')
         event.accept()
 
     @pyqtSlot(int)
     def update_progress(self, progress):
+        """ Update the progressbar in the ui. """
+        self.logger.info(f'setting progressbar to {progress}')
         self.ui.progressBar.setValue(progress)
         if progress == 100 and not self.statemachine.calibration:
-            self.show_complete()
+            self._messagebox_experiment_completed()
 
-    def show_complete(self):
+    def _messagebox_experiment_completed(self):
+        """ Messagebox prompting the user the experiment is completed. """
+        self.logger.info('messagebox experiment completed')
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Information)
 
@@ -545,15 +653,21 @@ class MainWindow(QtWidgets.QMainWindow):
         msg.exec_()
 
     def reset_progress(self):
+        """ Reset the progressbar to 0. """
+        self.logger.info('resetting progressbar')
         self.ui.progressBar.setValue(0)
         self.ui.label_completion_time.setText(f'Estimated completion time {datetime.timedelta(seconds=0)}')
 
     @pyqtSlot(int)
     def update_completion_time(self, ect):
+        """ Set the estimated completion time in the ui. """
+        self.logger.info(f'setting estimated completion time in ui to {datetime.timedelta(seconds=ect)}')
         self.ui.label_completion_time.setText(f'Estimated completion time {datetime.timedelta(seconds=ect)}')
 
     @pyqtSlot(str)
     def update_status_calibration(self, status):
+        """ Update the calibration status """
+        self.logger.info(f'setting calibration status in ui to {status}')
         self.ui.label_completion_time.setText(status)
 
 
@@ -566,6 +680,6 @@ if __name__ == '__main__':
         logging.config.dictConfig(config)
     import sys
     app = QtWidgets.QApplication(sys.argv)
-    window = MainWindow()
+    window = XYSetup()
     window.show()
     sys.exit(app.exec_())
