@@ -38,6 +38,7 @@ class QLaser(QObject):
 
     measurement_complete = pyqtSignal(float, str, float, bool, bool)
     wavelength_signal = pyqtSignal(int)
+    laser_stable = pyqtSignal()
 
     def __init__(self, waittime=0.05, polltime=0.1, timeout=10, parent=None):
         super().__init__(parent=parent)
@@ -298,6 +299,16 @@ class QLaser(QObject):
             time.sleep(self.polltime)
         return numpy.std(p) / numpy.mean(p) < 0.05
 
+    def set_wavelength_wait_stable(self, wl):
+        """ Set the wavelength. Return only when the laser has reached a stable state. """
+
+        self.wavelength = wl
+        time.sleep(0.1)
+        while not self.is_stable():
+            time.sleep(0.1)
+        self.logger.info('laser stable')
+        self.laser_stable.emit()
+
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.disconnect()
 
@@ -350,7 +361,7 @@ if __name__ == '__main__':
     import yaml
     import logging.config
     import logging.handlers
-    pathlogging = Path(__file__).parent.parent.parent / 'loggingconfig.yml'
+    pathlogging = Path(__file__).parent.parent.parent / 'logging/loggingconfig_testing.yml'
     with pathlogging.open() as f:
         config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)

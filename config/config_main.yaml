@@ -67,14 +67,14 @@ instrument_pages: {
 substrates: {
     # borofloat 50X50
     50X50 mm (Borofloat): {
-        x_lamp: 11,          # x position when avantes lamp lightsource is centered on corner of sampleholder
-        y_lamp: -5.5,        # y position when avantes lamp lightsource is centered on corner of sampleholder
+        x_lamp: 9,           # x position when avantes lamp lightsource is centered on corner of sampleholder
+        y_lamp: -5.3,        # y position when avantes lamp lightsource is centered on corner of sampleholder
         x_laser: 12,         # x position when avantes laser lightsource is centered on corner of sampleholder
         y_laser: 87,         # y position when avantes laser lightsource is centered on corner of sampleholder
         whse: 51,            # width holder sample edge
         hhse: 51,            # height holder sample edge
-        ws: 48,              # width sample usable
-        hs: 48,              # height sample usable
+        ws: 47,              # width sample usable
+        hs: 47,              # height sample usable
         dfhx: 6.8,           # distance from start of sample to side holder x
         dfhy: 4.7,           # distance from start of sample to side holder y
     },

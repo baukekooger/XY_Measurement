@@ -12,49 +12,40 @@ handlers:
     level: DEBUG
     formatter: regular
     stream: ext://sys.stdout
-  file:
-    class: logging.handlers.RotatingFileHandler
-    level: DEBUG
-    formatter: regular
-    mode: w
-    filename: logout.txt
-    backupCount: 1
-    maxBytes: 1_000_000
-    encoding: utf-8
 
 loggers:
   __main__:
     level: INFO
-    handlers: [console, file]
+    handlers: [console]
     propagate: no
   transitions:
     level: INFO
-    handlers: [console, file]
+    handlers: [console]
     propagate: no
   Qinstrument:
     level: INFO
-    handlers: [console, file]
+    handlers: [console]
     propagate: no
   Qinstrument.QDigitizer:
     level: INFO
-    handlers: [console, file]
+    handlers: [console]
     propagate: no
   instrument:
     level: WARNING
-    handlers: [console, file]
+    handlers: [console]
     propagate: no
   statemachine:
     level: DEBUG
-    handlers: [console, file]
+    handlers: [console]
     propagate: no
   gui:
     level: INFO
-    handlers: [ console, file ]
+    handlers: [console]
     propagate: no
   plot:
     level: INFO
-    handlers: [ console, file ]
+    handlers: [console]
     propagate: no
   root:
     level: DEBUG
-    handlers: [console, file]
+    handlers: [console]

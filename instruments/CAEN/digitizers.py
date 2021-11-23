@@ -789,7 +789,7 @@ if __name__ == '__main__':
     import yaml
     import logging.config
     import logging.handlers
-    pathlogging = Path(__file__).parent.parent.parent / 'loggingconfig.yml'
+    pathlogging = Path(__file__).parent.parent.parent / 'logging/loggingconfig_testing.yml'
     with pathlogging.open() as f:
         config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)

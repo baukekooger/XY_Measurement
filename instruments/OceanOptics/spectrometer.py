@@ -12,12 +12,14 @@ class QSpectrometer(QObject):
         measurement_complete (list, list)
             the intensities and the times of the spectromter measurement
     """
-    measurement_complete = pyqtSignal(np.ndarray, list)
+    measurement_complete = pyqtSignal(np.ndarray, str)
     measurement_done = pyqtSignal()
     measurement_dark_complete = pyqtSignal()
     measurement_lamp_complete = pyqtSignal()
     measurement_parameters = pyqtSignal(int, int)
     cache_cleared = pyqtSignal()
+    clear_darkspectrum_plot = pyqtSignal()
+    clear_lampspectrum_plot = pyqtSignal()
 
     def __init__(self, integrationtime=500, average_measurements=1, polltime=0.01, timeout=30, parent=None):
         super().__init__(parent=parent)
@@ -99,20 +101,14 @@ class QSpectrometer(QObject):
         self._average_measurements = value
 
     @pyqtSlot()
-    @pyqtSlot(list, list)
-    def measure(self, *args):
-        """Performs a mutex-locked measurement.
-
-        Returns:
-           | list: intensities [counts]
-           | list: times measured over as
-               [ [tstart0, tstart1,...], [tstop0, tstop1, ...] ]
-        Emits:
-            measurement_complete (list, list):
-                | intensities [counts],
-                | times measured over as
-                    [ [tstart0, tstart1,...], [tstop0, tstop1, ...] ]
+    def measurement(self):
         """
+        Measure a spectrum with the spectrometer.
+
+        Due to internal working of the spectrometer, it continuously acquires data and returns a spectrum when the
+        buffer is full. Therefore the first result is awaited, then measurement is performed again.
+        """
+
         with(QMutexLocker(self.mutex)):
             self.measuring = True
             cache_cleared = False
@@ -136,54 +132,80 @@ class QSpectrometer(QObject):
                                                     self.correct_nonlinearity))
                 t.append(time.time())
                 n += 1
-            # if any(self.dark):
-            #     intensity = intensity - self.dark
-            # if self.transmission and all(self.lamp):
-            #     intensity = intensity/self.lamp
+
         t2 = time.time()
         self.measuring = False
         self.logger.info(f'spectrometer done in {t2-t1:.3f} seconds')
         self.last_intensity = intensity
         self.last_times = t
-        self.measurement_complete.emit(intensity, t)
-        self.measurement_done.emit()
-        self.measurement_parameters.emit(int(self.integrationtime), int(self.average_measurements))
         return intensity, t
 
     @pyqtSlot()
-    def measure_dark(self):
-        """ Performs a mutex-locked dark measurement.
-        The result will be stored and emitted.
+    @pyqtSlot(str)
+    def measure(self, *plotinfo):
+        """ Measure a spectrum, optionally with information about the plot. """
+        self.logger.info('measuring a spectrum with spectrometer')
+        if not plotinfo:
+            if self.transmission:
+                plotinfo = 'Transmission Spectrum'
+            elif any(self.dark):
+                plotinfo = 'Spectrum minus Dark Spectrum'
+            else:
+                plotinfo = 'Raw Data'
+        else:
+            plotinfo = plotinfo[0]
+        spectrum, t = self.measurement()
+        self.logger.info(f'Spectrometer plotinfo = {plotinfo}')
+        self.measurement_complete.emit(spectrum, plotinfo)
+        self.measurement_done.emit()
+        self.measurement_parameters.emit(int(self.integrationtime), int(self.average_measurements))
+        pass
+
+    @pyqtSlot()
+    @pyqtSlot(str)
+    def measure_dark(self, *plotinfo):
         """
-        with(QMutexLocker(self.mutex)):
-            self.dark, t = self.measure()
-        self.measurement_complete.emit(self.dark, t)
-        self.last_intensity = self.dark
-        self.last_times = t
+        Perform a measurement and store the result in the dark spectrum attribute.
+        """
+        self.logger.info('measuring a spectrum with spectrometer')
+        if not plotinfo:
+            plotinfo = 'Dark Spectrum'
+        else:
+            plotinfo = plotinfo[0]
+        dark, t = self.measurement()
+        self.measurement_complete.emit(dark, plotinfo)
+        self.measurement_done.emit()
         self.measurement_dark_complete.emit()
+        self.dark = dark
         return self.dark, t
 
     @pyqtSlot()
     def clear_dark(self):
         self.dark = np.zeros(len(self.spec.wavelengths()))
+        self.clear_darkspectrum_plot.emit()
 
     @pyqtSlot()
-    def measure_lamp(self):
-        """Performs a mutex-locked lamp measurement.
-        The result will be stored and emitted.
+    @pyqtSlot(str)
+    def measure_lamp(self, *plotinfo):
         """
-        with(QMutexLocker(self.mutex)):
-            self.lamp, t = self.measure()
-        self.measurement_complete.emit(self.lamp, t)
-
-        self.last_intensity = self.lamp
-        self.last_times = t
+        Perform a measurement and store the result in the lamp spectrum attribute.
+        """
+        self.logger.info('measuring a spectrum with spectrometer')
+        if not plotinfo:
+            plotinfo = 'Lamp Spectrum'
+        else:
+            plotinfo = plotinfo[0]
+        lamp, t = self.measurement()
+        self.measurement_complete.emit(lamp, plotinfo)
+        self.measurement_done.emit()
         self.measurement_lamp_complete.emit()
+        self.lamp = lamp
         return self.dark, t
 
     @pyqtSlot()
     def clear_lamp(self):
         self.lamp = np.zeros(len(self.spec.wavelengths()))
+        self.clear_lampspectrum_plot.emit()
 
 
 if __name__ == '__main__':
@@ -192,7 +214,7 @@ if __name__ == '__main__':
     import yaml
     import logging.config
     import logging.handlers
-    pathlogging = Path(__file__).parent.parent.parent / 'loggingconfig.yml'
+    pathlogging = Path(__file__).parent.parent.parent / 'logging/loggingconfig_testing.yml'
     with pathlogging.open() as f:
         config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)

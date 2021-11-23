@@ -19,7 +19,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.ui.setupUi(self)
         self.ui.stackedWidget.setCurrentIndex(0)
 
-        with open('config_main.yaml') as f:
+        with open('config/config_main.yaml') as f:
             self.config = yaml_safe_load(f)
 
         self.threads = {}
@@ -190,8 +190,8 @@ class MainWindow(QtWidgets.QMainWindow):
 
     def store_ui(self):
         # writes widget settings for current experiment to file, overwrites previous settings for that experiment
-        with open('settings_ui.yaml') as f:
-            settings = yaml_safe_load(f)
+        with open('config/settings_ui.yaml') as file:
+            settings = yaml_safe_load(file)
         settings[self.experiment] = {}
         # store the last chosen beamsplitter calibration file
         settings['lineEdit_beamsplitter_calibration_file'] = self.ui.lineEdit_beamsplitter_calibration_file.text()
@@ -225,13 +225,13 @@ class MainWindow(QtWidgets.QMainWindow):
                             channels = []
                         settings[self.experiment][widget_inst][key] = channels
 
-        with open('settings_ui.yaml', 'w') as f:
-            dump(settings, f)
+        with open('config/settings_ui.yaml', 'w') as file:
+            dump(settings, file)
 
     def fill_ui(self):
         # fills the user interface with the last values known for that experiment
-        with open('settings_ui.yaml') as f:
-            settings = yaml_safe_load(f)
+        with open('config/settings_ui.yaml') as file:
+            settings = yaml_safe_load(file)
         try:
             fname = settings['lineEdit_beamsplitter_calibration_file']
             self.ui.lineEdit_beamsplitter_calibration_file.setText(fname)
@@ -312,9 +312,8 @@ class MainWindow(QtWidgets.QMainWindow):
         if not self._homingcheck():
             return
 
-
         self.start_experiment_ui()
-        self.statemachine.init_experiment()
+        QTimer.singleShot(200, self.statemachine.init_experiment)
 
     def start_experiment_ui(self):
         self.store_ui()
@@ -562,7 +561,7 @@ if __name__ == '__main__':
     import yaml
     import logging.config
     import logging.handlers
-    with open('loggingconfig.yml', 'r') as f:
+    with open('logging/loggingconfig_main.yml', 'r') as f:
         config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)
     import sys

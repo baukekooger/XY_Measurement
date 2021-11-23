@@ -40,7 +40,7 @@ class QShutterControl(QObject):
         self.connected = False
 
     def enable(self):
-        # Opens the shutter
+        """ Opens the shutter"""
         with(QMutexLocker(self.mutex)):
             if not int(self.query_value('ens')):
                 self.write_value('ens')
@@ -115,7 +115,7 @@ if __name__ == '__main__':
     import yaml
     import logging.config
     import logging.handlers
-    pathlogging = Path(__file__).parent.parent.parent / 'loggingconfig.yml'
+    pathlogging = Path(__file__).parent.parent.parent / 'logging/loggingconfig_testing.yml'
     with pathlogging.open() as f:
         config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)

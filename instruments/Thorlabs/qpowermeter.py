@@ -23,7 +23,7 @@ class QPowerMeter(PowerMeter, QObject):
 
     """
     measurement_complete = pyqtSignal(float)
-    measurement_complete_multiple = pyqtSignal(list, list)
+    measurement_complete_multiple = pyqtSignal(list, list, str)
     measurement_done = pyqtSignal()
     measurement_parameters = pyqtSignal(int, int)
     zero_complete = pyqtSignal()
@@ -95,15 +95,20 @@ class QPowerMeter(PowerMeter, QObject):
         return power
 
     @pyqtSlot()
-    def measure(self):
+    @pyqtSlot(str)
+    def measure(self, *plotinfo):
         """
         Take multiple single measurements for the duration of integration time
 
         Interpolate these measurements with a fixed number of values based on integration time
         each reading takes approx 5 ms.
         """
-        self.logger_q_instrument.info('measuring powermeter')
         self.measuring = True
+        self.logger_q_instrument.info('measuring powermeter')
+        if not plotinfo:
+            plotinfo = ''
+        else:
+            plotinfo = plotinfo[0]
         t1 = time.perf_counter()
         measurements = []
         t = []
@@ -120,7 +125,7 @@ class QPowerMeter(PowerMeter, QObject):
                      f'number of measurements = {len(measurements)}')
         self.last_times = list(np.linspace(0, t[-1], self.measurements_multiple))
         self.last_powers = list(np.interp(self.last_times, t, measurements))
-        self.measurement_complete_multiple.emit(self.last_times, self.last_powers)
+        self.measurement_complete_multiple.emit(self.last_times, self.last_powers, plotinfo)
         self.measurement_done.emit()
         self.measuring = False
         return self.last_times, self.last_powers
@@ -154,7 +159,7 @@ if __name__ == '__main__':
     import yaml
     import logging.config
     import logging.handlers
-    pathlogging = Path(__file__).parent.parent.parent / 'loggingconfig.yml'
+    pathlogging = Path(__file__).parent.parent.parent / 'logging/loggingconfig_testing.yml'
     with pathlogging.open() as f:
         config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)

@@ -23,8 +23,8 @@ class PowerMeterWidget(QtWidgets.QWidget):
         self.powermeter.measurement_complete_multiple.disconnect(self.handle_measurement)
         self.ui.pushButton_zero.clicked.disconnect(self.powermeter.zero)
 
-    @pyqtSlot(list, list)
-    def handle_measurement(self, times, power):
+    @pyqtSlot(list, list, str)
+    def handle_measurement(self, times, power, plotinfo):
         # set the right unit depending on the incoming power
         measurement = np.mean(power)
         if measurement >= 1:
@@ -40,20 +40,6 @@ class PowerMeterWidget(QtWidgets.QWidget):
         else:
             self.ui.label_power_value_unit.setText(f'zeroing required')
 
-    # @pyqtSlot(int, int)
-    # def update_parameters(self, wavelength, integration_time):
-    #     self.ui.label_indicator_wavelength_alignment.setText(f'{wavelength} nm')
-    #
-    # @pyqtSlot()`
-    # def handle_wavelength(self):
-    #     wavelength = self.ui.spinBox_wavelength_alignment.value()
-    #     self.powermeter.wavelength = wavelength
-    #     QTimer.singleShot(0, self.powermeter.emit_parameters)
-
-    # def closeEvent(self, event):
-    #     self.powermeter.disconnect()
-    #     event.accept()
-
 
 if __name__ == '__main__':
     # set up logging if file called directly
@@ -61,7 +47,7 @@ if __name__ == '__main__':
     import yaml
     import logging.config
     import logging.handlers
-    pathlogging = Path(__file__).parent.parent / 'loggingconfig.yml'
+    pathlogging = Path(__file__).parent.parent / 'logging/loggingconfig_testing.yml'
     with pathlogging.open() as f:
         config = yaml.safe_load(f.read())
         logging.config.dictConfig(config)
