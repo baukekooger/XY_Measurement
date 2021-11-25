@@ -204,7 +204,7 @@ class StateMachine(QObject):
         """
         Connect the relevant instrument signals to statemachine triggers.
         """
-        self.logger.info('connecting instrument signals to statemachine triggers')
+        self.logger.info('Connecting instrument signals to statemachine triggers')
         if self.calibration:
             self.instruments['xystage'].stage_settled.connect(self.start_experiment)
             self.instruments['powermeter'].measurement_done.connect(self.process_data)
