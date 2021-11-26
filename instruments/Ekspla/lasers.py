@@ -5,7 +5,7 @@ import numpy
 import win32com.client
 import re
 import asyncio
-from PyQt5.QtCore import QObject, pyqtSignal, QMutex, QMutexLocker
+from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot, QMutex, QMutexLocker
 from pathlib import Path
 import os
 
@@ -53,6 +53,7 @@ class QLaser(QObject):
         self.timeout = timeout
         self.measuring = False
         self.handle = c_int()
+        self.setpoint_wavelength = None
         path_dll = str(Path(__file__).parent / 'lib64/REMOTECONTROL64.dll')
         self.rcdll = windll.LoadLibrary(path_dll)
 
@@ -78,14 +79,15 @@ class QLaser(QObject):
         """
         Sets the wavelength of the laser. 
         """
+        self.logger.info(f'Attempting to set the laser wavelength to {wl}')
         if wl < MINIMUM_WAVELENGTH:
             wl = MINIMUM_WAVELENGTH
-            self.logger.warning('Exceeded wavelength range when setting to {}.2f nm. Set to {}.2f nm'.format(
-                wl, MINIMUM_WAVELENGTH))
+            self.logger.warning(f'Exceeded wavelength range when attempting to set wavelength to {wl:.2f} nm. '
+                                f'Wavelength set to minimum of to {MINIMUM_WAVELENGTH:.2f} nm')
         if wl > MAXIMUM_WAVELENGTH:
             wl = MAXIMUM_WAVELENGTH
-            self.logger.warning('Exceeded wavelength range when setting to {}.2f nm. Set to {}.2f nm'.format(
-                wl, MAXIMUM_WAVELENGTH))
+            self.logger.warning(f'Exceeded wavelength range when attempting to set wavelength to {wl:.2f} nm. '
+                                f'Wavelength set to maximum of to {MAXIMUM_WAVELENGTH:.2f} nm')
 
         dev = "MidiOPG:31"
         reg = "WaveLength"
@@ -245,6 +247,7 @@ class QLaser(QObject):
             self.logger.error(f'{message}')
             raise LaserError(e)
 
+    @pyqtSlot()
     def connect(self, connection_type=0, device_name='FT5AOAQM'):
         """
         Connect to laser.
@@ -257,6 +260,7 @@ class QLaser(QObject):
         self.connected = True
         self.logger.info('laser connected')
 
+    @pyqtSlot()
     def disconnect(self):
         """ Turns the laser off and disconnects """
         self.logger.info('disconnecting from laser')
@@ -264,6 +268,7 @@ class QLaser(QObject):
         self.energylevel = 'Off'
         self._is_error(self.rcdll.rcDisconnect2(self.handle))
 
+    @pyqtSlot()
     def measure(self):
         """Measure the current values of the laser.
         A single measurement should last around 0.25 seconds.
@@ -286,6 +291,7 @@ class QLaser(QObject):
         self.measurement_complete.emit(wavelength, energylevel, power, stable, output)
         return wavelength, energylevel, power, stable, output
 
+    @pyqtSlot()
     def is_stable(self):
         """ Returns True if no fluctuation in Power higher than 5% occurs
         between now and 5 polltimes
@@ -299,18 +305,23 @@ class QLaser(QObject):
             time.sleep(self.polltime)
         return numpy.std(p) / numpy.mean(p) < 0.05
 
-    def set_wavelength_wait_stable(self, wl):
-        """ Set the wavelength. Return only when the laser has reached a stable state. """
+    @pyqtSlot()
+    def set_wavelength_to_setpoint(self):
+        """
+        Set the wavelength to the setpoint. Setpoint must be defined before calling the function.
 
-        self.wavelength = wl
+        Return only when the laser has reached a stable state, emit a signal when ready.
+        """
+        self.wavelength = self.setpoint_wavelength
         time.sleep(0.1)
         while not self.is_stable():
             time.sleep(0.1)
-        self.logger.info('laser stable')
+        self.logger.info(f'laser stable at {self.setpoint_wavelength}')
         self.laser_stable.emit()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.disconnect()
+        if self.connected:
+            self.disconnect()
 
     def __repr__(self):
         if self.connected:

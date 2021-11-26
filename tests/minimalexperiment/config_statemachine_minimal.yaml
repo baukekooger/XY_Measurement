@@ -1,0 +1,47 @@
+# Statemachine configuration for the python Transitions module
+# Uses the Hierarchical state machine model. NEVER name states with
+# an underscore as the underscore is the separator between parent
+# and children states.
+
+states: [
+        {'name': 'initialize'},
+        {'name': 'connecting', 'on_enter': '_connect_all'},
+        {'name': 'align', 'on_enter': '_align', 'on_exit': '_stop_align'},
+        {'name': 'setExperiment'},
+        {'name': 'experiment', 'children': [
+                                            {'name': 'prepareMeasurement', 'on_enter': '_prepare_measurement'},
+                                            {'name': 'measuring', 'on_enter': '_measure'},
+                                            {'name': 'processingData', 'on_enter': '_process_data'},
+                                            {'name': 'aborted', 'on_enter': '_measurement_aborted'},
+                                            {'name': 'completed', 'on_enter': '_measurement_completed'}],
+         'on_enter': ['_connect_signals_experiment'],
+         'on_exit': ['_disconnect_signals_experiment']}]
+
+transitions: [
+            {'trigger': 'start', 'source': 'initialize', 'dest': 'connecting'},
+            {'trigger': 'align', 'source': 'connecting', 'dest': 'align'},
+            {'trigger': 'align_experiment', 'source': 'align', 'dest': 'setExperiment'},
+            {'trigger': 'align_experiment', 'source': 'setExperiment', 'dest': 'align'},
+            {'trigger': 'prepare', 'source': ['experiment_processingData'],
+             'dest': 'experiment_prepareMeasurement'},
+            {'trigger': 'measure', 'source': 'experiment_prepareMeasurement',
+             'dest': 'experiment_measuring'},
+            {'trigger': 'process_data', 'source': 'experiment_measuring',
+             'dest': 'experiment_processingData'},
+            {'trigger': 'return_setexperiment', 'source': 'experiment', 'dest': 'setExperiment'},
+            {'trigger': 'init_experiment', 'source': 'setExperiment', 'dest': 'experiment'},
+            {'trigger': 'start_experiment', 'source': 'experiment', 'dest': 'experiment_prepareMeasurement'},
+            {'trigger': 'measurement_complete', 'source': 'experiment_processingData', 'dest': 'experiment_completed'},
+            {'trigger': 'abort', 'source': ['experiment', 'experiment_prepareMeasurement',
+                                            'experiment_measuring', 'experiment_processingData'],
+                                            'dest': 'experiment_aborted'},
+            {'trigger': 'continue_experiment', 'source': ['experiment_completed', 'experiment_aborted'],
+                                                        'dest': 'experiment'}]
+
+auto_transitions: False
+initial: 'initialize'
+show_conditions: True
+
+show_state_attributes: True
+queued: True
+after_state_change: '_in_state'

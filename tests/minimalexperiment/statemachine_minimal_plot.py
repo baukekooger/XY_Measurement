@@ -4,7 +4,7 @@ import io
 from PIL import Image
 from pathlib import Path
 # provide path to the main configuration file
-pathconfigstate = Path(__file__).parent / 'config_statemachine.yaml'
+pathconfigstate = Path(__file__).parent / 'config_statemachine_minimal.yaml'
 
 
 class PlotStateMachine:

@@ -7,8 +7,8 @@ from PyQt5.QtCore import QObject, QMutexLocker, QMutex, pyqtSignal, pyqtSlot
 
 class QXYStage(QObject):
     """
-    Python implementation of XY stages as a QObject.
-    Wraps thorlabs apt dll and provides additional functionality
+    XY stages as a QObject.
+    Wraps thorlabs apt dll and provides additional functionality and signals for communicating to other threads.
     """
     measurement_complete = pyqtSignal(float, float)
     stage_settled = pyqtSignal()
@@ -37,6 +37,8 @@ class QXYStage(QObject):
         self.connected = False
         self.xhomed = None
         self.yhomed = None
+        self.setpoint_x = 0
+        self.setpoint_y = 0
 
     @property
     def name(self):
@@ -134,14 +136,20 @@ class QXYStage(QObject):
 
     @pyqtSlot(float, float)
     def move(self, x, y):
+        """ Move the stages to the given x and y positions. Function is non-blocking. """
         self.x = x
         self.y = y
 
-    @pyqtSlot(float, float)
-    def move_with_wait(self, x, y):
-        """ Move and block execution while doing so """
-        self.x = x
-        self.y = y
+    @pyqtSlot()
+    def move_to_setpoints(self):
+        """
+        Move the stages to their setpoints.
+
+        Keep checking status until stages settled. Function to be used in multithreaded applications where setpoints
+        are set prior to calling this function.
+        """
+        self.x = self.setpoint_x
+        self.y = self.setpoint_y
         while not self.settled():
             time.sleep(0.1)
 

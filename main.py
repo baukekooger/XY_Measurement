@@ -87,8 +87,8 @@ class XYSetup(QtWidgets.QMainWindow):
     @pyqtSlot()
     def init_gui(self):
         """
-        Initialize the gui when the connection is succesful. Is called when after transitioning from connecting to
-        align state.
+        Initialize the gui when the connection to all instruments is succesful.
+        Is called after transitioning from connecting to align state.
         """
         self.logger.info('initializing main gui')
         self.set_title()
@@ -435,7 +435,7 @@ class XYSetup(QtWidgets.QMainWindow):
             return
         if not self._messagebox_calibrationcheck():
             return
-        if not self._messagebox_beamsplitter():
+        if not self._inputdialog_beamsplitter():
             return
         self.statemachine.storage_dir_calibration = \
             str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory"))

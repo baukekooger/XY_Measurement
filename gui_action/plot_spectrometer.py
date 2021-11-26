@@ -26,57 +26,83 @@ class SpectrometerPlotWidget(QtWidgets.QWidget):
         self.blitmanager = None
         self.line = None
         self.annotation = None
-        self.darkspectrum = []
-        self.lampspectrum = []
-        self.transmission = False
 
     def connect_signals_slots(self):
         self.spectrometer.measurement_complete.connect(self.plot)
-        self.spectrometer.clear_darkspectrum_plot.connect(self.clear_dark)
-        self.spectrometer.clear_lampspectrum_plot.connect(self.clear_lamp)
+        self.spectrometer.measurement_dark_complete.connect(self.plot_dark)
+        self.spectrometer.measurement_lamp_complete.connect(self.plot_lamp)
 
     def disconnect_signals_slots(self):
         self.spectrometer.measurement_complete.disconnect(self.plot)
-        self.spectrometer.clear_darkspectrum_plot.disconnect(self.clear_dark)
-        self.spectrometer.clear_lampspectrum_plot.disconnect(self.clear_lamp)
+        self.spectrometer.measurement_dark_complete.disconnect(self.plot_dark)
+        self.spectrometer.measurement_lamp_complete.disconnect(self.plot_lamp)
 
-    @pyqtSlot(np.ndarray, str)
-    def plot(self, intensities, plotinfo):
+    def define_plotinfo(self) -> str:
+        """
+        Define the information to plot in the screen. If there is custom plotinfo, use that. Otherwise determine
+        plotinfo from which spectra are available.
+        :returns: plotinfo string.
+        """
+        if self.spectrometer.plotinfo:
+            return self.spectrometer.plotinfo
+        if self.spectrometer.transmission:
+            plotinfo = 'Transmission Spectrum'
+        elif any(self.spectrometer.dark):
+            plotinfo = 'Spectrum minus Dark Spectrum'
+        else:
+            plotinfo = 'Raw Spectrum'
+        return plotinfo
+
+    @pyqtSlot(np.ndarray)
+    def plot_dark(self, intensities):
+        """ Plot the dark spectrum. """
+        self.logger_plot.info('plotting dark spectrum')
+        plotinfo = 'Dark Spectrum'
+        if not self.blitmanager:
+            self.init_blitmanager(intensities, plotinfo)
+        self.line.set_ydata(intensities)
+        self.annotation.set_text(plotinfo)
+        self.blitmanager.update()
+
+    @pyqtSlot(np.ndarray)
+    def plot_lamp(self, intensities):
+        """ Plot the lamp spectrum. """
+        self.logger_plot.info('plotting lamp spectrum')
+        plotinfo = 'Lamp Spectrum'
+        if not self.blitmanager:
+            self.init_blitmanager(intensities, plotinfo)
+        self.line.set_ydata(intensities)
+        self.annotation.set_text(plotinfo)
+        self.blitmanager.update()
+
+    @pyqtSlot(np.ndarray)
+    def plot(self, intensities):
         """
         Plot spectrum and set graph annotation. Plot raw spectra, spectra with dark spectrum removed or
         transmission spectrum based on spectrometer settings.
 
         Plots using a blitmanager for increased performance.
         """
+        plotinfo = self.define_plotinfo()
         if not self.blitmanager:
-            self.init_blitmanager(intensities, plotinfo)
-
-        self.transmission = True if 'Transmission' in plotinfo and any(self.darkspectrum) \
-                                    and any(self.lampspectrum) else False
-
-        if self.transmission:
+            self.init_blitmanager(intensities, self.spectrometer.plotinfo)
+        if self.spectrometer.transmission:
             self.logger_plot.info('plotting transmission spectrum')
-            divideby = self.lampspectrum - self.darkspectrum
+            divideby = self.spectrometer.lamp - self.spectrometer.dark
             divideby[divideby <= 0] = 1
-            transmission = (intensities - self.darkspectrum)/divideby
+            transmission = (intensities - self.spectrometer.dark)/divideby
             np.clip(transmission, 0, 1, transmission)
             self.line.set_ydata(transmission)
             self.annotation.set_text(plotinfo)
-        elif any(self.darkspectrum):
+        elif any(self.spectrometer.dark):
             self.logger_plot.info('plotting spectrum minus dark spectrum')
-            minusdark = intensities - self.darkspectrum
+            minusdark = intensities - self.spectrometer.dark
             self.line.set_ydata(minusdark)
             self.annotation.set_text(plotinfo)
         else:
             self.line.set_ydata(intensities)
             self.annotation.set_text(plotinfo)
         self.blitmanager.update()
-        if 'Dark Spectrum' in plotinfo and 'minus' not in plotinfo:
-            self.logger_plot.info('setting dark spectrum plot')
-            self.darkspectrum = intensities
-        elif 'Lamp Spectrum' in plotinfo:
-            self.logger_plot.info('setting lamp spectrum plot')
-            self.lampspectrum = intensities
 
     def init_blitmanager(self, intensities, plotinfo):
         self.logger_plot.info(f'Initializing blitmanager spectrometerplot with data '
@@ -100,16 +126,6 @@ class SpectrometerPlotWidget(QtWidgets.QWidget):
         """
         if self.blitmanager:
             self.blitmanager.redraw_canvas_spectrometer()
-
-    @pyqtSlot()
-    def clear_dark(self):
-        self.logger_plot.info('clearing dark spectrum plot')
-        self.darkspectrum = []
-
-    @pyqtSlot()
-    def clear_lamp(self):
-        self.logger_plot.info('clearing lamp spectrum plot')
-        self.lampspectrum = []
 
 
 if __name__ == '__main__':

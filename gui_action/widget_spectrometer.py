@@ -4,6 +4,7 @@ from gui_design.spectrometer import Ui_Form
 from instruments.OceanOptics.spectrometer import QSpectrometer
 from PyQt5.QtCore import pyqtSlot, QTimer
 import logging
+import numpy as np
 
 
 class SpectrometerWidget(QtWidgets.QWidget):
@@ -20,6 +21,7 @@ class SpectrometerWidget(QtWidgets.QWidget):
         self.spectrometer.measurement_parameters.connect(self.update_parameters)
         self.spectrometer.measurement_lamp_complete.connect(self.lamp_measured)
         self.spectrometer.measurement_dark_complete.connect(self.dark_measured)
+        self.spectrometer.transmission_set.connect(self.transmission_button_set)
         self.ui.spinBox_integration_time_alignment.editingFinished.connect(self.handle_integrationtime)
         self.ui.spinBox_averageing_alignment.editingFinished.connect(self.handle_averageing)
         self.ui.pushButton_dark.clicked.connect(
@@ -27,6 +29,7 @@ class SpectrometerWidget(QtWidgets.QWidget):
         self.ui.pushButton_reset.clicked.connect(self.handle_reset)
         self.ui.pushButton_lamp.clicked.connect(self.handle_lampspectrum)
         self.ui.pushButton_transmission.clicked.connect(self.handle_transmission)
+
 
     def disconnect_signals_slots(self):
         self.spectrometer.measurement_parameters.disconnect()
@@ -80,12 +83,22 @@ class SpectrometerWidget(QtWidgets.QWidget):
             self.ui.pushButton_transmission.setChecked(True)
 
     @pyqtSlot()
-    def dark_measured(self):
+    def transmission_button_set(self):
+        """
+        Set the transmission button to checked.
+
+        This is done to set the transmission button to during an automated experiment. Otherwise when returning
+        from the experiment, there is a transmission spectrum but the button is unchecked.
+        """
+        self.ui.pushButton_transmission.setChecked(True)
+
+    @pyqtSlot(np.ndarray)
+    def dark_measured(self, *intensities):
         self.ui.pushButton_dark.setChecked(True)
         self.ui.groupBox_alignment.setEnabled(True)
 
-    @pyqtSlot()
-    def lamp_measured(self):
+    @pyqtSlot(np.ndarray)
+    def lamp_measured(self, *intensities):
         self.ui.pushButton_lamp.setChecked(True)
         self.ui.groupBox_alignment.setEnabled(True)
 

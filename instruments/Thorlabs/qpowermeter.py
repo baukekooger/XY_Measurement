@@ -38,6 +38,7 @@ class QPowerMeter(PowerMeter, QObject):
         self.measurements_multiple = 40
         self.last_powers = []
         self.last_times = []
+        self.plotinfo = None
 
     @pyqtSlot()
     def connect(self):
@@ -63,10 +64,11 @@ class QPowerMeter(PowerMeter, QObject):
 
     @pyqtSlot()
     def prepare_measurement_internal_averaging(self):
-        """ prepare a measurement where internal averaging is used
+        """
+        Prepare a measurement where internal averaging is used by setting the internal averageging.
 
-            checks if timeout needs to be adjusted based on set integration time
-            """
+        Check if timeout needs to be adjusted based on set integration time
+        """
         self.measuring = True
         if self.timeout < self.integration_time - 500:
             self.timeout = self.integration_time + 500
@@ -75,7 +77,9 @@ class QPowerMeter(PowerMeter, QObject):
 
     @pyqtSlot()
     def prepare_measurement_multiple(self):
-        """ sets the averageing back to 1 """
+        """
+        Sets the averageing back to 1
+        """
         self.averageing = 1
 
     @pyqtSlot()
@@ -95,8 +99,7 @@ class QPowerMeter(PowerMeter, QObject):
         return power
 
     @pyqtSlot()
-    @pyqtSlot(str)
-    def measure(self, *plotinfo):
+    def measure(self):
         """
         Take multiple single measurements for the duration of integration time
 
@@ -105,10 +108,7 @@ class QPowerMeter(PowerMeter, QObject):
         """
         self.measuring = True
         self.logger_q_instrument.info('measuring powermeter')
-        if not plotinfo:
-            plotinfo = ''
-        else:
-            plotinfo = plotinfo[0]
+        plotinfo = self.plotinfo if self.plotinfo else ''
         t1 = time.perf_counter()
         measurements = []
         t = []
@@ -147,7 +147,8 @@ class QPowerMeter(PowerMeter, QObject):
         self.measuring = False
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        self.disconnect()
+        if self.connected:
+            self.disconnect()
 
     def __repr__(self):
         return self.pm.query('*IDN?')

@@ -41,19 +41,16 @@ class XYStagePlotWidget(QtWidgets.QWidget):
         self.holder_sample_patch = None
         self.light_source_patch = None
         pathconfig = Path(__file__).parent.parent / 'config/config_main.yaml'
-        with pathconfig.open() as f:
-            self.config = yaml_safe_load(f)
+        with pathconfig.open() as file:
+            self.config = yaml_safe_load(file)
 
     def connect_signals_slots(self):
         self.xystage.measurement_complete.connect(self.plot_position)
         self.zoombutton.clicked.connect(self.zoomview)
 
     def disconnect_signals_slots(self):
-        try:
-            self.xystage.measurement_complete.disconnect()
-            self.zoombutton.clicked.disconnect()
-        except TypeError:
-            pass
+        self.xystage.measurement_complete.disconnect(self.plot_position)
+        self.zoombutton.clicked.disconnect(self.zoomview)
 
     @pyqtSlot(float, float)
     def plot_position(self, x, y):
@@ -153,7 +150,7 @@ class XYStagePlotWidget(QtWidgets.QWidget):
         self.figure.tight_layout()
         self.canvas.draw()
 
-    def plot_layout(self, xnum, ynum, xoffleft, xoffright, yoffbottom, yofftop):
+    def plot_layout(self, xnum, ynum, xoffleft, xoffright, yoffbottom, yofftop, xindex=None, yindex=None):
         if self.zoombutton.isVisible():
             self.zoombutton.setVisible(False)
         self.ax.clear()
@@ -189,10 +186,13 @@ class XYStagePlotWidget(QtWidgets.QWidget):
         measurements_y = np.tile(measurements_y, lenx)
 
         measurements = []
-        for m_x, m_y in zip(measurements_x, measurements_y):
-            measurement = gmt.Point(m_x, m_y).buffer(bw / 2)
-            measurements.append(measurement)
-            self.ax.add_patch(descartes.PolygonPatch(measurement, fc='green', ec='green'))
+        if not isinstance(xindex, int) or not isinstance(yindex, int):
+            for m_x, m_y in zip(measurements_x, measurements_y):
+                measurement = gmt.Point(m_x, m_y).buffer(bw / 2)
+                measurements.append(measurement)
+                self.ax.add_patch(descartes.PolygonPatch(measurement, fc='green', ec='green'))
+        else:
+            pass
 
         self.ax.set_xlabel('x [mm]')
         self.ax.set_ylabel('y [mm]')

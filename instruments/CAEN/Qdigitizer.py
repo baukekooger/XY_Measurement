@@ -47,6 +47,7 @@ class QDigitizer(CAENlib.Digitizer, QObject):
         self.jitter_channel = 1
         self.jitter_startsample = 0
         self.max_plot_points = 2e4
+        self.plotinfo = None
 
     def init_device(self):
         """ Provide some commom initial settings """
@@ -77,8 +78,7 @@ class QDigitizer(CAENlib.Digitizer, QObject):
         self.connected = False
 
     @pyqtSlot()
-    @pyqtSlot(str)
-    def measure(self, *plotinfo_user):
+    def measure(self):
         """
         Performs repeated single-event measurements with the number of measurements set by the pulses per
         measurement attribute or by the input value. Can also read single measurement.
@@ -86,10 +86,6 @@ class QDigitizer(CAENlib.Digitizer, QObject):
         If a maximum measuring polltime is set
         """
         with(QMutexLocker(self.mutex)):
-            if plotinfo_user:
-                plotinfo_user = plotinfo_user[0]
-            else:
-                plotinfo_user = ''
             self.measuring = True
             tstart = time.time()
             self.logger_q_instrument.info(f'started measuring {self.pulses_per_measurement} pulse(s)')
@@ -106,31 +102,30 @@ class QDigitizer(CAENlib.Digitizer, QObject):
                     break
                 elif (tcurrent - tstart) > (0.8 * self.polltime_measurement):
                     self.logger_q_instrument.debug(f'{pulse} out of {self.pulses_per_measurement}, emitting data')
-                    self._emit_pulses_plotting(data, plotinfo_user)
+                    self._emit_pulses_plotting(data)
                     tstart = time.time()
 
             self.logger_q_instrument.info(f'measurement finishing after {pulse + 1} pulses')
 
-        self._emit_pulses_plotting(data, plotinfo_user)
+        self._emit_pulses_plotting(data)
         self.measurement_done.emit()
         self.measuring = False
 
         return data
 
-    def _emit_pulses_plotting(self, data, plotinfo_user):
+    def _emit_pulses_plotting(self, data):
         """ Emit the data for plotting """
         if self.measurement_mode == 'single pulse':
             times, data, plotinfo = self._plot_single_pulse(data)
-            plotinfo = plotinfo + ' ' + plotinfo_user
             self.measurement_complete.emit(times, data, plotinfo)
         elif self.measurement_mode == 'averageing':
             times, data, plotinfo = self._compress_average_pulses()
             plotinfo = f'{self.pulse_counter} pulses, {plotinfo}'
-            plotinfo = plotinfo + ' ' + plotinfo_user
+            plotinfo = plotinfo + '\n' + self.plotinfo if self.plotinfo else plotinfo
             self.measurement_complete.emit(times, data, plotinfo)
         elif self.measurement_mode == 'single photon counting':
             times, data, plotinfo = self._compress_single_photon_counts()
-            plotinfo = plotinfo + ' ' + plotinfo_user
+            plotinfo = plotinfo + '\n' + self.plotinfo if self.plotinfo else plotinfo
             self.logger_q_instrument.debug(f'times = {times*1000000}, data = {data}, plotinfo = {plotinfo}')
             self.logger_q_instrument.debug(f'len times = {len(times)}, len data = {len(data)}')
             self.logger_q_instrument.debug(f'max value counts unedited = {np.max(self.single_photon_counts)}')

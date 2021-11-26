@@ -20,8 +20,8 @@ class BlitManager:
         animated_artists : Iterable[Artist]
             List of the artists to manage
         """
-        self.logger_plot = logging.getLogger('plot.Blitmanager')
-        self.logger_plot.info(f'init blitmanager')
+        self.logger = logging.getLogger('plot.Blitmanager')
+        self.logger.info(f'init blitmanager')
         self.canvas = canvas
         self._bg = None
         self._artists = []
@@ -33,6 +33,7 @@ class BlitManager:
 
     def on_draw(self, event):
         """Callback to register with 'draw_event'."""
+
         cv = self.canvas
         if event is not None:
             if event.canvas != cv:
@@ -53,7 +54,7 @@ class BlitManager:
             the canvas this class is managing.
 
         """
-        self.logger_plot.debug(f'adding artist {art}')
+        self.logger.debug(f'adding artist {art}')
         if art.figure != self.canvas.figure:
             raise RuntimeError
         art.set_animated(True)
@@ -61,7 +62,7 @@ class BlitManager:
 
     def redraw_canvas_spectrometer(self):
         """ Redraw the canvas for the spectrometer to fit the axes """
-        self.logger_plot.info('redrawn canvas spectrometer')
+        self.logger.info('redrawn canvas spectrometer')
         data = self._artists[0]
         _, y = data.get_data()
         max_y_data = max(y)
@@ -75,7 +76,7 @@ class BlitManager:
 
     def redraw_canvas_digitizer(self):
         """ Redraw the canvas for the digitizer to fit the axes """
-        self.logger_plot.info('redrawn canvas digitizer')
+        self.logger.info('redrawn canvas digitizer')
         data = self._artists[0]
         times, values = data.get_data()
         max_values = max(values)
@@ -91,7 +92,7 @@ class BlitManager:
 
     def redraw_canvas_powermeter(self):
         """ Redraw the canvas for the powermeter to fit the axes """
-        self.logger_plot.info('redrawn canvas powermeter')
+        self.logger.info('redrawn canvas powermeter')
         data = self._artists[0]
         _, y = data.get_data()
         max_y_data = max(y)
@@ -105,15 +106,16 @@ class BlitManager:
 
     def _draw_animated(self):
         """Draw all of the animated artists."""
-        self.logger_plot.debug('drawing all artists')
+        self.logger.debug('drawing all artists')
         fig = self.canvas.figure
         for a in self._artists:
             fig.draw_artist(a)
 
     def update(self):
-        """Update the screen with animated artists.
-           for plots that have data that will not become negative
         """
+        Update the screen with animated artists.
+        """
+        self.logger.debug('updating plots')
         cv = self.canvas
         fig = cv.figure
         # paranoia in case we missed the draw event,
