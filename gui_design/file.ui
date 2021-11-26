@@ -187,6 +187,11 @@
             </item>
             <item>
              <property name="text">
+              <string>225 nm - Newport 10CGA-225</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
               <string>300 nm - Semrock FF01-300/LP25</string>
              </property>
             </item>
@@ -213,6 +218,16 @@
             <item>
              <property name="text">
               <string>473 nm - Semrock BLP01-473R-25</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>590 nm - Newport 10CGA-590</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>695 nm - Newport 10CGA-695</string>
              </property>
             </item>
            </widget>
@@ -249,7 +264,72 @@
             </item>
             <item>
              <property name="text">
-              <string>640 nm - Thorlabs FB640-10-1 V 1-39-11</string>
+              <string>400 nm - 10 nm - Thorlabs FB400-10-1 V 1-34-11</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>420 nm -10 nm - Thorlabs FB420-10-1 V 1-41-11</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>440 nm - 10 nm - Thorlabs FB440-10-1 V 1-28-11</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>460 nm - 10 nm - Thorlabs FB460-10-1 V 1-52-11</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>480 nm - 10 nm - Thorlabs FB480-10-1 V 1-8-12</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>500 nm -10 nm- Thorlabs FB500-10-1 V 1-37-11</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>520 nm -10 nm - Thorlabs FB520-10-1 V 1-40-11</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>540 nm - 10 nm - Thorlabs FB540-10-1 V 1-38-11</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>560 nm - 10 nm - Thorlabs FB560-10-1 V 1-50-11</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>580 nm - 10 nm - Thorlabs FB580-10-1 V 1-50-11</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>620 nm- 10 nm - Thorlabs FB620-10-1 V 1-48-11</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>640 nm -10 nm - Thorlabs FB640-10-1 V 1-39-11</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>660 nm - 10 nm - Thorlabs FB660-10-1 V 1-45-11</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>680 nm - 10 nm - Thorlabs FB680-10-1 V 1-33-11</string>
              </property>
             </item>
            </widget>
