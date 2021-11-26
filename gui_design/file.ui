@@ -217,7 +217,22 @@
             </item>
             <item>
              <property name="text">
+              <string>455 nm - Newport 10CGA-455 </string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
               <string>473 nm - Semrock BLP01-473R-25</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>515 nm - Newport 10CGA-515 </string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>550 nm - Newport 10CGA-550</string>
              </property>
             </item>
             <item>
@@ -227,7 +242,62 @@
             </item>
             <item>
              <property name="text">
+              <string>610 nm - Newport 10CGA-610</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>630 nm - Newport 10CGA-630</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>645 nm - Newport 10CGA-645</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>665 nm - Newport 10CGA-665</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
               <string>695 nm - Newport 10CGA-695</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>715 nm - Newport 10CGA-715</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>760 nm - Newport 10CGA-760</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>780 nm - Newport 10CGA-780</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>800 nm -Newport 10 CGA-800</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>830 nm - Newport 10CGA-830</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>850 nm - Newport 10CGA-850</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>1000 nm - Newport 10CGA-1000</string>
              </property>
             </item>
            </widget>
