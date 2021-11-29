@@ -575,7 +575,7 @@ class StateMachine(QObject):
         wlstep = lasersettings['spinBox_wavelength_step']
         self.logger.info(f'opening calibration file, wlstart = {wlstart}, wlstep = {wlstep}, wlstop  = {wlstop}')
         self.startingtime = time.time()
-        date = time.strftime("%y%m%d%H%M", time.localtime(self.startingtime))
+        date = time.strftime("%y_%m_%d%H:%M", time.localtime(self.startingtime))
         wl = f'{wlstart}_{wlstep}_{wlstop}_nm'
         self.calibration_fname = f'{self.storage_dir_calibration}/{self.beamsplitter}_{wl}_{date}.csv'
         self.calibration_position = 1
@@ -724,7 +724,13 @@ class StateMachine(QObject):
         power = list(df['Power [W]'])
         times = list(df['Time [s]'])
 
+        fname_split = fname.split('_')
+        beamsplitter_model = fname_split[0]
+        calibration_date = fname_split[-1].replace('.csv', '')
+
         group_beamsplitter = self.dataset.createGroup(f'calibration_beamsplitter')
+        group_beamsplitter.beamsplitter_model = beamsplitter_model
+        group_beamsplitter.calibration_date = calibration_date
         group_beamsplitter.createDimension('powermeasurements', len(times))
         wl = group_beamsplitter.createVariable('wavelength', 'f8', 'powermeasurements', fill_value=np.nan)
         wl.units = 'nm'
