@@ -29,6 +29,7 @@ class PowerMeter:
             self.connected = True
             # Set spectrometer to power mode
             self.pm.write('conf:pow')
+            self.logger_instrument.info('Connection to powermeter succesful')
         except pyvisa.errors.VisaIOError as error:
             self.logger_instrument.error('Could not connect powermeter')
             raise ConnectionError('No powermeter found')
@@ -43,10 +44,6 @@ class PowerMeter:
     def wavelength(self, value):
         self.logger_instrument.info(f'setting the powermeter wavelength to {value}')
         self.pm.write(f'sense:corr:wav {value}')
-
-    def set_wavelength(self, value):
-        """ Callable to set the wavelength. """
-        self.wavelength = value
 
     @property
     def averageing(self):

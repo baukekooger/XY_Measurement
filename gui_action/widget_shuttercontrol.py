@@ -21,8 +21,8 @@ class ShutterControlWidget(QtWidgets.QWidget):
         self.ui.pushButton_shutter.clicked.connect(self.handle_shutter_open_close)
 
     def disconnect_signals_slots(self):
-        self.shuttercontrol.shutter_status.disconnect()
-        self.ui.pushButton_shutter.clicked.disconnect()
+        self.shuttercontrol.shutter_status.disconnect(self.handle_shutterstatus)
+        self.ui.pushButton_shutter.clicked.disconnect(self.handle_shutter_open_close)
 
     @pyqtSlot(bool)
     def handle_shutterstatus(self, status):

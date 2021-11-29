@@ -18,7 +18,7 @@ class FileWidget(QtWidgets.QWidget):
         self.ui.toolButton_directory.clicked.connect(self.select_filedir)
 
     def disconnect_signals_slots(self):
-        self.ui.toolButton_directory.clicked.disconnect()
+        self.ui.toolButton_directory.clicked.disconnect(self.select_filedir)
 
     def select_filedir(self):
         self.logger_widget.info('selecting file directory')

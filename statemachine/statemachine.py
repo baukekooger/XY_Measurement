@@ -128,7 +128,9 @@ class StateMachine(QObject):
         self.logger.info(f'defining instruments for statemachine. Experiment = {self.experiment}, '
                          f'instruments = {instruments_needed}')
         to_remove = [inst for inst in self.instruments.keys() if (inst not in instruments_needed)]
+        self.logger.info(f'removing following instruments: {to_remove}')
         to_add = [inst for inst in instruments_needed if (inst not in self.instruments.keys())]
+        self.logger.info(f'adding following instruments: {to_add}')
         for inst in to_remove:
             self.instruments[inst].measuring = False
             self.instruments[inst].disconnect()

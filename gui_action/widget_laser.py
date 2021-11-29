@@ -24,8 +24,12 @@ class LaserWidget(QtWidgets.QWidget):
         self.ui.pushButton_output.clicked.connect(self.handle_output)
 
     def disconnect_signals_slots(self):
-        self.laser.measurement_complete.disconnect()
-
+        self.laser.measurement_complete.disconnect(self.update_status)
+        self.ui.spinBox_wavelength_alignment.editingFinished.disconnect(self.set_wavelength)
+        self.ui.pushButton_max.clicked.disconnect(self.handle_max)
+        self.ui.pushButton_off.clicked.disconnect(self.handle_off)
+        self.ui.pushButton_adjust.clicked.disconnect(self.handle_adjust)
+        self.ui.pushButton_output.clicked.disconnect(self.handle_output)
 
     @pyqtSlot(float, str, float, bool, bool)
     def update_status(self, wavelength, energylevel, power, stable, output):

@@ -107,15 +107,19 @@ class XYSetup(QtWidgets.QMainWindow):
         instruments_threads = self.config['instruments'][self.experiment]
         self.logger.info(f'defining threads for the following instruments: {instruments_threads}')
         to_quit = [inst for inst in self.threads.keys() if (inst not in instruments_threads)]
+        self.logger.info(f'quitting and removing following threads: {to_quit}')
         to_add = [inst for inst in instruments_threads if (inst not in self.threads.keys())]
+        self.logger.info(f'adding the following threads: {to_add}')
         for inst in to_quit:
             self.threads[inst].quit()
+            self.threads[inst].deleteLater()
+            self.threads.pop(inst)
         for inst in to_add:
             self.threads[inst] = QThread()
 
     def move_to_threads(self):
         """ Move the instruments to their threads. """
-        self.logger.info('moving instruments to threads')
+        self.logger.info(f'moving instruments to threads. threads: {self.threads.keys()}')
         for inst in self.threads.keys():
             if not self.threads[inst].isRunning():
                 self.statemachine.instruments[inst].moveToThread(self.threads[inst])

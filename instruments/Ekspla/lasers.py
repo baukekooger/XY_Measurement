@@ -237,6 +237,8 @@ class QLaser(QObject):
         elif e in [7]:
             self.logger.error(f'{message}')
             raise ConnectionError(message)
+        elif e in [17, 18]:
+            self.logger.warning(f'Laser connection - {message}')
         elif e in [11, 12, 13]:
             self.logger.warning(f'{message}')
             raise ValueError(message)

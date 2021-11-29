@@ -29,10 +29,11 @@ class XYStageWidget(QtWidgets.QWidget):
         self.ui.doubleSpinBox_y.setMaximum(self.xystage.ymax)
 
     def disconnect_signals_slots(self):
-        self.xystage.homing_status.disconnect()
-        self.ui.doubleSpinBox_x.editingFinished.disconnect()
-        self.ui.doubleSpinBox_y.editingFinished.disconnect()
-        self.ui.pushButton_home_motors.clicked.disconnect()
+        self.xystage.measurement_complete.disconnect(self.set_position)
+        self.xystage.homing_status.disconnect(self.set_homing)
+        self.ui.doubleSpinBox_x.editingFinished.disconnect(self._handle_move_x)
+        self.ui.doubleSpinBox_y.editingFinished.disconnect(self._handle_move_y)
+        self.ui.pushButton_home_motors.clicked.disconnect(self._handle_home)
 
     def _handle_move_x(self):
         if not self.xystage.xhomed:

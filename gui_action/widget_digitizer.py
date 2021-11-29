@@ -48,18 +48,22 @@ class DigitizerWidget(QtWidgets.QWidget):
     def disconnect_signals_slots(self):
         """ Disconnect all ui signals """
         self.logger_widget.info('disconnecting all signals digitizerwidget')
-        self.ui.comboBox_measurement_mode_alignment.disconnect()
-        self.ui.comboBox_data_channel_alignment.disconnect()
-        self.ui.comboBox_data_channel_experiment.disconnect()
-        self.ui.comboBox_time_range_alignment.disconnect()
-        self.ui.spinBox_dc_offset_alignment.disconnect()
-        self.ui.spinBox_post_trigger_size_alignment.disconnect()
-        self.ui.comboBox_jitter_channel_alignment.disconnect()
-        self.ui.comboBox_single_photon_compression_alignment.disconnect()
-        self.ui.checkBox_jitter_correction_alignment.disconnect()
-        self.ui.pushButton_single_photon_clear_alignment.disconnect()
-        self.ui.spinBox_single_photon_treshold_alignment.disconnect()
-        self.digitizer.digitizer_parameters.disconnect()
+        self.digitizer.parameters.disconnect(self.init_ui)
+        self.ui.comboBox_measurement_mode_alignment.currentTextChanged.disconnect(self.digitizer.set_measurement_mode)
+        self.ui.comboBox_measurement_mode_alignment.currentTextChanged.disconnect(self.logmode)
+        self.ui.comboBox_data_channel_alignment.currentTextChanged.disconnect(self.set_data_channel)
+        self.ui.comboBox_data_channel_experiment.currentTextChanged.disconnect(self.set_data_channel)
+        self.ui.comboBox_time_range_alignment.currentTextChanged.disconnect(self.set_time_range)
+        self.ui.spinBox_dc_offset_alignment.valueChanged.disconnect(self.digitizer.set_dc_offset_data_channel)
+        self.ui.spinBox_post_trigger_size_alignment.valueChanged.disconnect(self.digitizer.set_post_trigger_size)
+        self.ui.comboBox_jitter_channel_alignment.currentTextChanged.disconnect(self.set_jitter_channel)
+        self.ui.checkBox_jitter_correction_alignment.stateChanged.disconnect(self.jitter_correction)
+        self.ui.comboBox_single_photon_compression_alignment.currentTextChanged.disconnect(
+            self.set_single_photon_compression)
+        self.ui.pushButton_single_photon_clear_alignment.clicked.disconnect(self.digitizer.clear_measurement)
+        self.ui.spinBox_single_photon_treshold_alignment.valueChanged.disconnect(
+            self.digitizer.set_single_photon_counting_treshold)
+        self.ui.pushButton_clear_averageing_alignment.clicked.disconnect(self.digitizer.clear_measurement)
 
     @pyqtSlot(list, list, list, int, int)
     def init_ui(self, available_channels, time_ranges, compression_ranges, dc_offset, post_trigger_size):

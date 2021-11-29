@@ -48,8 +48,8 @@ class DigitizerPlotWidget(QtWidgets.QWidget):
     def disconnect_signals_slots(self):
         """ Disconnect all the signals from the digitizer """
         self.logger.info('disconnecting signals digitizer plotwindow')
-        self.digitizer.measurement_complete.disconnect()
-        self.digitizer.plotaxis_labels.disconnect()
+        self.digitizer.measurement_complete.disconnect(self.plot)
+        self.digitizer.plotaxis_labels.disconnect(self.set_axislabels)
 
     @pyqtSlot(np.ndarray, np.ndarray, str)
     def plot(self, times, data, plotinfo):

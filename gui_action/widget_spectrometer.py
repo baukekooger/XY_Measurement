@@ -32,15 +32,17 @@ class SpectrometerWidget(QtWidgets.QWidget):
 
 
     def disconnect_signals_slots(self):
-        self.spectrometer.measurement_parameters.disconnect()
-        self.spectrometer.measurement_lamp_complete.disconnect()
-        self.spectrometer.measurement_dark_complete.disconnect()
-        self.ui.spinBox_integration_time_alignment.editingFinished.disconnect()
-        self.ui.spinBox_averageing_alignment.editingFinished.disconnect()
-        self.ui.pushButton_dark.clicked.disconnect()
-        self.ui.pushButton_reset.clicked.disconnect()
-        self.ui.pushButton_lamp.clicked.disconnect()
-        self.ui.pushButton_transmission.clicked.disconnect()
+        self.spectrometer.measurement_parameters.disconnect(self.update_parameters)
+        self.spectrometer.measurement_lamp_complete.disconnect(self.lamp_measured)
+        self.spectrometer.measurement_dark_complete.disconnect(self.dark_measured)
+        self.spectrometer.transmission_set.disconnect(self.transmission_button_set)
+        self.ui.spinBox_integration_time_alignment.editingFinished.disconnect(self.handle_integrationtime)
+        self.ui.spinBox_averageing_alignment.editingFinished.disconnect(self.handle_averageing)
+        self.ui.pushButton_dark.clicked.disconnect(
+            self.handle_darkspectrum)
+        self.ui.pushButton_reset.clicked.disconnect(self.handle_reset)
+        self.ui.pushButton_lamp.clicked.disconnect(self.handle_lampspectrum)
+        self.ui.pushButton_transmission.clicked.disconnect(self.handle_transmission)
         self.handle_reset()
 
     @pyqtSlot(int, int)

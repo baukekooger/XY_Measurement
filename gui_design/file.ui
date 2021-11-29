@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>399</width>
-    <height>302</height>
+    <width>397</width>
+    <height>345</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -65,6 +65,12 @@
               <height>0</height>
              </size>
             </property>
+            <property name="maximumSize">
+             <size>
+              <width>90</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="text">
              <string>sample</string>
             </property>
@@ -89,6 +95,12 @@
              <size>
               <width>90</width>
               <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>90</width>
+              <height>16777215</height>
              </size>
             </property>
             <property name="text">
@@ -136,6 +148,12 @@
               <height>0</height>
              </size>
             </property>
+            <property name="maximumSize">
+             <size>
+              <width>90</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="text">
              <string>neutral filter</string>
             </property>
@@ -171,6 +189,12 @@
              <size>
               <width>90</width>
               <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>90</width>
+              <height>16777215</height>
              </size>
             </property>
             <property name="text">
@@ -422,6 +446,12 @@
               <height>0</height>
              </size>
             </property>
+            <property name="maximumSize">
+             <size>
+              <width>90</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="text">
              <string>comments</string>
             </property>
@@ -459,6 +489,12 @@
              <size>
               <width>90</width>
               <height>0</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>90</width>
+              <height>16777215</height>
              </size>
             </property>
             <property name="text">

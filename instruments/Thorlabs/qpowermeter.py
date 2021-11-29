@@ -39,11 +39,16 @@ class QPowerMeter(PowerMeter, QObject):
         self.last_powers = []
         self.last_times = []
         self.plotinfo = None
+        self.sensorinfo_plot = None
+        self.modelinfo_plot = None
 
     @pyqtSlot()
     def connect(self):
         self.connect_device()
-        if self.sensor['Model'] == 'no sensor':
+        time.sleep(0.1)
+        self.modelinfo_plot = self.device
+        self.sensorinfo_plot = self.sensor
+        if self.sensorinfo_plot['Model'] == 'no sensor':
             raise ConnectionError('No sensor connected to powermeter')
         self.averageing = 1
         self.integration_time = 200
@@ -122,7 +127,7 @@ class QPowerMeter(PowerMeter, QObject):
                 time.sleep(0.002)
         t2 = time.perf_counter()
         self.logger_q_instrument.info(f'powermeter completed,  time with all measurements {t2-t1:.3f}, '
-                     f'number of measurements = {len(measurements)}')
+                                      f'number of measurements = {len(measurements)}')
         self.last_times = list(np.linspace(0, t[-1], self.measurements_multiple))
         self.last_powers = list(np.interp(self.last_times, t, measurements))
         self.measurement_complete_multiple.emit(self.last_times, self.last_powers, plotinfo)
@@ -137,6 +142,11 @@ class QPowerMeter(PowerMeter, QObject):
             self.zero_device()
             self.zero_complete.emit()
         self.measuring = False
+
+    @pyqtSlot(int)
+    def set_wavelength(self, value):
+        """ Callable to set the wavelength. """
+        self.wavelength = value
 
     @pyqtSlot()
     def reset(self):
