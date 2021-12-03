@@ -495,7 +495,7 @@ class XYSetup(QtWidgets.QMainWindow):
         Set the beamsplitter attribute of the statemachine.
         """
         self.logger.info('showing inputdialog beamsplitter')
-        beamsplitters = ['BS20WR', 'BSW26R', 'Fused Silica', 'Other Type']
+        beamsplitters = ['BS20WR', 'BSW26R', 'Quartz', 'Other Type']
         self.statemachine.beamsplitter, ok = \
             QtWidgets.QInputDialog.getItem(self, 'beamsplitter',
                                            'please choose beamsplitter type or edit if type not available',

@@ -67,10 +67,10 @@ instrument_pages: {
 substrates: {
     # borofloat 50X50
     50X50 mm (Borofloat): {
-        x_lamp: 9,           # x position when avantes lamp lightsource is centered on corner of sampleholder
+        x_lamp: 8.5,         # x position when avantes lamp lightsource is centered on corner of sampleholder
         y_lamp: -5.3,        # y position when avantes lamp lightsource is centered on corner of sampleholder
-        x_laser: 12,         # x position when avantes laser lightsource is centered on corner of sampleholder
-        y_laser: 87,         # y position when avantes laser lightsource is centered on corner of sampleholder
+        x_laser: 10.5,       # x position when laser lightsource is centered on corner of sampleholder
+        y_laser: 85,         # y position when laser lightsource is centered on corner of sampleholder
         whse: 51,            # width holder sample edge
         hhse: 51,            # height holder sample edge
         ws: 47,              # width sample usable
@@ -80,10 +80,10 @@ substrates: {
     },
     44X44 mm (Quartz): {
         name: 'Quartz 44 x 44 mm',
-        x_lamp: 10,          # x position when avantes lamp lightsource is centered on corner of sampleholder
+        x_lamp: 8.5,         # x position when avantes lamp lightsource is centered on corner of sampleholder
         y_lamp: -5.3,        # y position when avantes lamp lightsource is centered on corner of sampleholder
-        x_laser: 12,         # x position when avantes laser lightsource is centered on corner of sampleholder
-        y_laser: 87,         # y position when avantes laser lightsource is centered on corner of sampleholder
+        x_laser: 10.5,       # x position when laser lightsource is centered on corner of sampleholder
+        y_laser: 85,         # y position when laser lightsource is centered on corner of sampleholder
         whse: 45,            # width holder sample edge
         hhse: 45,            # height holder sample edge
         ws: 42,              # width sample usable
@@ -94,10 +94,10 @@ substrates: {
     },
     22X22 mm (Quartz small): {
         name: 'Quartz 22 x 22 mm',
-        x_lamp: 10,          # x position when avantes lamp lightsource is centered on corner of sampleholder
-        y_lamp: -4.7,        # y position when avantes lamp lightsource is centered on corner of sampleholder
-        x_laser: 12,         # x position when avantes laser lightsource is centered on corner of sampleholder
-        y_laser: 87,         # y position when avantes laser lightsource is centered on corner of sampleholder
+        x_lamp: 8.5,         # x position same as Quartz position
+        y_lamp: -5.3,        # y postion same as Quartz position
+        x_laser: 10.5,       # x position same as Quartz position
+        y_laser: 85,         # y position same as Quartz position
         whse: 26,            # width holder sample edge
         hhse: 26,            # height holder sample edge
         ws: 23,              # width sample usable

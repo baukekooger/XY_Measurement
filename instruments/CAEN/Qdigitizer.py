@@ -74,8 +74,9 @@ class QDigitizer(CAENlib.Digitizer, QObject):
     @pyqtSlot()
     def disconnect(self):
         """ Disconnect the digitizer """
-        self.close()
-        self.connected = False
+        if self.connected:
+            self.close()
+            self.connected = False
 
     @pyqtSlot()
     def measure(self):

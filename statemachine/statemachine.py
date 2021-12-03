@@ -324,6 +324,8 @@ class StateMachine(QObject):
         self.logger.info('parsing configuration beamsplitter calibration')
         self.calibration_status.emit('started calibration')
         self.measurement_parameters = {}
+        self._add_measurement_parameter('x', np.array([0]))
+        self._add_measurement_parameter('y', np.array([0]))
         self._parse_excitation_wavelengths()
         self._parse_lasersettings('Max')
         self._parse_powermetersettings(3000)
@@ -458,6 +460,7 @@ class StateMachine(QObject):
         averageing_sm = smsettings['spinBox_averageing_experiment']
         self.instruments['powermeter'].prepare_measurement_multiple()
         self.instruments['powermeter'].integration_time = integration_time_sm * averageing_sm
+        QTimer.singleShot(0, self.instruments['powermeter'].zero)
 
     def _parse_connect_spectrometer_powermeter(self):
         """
@@ -575,9 +578,9 @@ class StateMachine(QObject):
         wlstep = lasersettings['spinBox_wavelength_step']
         self.logger.info(f'opening calibration file, wlstart = {wlstart}, wlstep = {wlstep}, wlstop  = {wlstop}')
         self.startingtime = time.time()
-        date = time.strftime("%y_%m_%d%H:%M", time.localtime(self.startingtime))
+        date = time.strftime("%y%m%d%H%M", time.localtime(self.startingtime))
         wl = f'{wlstart}_{wlstep}_{wlstop}_nm'
-        self.calibration_fname = f'{self.storage_dir_calibration}/{self.beamsplitter}_{wl}_{date}.csv'
+        self.calibration_fname = f'{self.storage_dir_calibration}/BSC_{self.beamsplitter}_{wl}_{date}.csv'
         self.calibration_position = 1
         self.calibration_dataframe = pd.DataFrame(columns=['Wavelength [nm]', 'Position', 'Power [W]', 'Time [s]'])
 
@@ -703,7 +706,7 @@ class StateMachine(QObject):
 
     def _write_beamsplitter_calibration(self):
         """
-        writes Calibration file to main hdf5 file for automatic processing in matlab
+        writes currently selected calibration file to main hdf5 file for automatic processing in matlab
         checks if file is selected and exists.
         Creates folder with attributes, dimensions, variables and data
         """
@@ -724,13 +727,8 @@ class StateMachine(QObject):
         power = list(df['Power [W]'])
         times = list(df['Time [s]'])
 
-        fname_split = fname.split('_')
-        beamsplitter_model = fname_split[0]
-        calibration_date = fname_split[-1].replace('.csv', '')
-
         group_beamsplitter = self.dataset.createGroup(f'calibration_beamsplitter')
-        group_beamsplitter.beamsplitter_model = beamsplitter_model
-        group_beamsplitter.calibration_date = calibration_date
+        group_beamsplitter.filename = fname
         group_beamsplitter.createDimension('powermeasurements', len(times))
         wl = group_beamsplitter.createVariable('wavelength', 'f8', 'powermeasurements', fill_value=np.nan)
         wl.units = 'nm'
@@ -800,8 +798,8 @@ class StateMachine(QObject):
         """ Set the laser and powermeter to the correct wavelength """
         self.logger.info(f'preparing beamsplitter calibration measurement {self.measurement_index} of '
                          f'{len(self.measurement_parameters)}')
-        self._control_shutter()
         self._prepare_powermeter()
+        self._control_shutter()
         self._prepare_laser()
 
     def _prepare_measurement_transmission(self):
@@ -815,8 +813,8 @@ class StateMachine(QObject):
         self.logger.info(f"preparing {self.experiment} measurement {self.measurement_index} of "
                          f"{len(self.measurement_parameters['x'])}")
         self.wait_signals_prepare_measurement.reset()
-        self._control_shutter()
         self._prepare_powermeter()
+        self._control_shutter()
         self._prepare_laser()
         self._prepare_move_stage()
 
@@ -855,10 +853,40 @@ class StateMachine(QObject):
             self.instruments['shuttercontrol'].enable()
 
     def _prepare_powermeter(self):
-        """ Set the powermeter to the new laser wavelength. """
+        """
+        Set the powermeter to the new laser wavelength.
+        At the first measurement, or at any new position during excitation,
+        close the shutter and zero the powermeter to get the same starting power.
+        """
         wl = self.measurement_parameters['wl'][self.measurement_index]
         self.logger.info(f'setting powermeter to {wl} nm')
         self.instruments['powermeter'].wavelength = wl
+
+        if self._requires_zeroing():
+            self.instruments['shuttercontrol'].disable()
+            self.instruments['powermeter'].zero()
+
+    def _requires_zeroing(self):
+        """
+        Determine if the powermeter needs to be zero'd before each measurement. This is necessary if there is more
+        than one excitation wavelength, when the xystage moves to a new position. As there is always a specific
+        wavelength set for the dark spectrum, excitation happens when number of wavelengths is larger than 2.
+        """
+        idx = self.measurement_index
+        wavelengths = np.unique(self.measurement_parameters['wl'])
+
+        if self.measurement_index == 0:
+            self.logger.info('First measurement, zero powermeter')
+            return True
+        elif self.measurement_parameters['x'][idx] != self.measurement_parameters['x'][idx-1] and len(wavelengths) > 2:
+            self.logger.info('New x posisition, zero powermeter')
+            return True
+        elif self.measurement_parameters['y'][idx] != self.measurement_parameters['y'][idx-1] and len(wavelengths) > 2:
+            self.logger.info('New y position, zero powermeter')
+            return True
+        else:
+            return False
+
 
     def _prepare_digitizer(self):
         """ Clear the average measurements from the digitizer. """
