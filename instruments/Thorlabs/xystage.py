@@ -46,14 +46,20 @@ class QXYStage(QObject):
 
     @staticmethod
     def list_available_devices(self):
+        """ List all the connected linear stages. """
+        self.logger.info('Listing available devices.')
         return apt.list_available_devices()
 
     @property
     def x(self):
+        """ Query the position of the x stage. """
+        self.logger.info('Querying position x stage')
         return self.xstage.position
 
     @x.setter
     def x(self, value):
+        """ Set the position of the x stage. """
+        self.logger.info(f'Attempting to move x stage to {value}')
         if not (self.xmin <= value <= self.xmax):
             self.logger.warning('Attempt to move x stage out of bounds')
             self.logger.warning('Retaining position x=%.2f mm', self.x)
@@ -62,10 +68,14 @@ class QXYStage(QObject):
 
     @property
     def y(self):
+        """ Query the position of the y stage. """
+        self.logger.info('Querying the position of the y stage.')
         return self.ystage.position
 
     @y.setter
     def y(self, value):
+        """ Set the position of the y stage. """
+        self.logger.info(f'Attempting to set the y position to {value}')
         if not (self.ymin <= value <= self.ymax):
             self.logger.warning('Attempt to move y stage out of bounds')
             self.logger.warning('Retaining position y=%.2f mm', self.y)
@@ -73,7 +83,9 @@ class QXYStage(QObject):
         self.ystage.move_to(value, blocking=False)
 
     def connect(self):
+        """ Connect the xy stages. """
         try:
+            self.logger.info('Attempting to connect to XY stages.')
             self.xstage = apt.Motor(self.xstage_serial)
             self.ystage = apt.Motor(self.ystage_serial)
             self.connected = True
@@ -84,19 +96,25 @@ class QXYStage(QObject):
             raise ConnectionError(e)
 
     def disconnect(self):
+        """ Disconnect the xy stages. """
         if not self.connected:
+            self.logger.info('xy stages already disconnected.')
             return
+        self.logger.info('Disconnecting xy stages, cleaning up apt lib.')
         self.xstage = None
         self.ystage = None
         apt.reconnect()
         self.connected = False
 
     def stop_motors(self):
-        # stops motors slowly such they don't loose their homing
+        """ Stop the motors slowly to prevent them losing their homing. """
+        self.logger.info('Stopping the motors.')
         self.xstage.stop_profiled()
         self.ystage.stop_profiled()
 
     def reconnect(self):
+        """ Reconnect to motors by reloading the apt library. """
+        self.logger.info('Attempting to reconnect motors. ')
         self.connected = False
         while not self.connected:
             try:
@@ -109,11 +127,14 @@ class QXYStage(QObject):
                 time.sleep(1)
 
     def close(self):
+        """ Close the motors and the apt library. """
+        self.logger.info('Closing the motors and apt library.')
         self.xstage = None
         self.ystage = None
         apt.close()
 
     def settled(self):
+        """ Query if the stages are settled or not. """
         if not self.xstage.is_in_motion and not self.ystage.is_in_motion:
             self.logger.info('stages settled')
             self.stage_settled.emit()
@@ -123,14 +144,20 @@ class QXYStage(QObject):
             return False
 
     def disable(self):
+        """ Disable the stages. """
+        self.logger.info('Disabling xy stages. ')
         self.xstage.disable()
         self.ystage.disable()
 
     def enable(self):
+        """ Enable xystages. """
+        self.logger.info('Enabling xy stages. ')
         self.xstage.enable()
         self.ystage.enable()
 
     def home(self):
+        """ Home the xy stage. """
+        self.logger.info('Homing xy stage.')
         self.xstage.move_home()
         self.ystage.move_home()
 
@@ -156,7 +183,8 @@ class QXYStage(QObject):
     @pyqtSlot()
     @pyqtSlot(float, float)
     def measure(self, *args):
-        # Emits positions and homing status
+        """ Measure position and homing status, and emit values to widget. """
+        self.logger.debug('measuring xy stage position and homing status')
         with(QMutexLocker(self.mutex)):
             x = self.x
             y = self.y
@@ -169,7 +197,8 @@ class QXYStage(QObject):
 
     @pyqtSlot()
     def measure_homing(self, *args):
-        # Emits homing status only
+        """ Measure and emit only the homing status. """
+        self.logger.info('measuring and emitting only the homing status. ')
         with(QMutexLocker(self.mutex)):
             self.xhomed = self.xstage.has_homing_been_completed
             self.yhomed = self.ystage.has_homing_been_completed

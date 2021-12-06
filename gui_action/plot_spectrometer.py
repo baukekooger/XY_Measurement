@@ -28,11 +28,15 @@ class SpectrometerPlotWidget(QtWidgets.QWidget):
         self.annotation = None
 
     def connect_signals_slots(self):
+        """ Connect signals from the spectrometer to the plotwindow. """
+        self.logger_plot.info('connecting signals plot spectrometer')
         self.spectrometer.measurement_complete.connect(self.plot)
         self.spectrometer.measurement_dark_complete.connect(self.plot_dark)
         self.spectrometer.measurement_lamp_complete.connect(self.plot_lamp)
 
     def disconnect_signals_slots(self):
+        """ Disconnect spectrometer signals from the plotwindow. """
+        self.logger_plot.info('disconnecting signals plot spectrometer')
         self.spectrometer.measurement_complete.disconnect(self.plot)
         self.spectrometer.measurement_dark_complete.disconnect(self.plot_dark)
         self.spectrometer.measurement_lamp_complete.disconnect(self.plot_lamp)
@@ -100,11 +104,17 @@ class SpectrometerPlotWidget(QtWidgets.QWidget):
             self.line.set_ydata(minusdark)
             self.annotation.set_text(plotinfo)
         else:
+            self.logger_plot.info('plotting raw spectrum')
             self.line.set_ydata(intensities)
             self.annotation.set_text(plotinfo)
+        self.logger_plot.info('updating blitmanager spectrometer')
         self.blitmanager.update()
 
     def init_blitmanager(self, intensities, plotinfo):
+        """
+        Initialize the blitmanager for faster rendering of the graphs. Two artists,
+        one is the plotline, the other the annotation.
+        """
         self.logger_plot.info(f'Initializing blitmanager spectrometerplot with data '
                               f'= {intensities} and plotinfo = {plotinfo}')
         self.blitmanager = None
@@ -125,6 +135,7 @@ class SpectrometerPlotWidget(QtWidgets.QWidget):
         Function called from main.py as the button for it is in the main ui.
         """
         if self.blitmanager:
+            self.logger_plot.info('redrawing canvas spectrometer')
             self.blitmanager.redraw_canvas_spectrometer()
 
 

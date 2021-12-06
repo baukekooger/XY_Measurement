@@ -6,6 +6,10 @@ import logging
 
 
 class LaserWidget(QtWidgets.QWidget):
+    """
+    PyQt Widget for controlling the laser.
+    Check the corresponding gui design file in pyqt designer for detailed info.
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -16,6 +20,8 @@ class LaserWidget(QtWidgets.QWidget):
         self.laser = QLaser()
 
     def connect_signals_slots(self):
+        """ Connect signals from the laser widget to laser function. """
+        self.logger_widget.info('Connecting signals laser widget')
         self.laser.measurement_complete.connect(self.update_status)
         self.ui.spinBox_wavelength_alignment.editingFinished.connect(self.set_wavelength)
         self.ui.pushButton_max.clicked.connect(self.handle_max)
@@ -24,6 +30,8 @@ class LaserWidget(QtWidgets.QWidget):
         self.ui.pushButton_output.clicked.connect(self.handle_output)
 
     def disconnect_signals_slots(self):
+        """ Disconnect laser widget signals. """
+        self.logger_widget.info('Disconnecting laser widget signals. ')
         self.laser.measurement_complete.disconnect(self.update_status)
         self.ui.spinBox_wavelength_alignment.editingFinished.disconnect(self.set_wavelength)
         self.ui.pushButton_max.clicked.disconnect(self.handle_max)
@@ -33,6 +41,9 @@ class LaserWidget(QtWidgets.QWidget):
 
     @pyqtSlot(float, str, float, bool, bool)
     def update_status(self, wavelength, energylevel, power, stable, output):
+        """ Update the current status of the laser in the widget e.g. wavelength, stability. """
+        self.logger_widget.info(f'updating laser status, wl = {wavelength}, energylevel = {energylevel}, '
+                                f'stable = {stable}, output = {output}')
         self.ui.label_wavelength_indicator.setText(f'{wavelength:.0f} nm')
         self.ui.checkBox_stable.setChecked(stable)
         if energylevel == 'Off':
@@ -53,21 +64,33 @@ class LaserWidget(QtWidgets.QWidget):
             self.ui.pushButton_output.setChecked(False)
 
     def set_wavelength(self):
+        """ Set the laser wavelength. """
+        self.logger_widget.info(f'Setting the laser wavelength from widget'
+                                f' to {self.ui.spinBox_wavelength_alignment.value()}')
         self.laser.wavelength = self.ui.spinBox_wavelength_alignment.value()
 
     def handle_max(self):
+        """ Set the energy level to maximum. """
+        self.logger_widget.info('setting laser energylevel from widget to Max')
         self.laser.energylevel = 'Max'
 
     def handle_adjust(self):
+        """ Set the energy level to adjust. """
+        self.logger_widget.info('setting laser energylevel from widget to Adjust')
         self.laser.energylevel = 'Adjust'
 
     def handle_off(self):
+        """ Set the energy level to off. """
+        self.logger_widget.info('setting laser energylevel from widet to Off')
         self.laser.energylevel = 'Off'
 
     def handle_output(self):
+        """ Turn laser output on or off. """
         if not self.laser.output:
+            self.logger_widget.info('Turning on laser from widget')
             self.laser.output = True
         else:
+            self.logger_widget.info('Turning off laser from widget')
             self.laser.output = False
 
 

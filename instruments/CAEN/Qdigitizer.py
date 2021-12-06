@@ -51,6 +51,7 @@ class QDigitizer(CAENlib.Digitizer, QObject):
 
     def init_device(self):
         """ Provide some commom initial settings """
+        self.logger_q_instrument.info('Initializing digitizer')
         self.record_length = 0
         self.max_num_events_blt = 1
         self.post_trigger_size = 90
@@ -64,6 +65,7 @@ class QDigitizer(CAENlib.Digitizer, QObject):
     def connect(self):
         """ Open the digitizer, then apply common initial settings """
         try:
+            self.logger_q_instrument('attempting connecting to digitizer')
             self.connect_device()
             self.connected = True
             self.init_device()
@@ -75,6 +77,7 @@ class QDigitizer(CAENlib.Digitizer, QObject):
     def disconnect(self):
         """ Disconnect the digitizer """
         if self.connected:
+            self.logger_q_instrument('Disconnecting digitizer')
             self.close()
             self.connected = False
 
@@ -116,6 +119,7 @@ class QDigitizer(CAENlib.Digitizer, QObject):
 
     def _emit_pulses_plotting(self, data):
         """ Emit the data for plotting """
+        self.logger_q_instrument('emitting digitizer data to plotwindow.')
         if self.measurement_mode == 'single pulse':
             times, data, plotinfo = self._plot_single_pulse(data)
             self.measurement_complete.emit(times, data, plotinfo)
@@ -226,6 +230,7 @@ class QDigitizer(CAENlib.Digitizer, QObject):
         :type n: int
         :returns: closest power of two to input value n
         """
+        self.logger_q_instrument.debug(f'finding highest power of 2 that {n} can be divided by')
         # return values outside of range to 1
         n = 1 if n <= 1 else n
         # decrement `n` (to handle cases when `n` itself
@@ -268,6 +273,7 @@ class QDigitizer(CAENlib.Digitizer, QObject):
         :param data: [samples]
         :type data: np.ndarray
         """
+        self.logger_q_instrument.debug('taking average of pulses')
         self.pulse_counter += 1
         # subtract the average of the first 30 datapoints.
         data = data - np.mean(data[0:30])

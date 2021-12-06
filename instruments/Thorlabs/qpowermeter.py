@@ -20,7 +20,6 @@ class QPowerMeter(PowerMeter, QObject):
     Python interface for the Thorlabs PM100A powermeter as a QObject
 
     Includes additional measurement functions and signals.
-
     """
     measurement_complete = pyqtSignal(float)
     measurement_complete_multiple = pyqtSignal(list, list, str)
@@ -44,6 +43,8 @@ class QPowerMeter(PowerMeter, QObject):
 
     @pyqtSlot()
     def connect(self):
+        """ Connect powermeter and initialize. """
+        self.logger_q_instrument.info('Attempt to connect powermeter.')
         self.connect_device()
         time.sleep(0.1)
         self.modelinfo_plot = self.device
@@ -57,6 +58,7 @@ class QPowerMeter(PowerMeter, QObject):
     @property
     def integration_time(self):
         """ Integration time in [ms] """
+        self.logger_q_instrument.info('Querying integration time')
         return self._integration_time
 
     @integration_time.setter
@@ -74,6 +76,7 @@ class QPowerMeter(PowerMeter, QObject):
 
         Check if timeout needs to be adjusted based on set integration time
         """
+        self.logger_q_instrument.info('Preparing measurement for internal averageing.')
         self.measuring = True
         if self.timeout < self.integration_time - 500:
             self.timeout = self.integration_time + 500
@@ -83,15 +86,17 @@ class QPowerMeter(PowerMeter, QObject):
     @pyqtSlot()
     def prepare_measurement_multiple(self):
         """
-        Sets the averageing back to 1
+        Prepare powermeter for taking multiple measurements with external averageing, by setting the averageing to 1.
         """
+        self.logger_q_instrument.info('Preparing powermeter for multiple measurements')
         self.averageing = 1
 
     @pyqtSlot()
     def measure_average(self):
         """
-        Single reading of the powermeter with averaging set close to integration time
+        Single reading of the powermeter with averaging set close to integration time.
         """
+        self.logger_q_instrument.info('Measuring powermeter with internal averegeing.')
         self.measuring = True
         t1 = time.time()
         with(QMutexLocker(self.mutex)):
@@ -112,7 +117,7 @@ class QPowerMeter(PowerMeter, QObject):
         each reading takes approx 5 ms.
         """
         self.measuring = True
-        self.logger_q_instrument.info('measuring powermeter')
+        self.logger_q_instrument.info('Measuring powermeter with multiple measurements, external averageing.')
         plotinfo = self.plotinfo if self.plotinfo else ''
         t1 = time.perf_counter()
         measurements = []
@@ -137,6 +142,8 @@ class QPowerMeter(PowerMeter, QObject):
 
     @pyqtSlot()
     def zero(self):
+        """ Zero the powermeter. """
+        self.logger_q_instrument.info('Zeroing powermeter')
         self.measuring = True
         with(QMutexLocker(self.mutex)):
             self.zero_device()
@@ -146,11 +153,13 @@ class QPowerMeter(PowerMeter, QObject):
     @pyqtSlot(int)
     def set_wavelength(self, value):
         """ Callable to set the wavelength. """
+        self.logger_q_instrument.info(f'Setting the wavelength from callable to {value}')
         self.wavelength = value
 
     @pyqtSlot()
     def reset(self):
-        # returns unit to default condition
+        """ Reset device to default condition. """
+        self.logger_q_instrument.info('Setting powermeter to default. ')
         self.measuring = True
         with(QMutexLocker(self.mutex)):
             self.reset_default()
