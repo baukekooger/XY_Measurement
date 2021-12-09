@@ -65,7 +65,7 @@ class QDigitizer(CAENlib.Digitizer, QObject):
     def connect(self):
         """ Open the digitizer, then apply common initial settings """
         try:
-            self.logger_q_instrument('attempting connecting to digitizer')
+            self.logger_q_instrument.info('attempting connecting to digitizer')
             self.connect_device()
             self.connected = True
             self.init_device()
@@ -77,7 +77,7 @@ class QDigitizer(CAENlib.Digitizer, QObject):
     def disconnect(self):
         """ Disconnect the digitizer """
         if self.connected:
-            self.logger_q_instrument('Disconnecting digitizer')
+            self.logger_q_instrument.info('Disconnecting digitizer')
             self.close()
             self.connected = False
 
@@ -119,7 +119,7 @@ class QDigitizer(CAENlib.Digitizer, QObject):
 
     def _emit_pulses_plotting(self, data):
         """ Emit the data for plotting """
-        self.logger_q_instrument('emitting digitizer data to plotwindow.')
+        self.logger_q_instrument.info('emitting digitizer data to plotwindow.')
         if self.measurement_mode == 'single pulse':
             times, data, plotinfo = self._plot_single_pulse(data)
             self.measurement_complete.emit(times, data, plotinfo)
@@ -220,8 +220,7 @@ class QDigitizer(CAENlib.Digitizer, QObject):
 
         return times, data, plotinfo
 
-    @staticmethod
-    def _find_next_power_two(n):
+    def _find_next_power_two(self, n):
         """
         Find the (positive) power of two closes to n. For example, input n = 17 returns 32.
         Smallest output is 2^1 or 1. All values smaller or equal to one (also negative) return 2.

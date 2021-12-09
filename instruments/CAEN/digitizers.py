@@ -1,5 +1,5 @@
 import time
-from PyQt5.QtCore import QObject, QMutex, pyqtSlot, pyqtSignal
+from PyQt5.QtCore import pyqtSlot
 from ctypes import c_char, c_char_p, byref, windll, pointer, c_uint32, c_int32
 import os
 import numpy as np
@@ -41,6 +41,10 @@ def list_available_devices():
 
 def handle_error(error_code):
     if error_code is not definitions.ErrorCode.Success.value:
+        # if error_code == -5:
+        #     print('invalid device handle, digitizer probably closed while busy')
+        #     pass
+        # else:
         raise definitions.Error(error_code)
     return error_code
 
@@ -141,7 +145,7 @@ class Digitizer(DigitizerHandle):
 
     @post_trigger_size.setter
     def post_trigger_size(self, value):
-        self.logger.info(f'setting post trigger size to {value}')
+        self.logger_instrument.info(f'setting post trigger size to {value}')
         set_value = c_uint32(value)
         handle_error(_lib.CAEN_DGTZ_SetPostTriggerSize(self._handle, set_value))
 
@@ -244,7 +248,7 @@ class Digitizer(DigitizerHandle):
         handle_error(_lib.CAEN_DGTZ_SetChannelEnableMask(self._handle, set_value))
 
     def set_channel_gain(self, channel, value):
-        self.logger_instrument.debug(f'setting channel {channel} gain to {gain}')
+        self.logger_instrument.debug(f'setting channel {channel} gain to {value}')
         address = 0x1028 + 0x100 * channel
         set_value = c_uint32(value)
         handle_error(_lib.CAEN_DGTZ_WriteRegister(self._handle, address, set_value))
@@ -405,11 +409,11 @@ class Digitizer(DigitizerHandle):
         channel = c_uint32(channel)
         threshold = c_uint32(0)
         handle_error(_lib.CAEN_DGTZ_GetChannelTriggerThreshold(self._handle, channel, byref(threshold)))
-        self.logger_instrument.debug(f'trigger treshold = {treshold.value}')
+        self.logger_instrument.debug(f'trigger treshold = {threshold.value}')
         return threshold.value
 
     def set_trigger_threshold(self, channel, threshold):
-        self.logger_instrument.debug(f'setting trigger treshold to {treshold}')
+        self.logger_instrument.debug(f'setting trigger treshold to {threshold}')
         channel = c_uint32(channel)
         threshold = c_uint32(threshold)
         handle_error(_lib.CAEN_DGTZ_SetChannelTriggerThreshold(self._handle, channel, threshold))
@@ -627,7 +631,7 @@ class Digitizer(DigitizerHandle):
         self.sw_start_acquisition()
         time.sleep(0.001)
 
-    @pyqtSlot()
+    # @pyqtSlot()
     def finish_measurement(self):
         """ This function finishes up the measurement by stopping the acquisition and freeing all buffers. """
         self.logger_instrument.debug("finishing measurement")

@@ -79,7 +79,7 @@ class QSpectrometer(QObject):
     @property
     def integrationtime(self):
         """ The spectrometer's integration time in [ms] """
-        self.logger.info('requesting integration time. ')
+        self.logger.debug('requesting integration time. ')
         return self._integrationtime
 
     @integrationtime.setter
@@ -99,13 +99,13 @@ class QSpectrometer(QObject):
     @property
     def average_measurements(self):
         """. Average number of measurements."""
-        self.logger.info('Requesting average measurements spectrometer')
+        self.logger.debug('Requesting average measurements spectrometer')
         return self._average_measurements
 
     @average_measurements.setter
     def average_measurements(self, value):
         """ Set the number of measurements to average over. """
-        self.logger.info(f'Setting the number of measurements to average over to {value}')
+        self.logger.debug(f'Setting the number of measurements to average over to {value}')
         self.measuring = False
         self._average_measurements = value
 

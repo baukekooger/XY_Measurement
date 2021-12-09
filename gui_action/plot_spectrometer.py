@@ -90,7 +90,8 @@ class SpectrometerPlotWidget(QtWidgets.QWidget):
         plotinfo = self.define_plotinfo()
         if not self.blitmanager:
             self.init_blitmanager(intensities, self.spectrometer.plotinfo)
-        if self.spectrometer.transmission:
+            return
+        elif self.spectrometer.transmission:
             self.logger_plot.info('plotting transmission spectrum')
             divideby = self.spectrometer.lamp - self.spectrometer.dark
             divideby[divideby <= 0] = 1
@@ -98,26 +99,30 @@ class SpectrometerPlotWidget(QtWidgets.QWidget):
             np.clip(transmission, 0, 1, transmission)
             self.line.set_ydata(transmission)
             self.annotation.set_text(plotinfo)
+            self.logger_plot.info('updating blitmanager spectrometer')
+            self.blitmanager.update()
         elif any(self.spectrometer.dark):
             self.logger_plot.info('plotting spectrum minus dark spectrum')
             minusdark = intensities - self.spectrometer.dark
             self.line.set_ydata(minusdark)
             self.annotation.set_text(plotinfo)
+            self.logger_plot.info('updating blitmanager spectrometer')
+            self.blitmanager.update()
         else:
             self.logger_plot.info('plotting raw spectrum')
             self.line.set_ydata(intensities)
             self.annotation.set_text(plotinfo)
-        self.logger_plot.info('updating blitmanager spectrometer')
-        self.blitmanager.update()
+            self.logger_plot.info('updating blitmanager spectrometer')
+            self.blitmanager.update()
 
     def init_blitmanager(self, intensities, plotinfo):
         """
         Initialize the blitmanager for faster rendering of the graphs. Two artists,
         one is the plotline, the other the annotation.
         """
-        self.logger_plot.info(f'Initializing blitmanager spectrometerplot with data '
-                              f'= {intensities} and plotinfo = {plotinfo}')
-        self.blitmanager = None
+        self.logger_plot.info(f'Initializing blitmanager spectrometerplot')
+        if self.blitmanager:
+            self.blitmanager = None
         self.line, = self.ax.plot(self.spectrometer.wavelengths, intensities, animated=True)
         self.annotation = self.ax.annotate(plotinfo, (0, 1), xycoords="axes fraction", xytext=(10, -10),
                                            textcoords="offset points", ha="left", va="top", animated=True)

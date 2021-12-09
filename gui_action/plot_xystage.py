@@ -69,9 +69,6 @@ class XYStagePlotWidget(QtWidgets.QWidget):
         """
         if not self.zoombutton.isVisible():
             self.zoombutton.setVisible(True)
-        if self.substrate == '22X22 mm (Quartz small)':
-            # adds extra distance for small holder
-            x = x + 25
         if not self.blitmanager:
             self.init_blitmanager(x, y)
         else:

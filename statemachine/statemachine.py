@@ -430,7 +430,8 @@ class StateMachine(QObject):
         where the light from the lamp goes directly through to the integrating sphere.
         """
         dark_lamp_x = np.array(0)
-        dark_lamp_y = np.array(0)
+        # this y position makes sure it also works for the 22X22 sample
+        dark_lamp_y = np.array(20)
         self.measurement_parameters['x'] = np.hstack((dark_lamp_x, self.measurement_parameters['x']))
         self.measurement_parameters['y'] = np.hstack((dark_lamp_y, self.measurement_parameters['y']))
 
@@ -515,7 +516,7 @@ class StateMachine(QObject):
         off1_mm = (ss - bw) * off1 / (100 + off2)
         off2_mm = (ss - bw) * off2 / (100 + off1)
         span = ss - bw - off1_mm - off2_mm
-        self.logger.info(f'off1 = {off1_mm}, off2 = {off2_mm}, span = {span}')
+        self.logger.info(f'off1 = {off1_mm}, off2 = {off2_mm}, span = {span}, start = {start}')
 
         # need the left offset from x and the top offset from y
         if num == 1:

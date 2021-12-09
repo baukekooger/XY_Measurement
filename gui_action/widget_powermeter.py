@@ -35,7 +35,7 @@ class PowerMeterWidget(QtWidgets.QWidget):
     def handle_measurement(self, times, power, plotinfo):
         """ Format the power shown in the widget depending on the magnitude. """
         # set the right unit depending on the incoming power
-        self.logger_widget.info(f'Setting power powermeterwidget to {power}')
+        self.logger_widget.debug(f'Setting power powermeterwidget')
         measurement = np.mean(power)
         if measurement >= 1:
             self.ui.label_power_value_unit.setText(f'{measurement:.2} W')

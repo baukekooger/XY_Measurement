@@ -58,7 +58,7 @@ class QPowerMeter(PowerMeter, QObject):
     @property
     def integration_time(self):
         """ Integration time in [ms] """
-        self.logger_q_instrument.info('Querying integration time')
+        self.logger_q_instrument.debug('Querying integration time')
         return self._integration_time
 
     @integration_time.setter

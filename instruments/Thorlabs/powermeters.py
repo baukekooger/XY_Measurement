@@ -110,7 +110,7 @@ class PowerMeter:
 
     def read_power(self):
         """ Read the power from the powermeter."""
-        self.logger_instrument.info('Reading single power value')
+        self.logger_instrument.debug('Reading single power value')
         power = self.pm.query_ascii_values('read?')[0]
         return power
 
