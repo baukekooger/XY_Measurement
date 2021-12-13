@@ -8,7 +8,10 @@ import numpy as np
 
 
 class SpectrometerWidget(QtWidgets.QWidget):
-
+    """
+    PyQt Widget for controlling the spectrometer.
+    Check the corresponding gui design file in pyqt designer for detailed info.
+    """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.logger_widget = logging.getLogger('gui.SpectrometerWidget')
@@ -18,6 +21,8 @@ class SpectrometerWidget(QtWidgets.QWidget):
         self.spectrometer = QSpectrometer()
 
     def connect_signals_slots(self):
+        """ Connect signals between widget and spectrometer. """
+        self.logger_widget.info('Connecting signals spectrometerwidget.')
         self.spectrometer.measurement_parameters.connect(self.update_parameters)
         self.spectrometer.measurement_lamp_complete.connect(self.lamp_measured)
         self.spectrometer.measurement_dark_complete.connect(self.dark_measured)
@@ -30,8 +35,9 @@ class SpectrometerWidget(QtWidgets.QWidget):
         self.ui.pushButton_lamp.clicked.connect(self.handle_lampspectrum)
         self.ui.pushButton_transmission.clicked.connect(self.handle_transmission)
 
-
     def disconnect_signals_slots(self):
+        """ Disconnect signals between widget and spectrometer. """
+        self.logger_widget.info('Disconnecting signals spectrometerwidget.')
         self.spectrometer.measurement_parameters.disconnect(self.update_parameters)
         self.spectrometer.measurement_lamp_complete.disconnect(self.lamp_measured)
         self.spectrometer.measurement_dark_complete.disconnect(self.dark_measured)
@@ -47,17 +53,28 @@ class SpectrometerWidget(QtWidgets.QWidget):
 
     @pyqtSlot(int, int)
     def update_parameters(self, integrationtime, average_measurements):
+        """ Update the current integration time and average measurements setting in the spectrometer widget. """
+        self.logger_widget.info(f'setting spectrometer widget integration time to {integrationtime} and '
+                                f'average measurements to {average_measurements}')
         self.ui.label_integration_time_alignment_value.setText(f'{integrationtime} ms')
         self.ui.label_averageing_alignment_value.setText(f'{average_measurements}')
 
     def handle_darkspectrum(self):
+        """ Measure a dark spectrum if none present, otherwise remove the darkspectrum and any other saved spectra. """
         if not any(self.spectrometer.dark):
+            self.logger_widget.info('Requesting dark spectrum from widget')
             QTimer.singleShot(0, self.spectrometer.measure_dark)
             self.ui.groupBox_alignment.setEnabled(False)
         else:
+            self.logger_widget.info('Resetting dark spectrum and possibly lamp spectrum from widget')
             self.handle_reset()
 
     def handle_lampspectrum(self):
+        """
+        Set or reset the lamp spectrum. Checks if a lamp spectrum may be taken, can only be
+        taken after a dark spectrum.
+        """
+        self.logger_widget.info('Requested a lamp spectrum')
         if not any(self.spectrometer.dark):
             QtWidgets.QMessageBox.information(self, 'No dark spectrum', 'Please first take dark spectrum')
             self.ui.pushButton_lamp.setChecked(False)
@@ -74,6 +91,8 @@ class SpectrometerWidget(QtWidgets.QWidget):
             self.ui.pushButton_lamp.setChecked(False)
 
     def handle_transmission(self):
+        """ Set the transmission attribute of the spectrometer when a lamp spectrum is present. """
+        self.logger_widget.info('Requested setting the spectrometer transmission attribute. ')
         if not any(self.spectrometer.lamp):
             QtWidgets.QMessageBox.information(self, 'No lamp spectrum', 'Please first take lamp spectrum')
             self.ui.pushButton_transmission.setChecked(False)
@@ -96,15 +115,21 @@ class SpectrometerWidget(QtWidgets.QWidget):
 
     @pyqtSlot(np.ndarray)
     def dark_measured(self, *intensities):
+        """ Set the dark spectrum button when a dark spectrum has been measured. """
+        self.logger_widget.info('Dark spectrum measured, setting button.')
         self.ui.pushButton_dark.setChecked(True)
         self.ui.groupBox_alignment.setEnabled(True)
 
     @pyqtSlot(np.ndarray)
     def lamp_measured(self, *intensities):
+        """ Set the lamp spectrum button when a lamp spectrum has been measured. """
+        self.logger_widget.info('Lamp spectrum measured, setting button.')
         self.ui.pushButton_lamp.setChecked(True)
         self.ui.groupBox_alignment.setEnabled(True)
 
     def handle_reset(self):
+        """ Reset the buttons and clear any stored spectra in the spectrometer. """
+        self.logger_widget.info('Resetting all stored spectra from widget')
         self.spectrometer.transmission = False
         self.ui.pushButton_transmission.setChecked(False)
         self.spectrometer.clear_lamp()
@@ -113,9 +138,15 @@ class SpectrometerWidget(QtWidgets.QWidget):
         self.ui.pushButton_dark.setChecked(False)
 
     def handle_integrationtime(self):
-        self.spectrometer.integrationtime = self.ui.spinBox_integration_time_alignment.value()
+        """ Set the integration time attribute in the spectrometer. """
+        value = self.ui.spinBox_integration_time_alignment.value()
+        self.logger_widget.info(f'Setting spectrometer integration time from widget to {value}')
+        self.spectrometer.integrationtime = value
 
     def handle_averageing(self):
+        """ Set the number of measurements to average over. """
+        value = self.ui.spinBox_averageing_alignment.value()
+        self.logger_widget.info(f'Setting spectrometer averageing from widget to {value}')
         self.spectrometer.average_measurements = self.ui.spinBox_averageing_alignment.value()
 
 

@@ -43,14 +43,17 @@ class QSpectrometer(QObject):
 
     @property
     def name(self):
-        """Name of the Instrument"""
+        """Return the name of the instrument. """
         return type(self).__name__
 
     def connect(self, spec=None):
+        """ Connect to the first available spectrometer. """
         if not spec:
             try:
+                self.logger.info('attempting to connect spectrometer')
                 self.spec = sb.Spectrometer(sb.list_devices()[0])
             except IndexError as e:
+                self.logger.error('No spectrometer found')
                 raise ConnectionError('No spectrometer found, please check connection')
         else:
             self.spec = spec
@@ -59,29 +62,35 @@ class QSpectrometer(QObject):
         self.connected = True
 
     def disconnect(self):
+        """ Disconnect the spectrometer. """
         if not self.connected:
             return
+        self.logger.info('disconnecting from spectrometer')
         self.spec.close()
         self.connected = False
 
     @property
     def wavelengths(self):
         """The wavelengths this spectrometer can measure (Read-only) """
+        self.logger.info('requesting spectrometer wavelengths')
         wls = self.spec.wavelengths()
         return wls.tolist()
 
     @property
     def integrationtime(self):
         """ The spectrometer's integration time in [ms] """
+        self.logger.debug('requesting integration time. ')
         return self._integrationtime
 
     @integrationtime.setter
     def integrationtime(self, value):
+        """ Set the integration time. """
         v = value * 1000
+        self.logger.info(f'attempting to set the spectrometer integration time to {v}')
         min_v = self.min_integrationtime * 1000
         if v < min_v:
             self.logger.warning(f'{float(v) / 1000} ms is lower than the minimal '
-                            'allowed integration time')
+                                'allowed integration time')
             self.logger.warning('Integration time set to mimimal value')
             v = min_v
         self.spec.integration_time_micros(v)
@@ -89,11 +98,14 @@ class QSpectrometer(QObject):
 
     @property
     def average_measurements(self):
-        """Average number of measurements. Stops any measurement upon setting."""
+        """. Average number of measurements."""
+        self.logger.debug('Requesting average measurements spectrometer')
         return self._average_measurements
 
     @average_measurements.setter
     def average_measurements(self, value):
+        """ Set the number of measurements to average over. """
+        self.logger.debug(f'Setting the number of measurements to average over to {value}')
         self.measuring = False
         self._average_measurements = value
 
@@ -106,7 +118,6 @@ class QSpectrometer(QObject):
         buffer is full. Therefore the first result is awaited and timed. When the time is above a certain treshold,
         it measures again.
         """
-
         with(QMutexLocker(self.mutex)):
             cache_cleared = False
             while self.measuring and not cache_cleared:
@@ -165,6 +176,8 @@ class QSpectrometer(QObject):
 
     @pyqtSlot()
     def clear_dark(self):
+        """ Clear the dark spectrum. """
+        self.logger.info('clearing the dark spectrum')
         self.dark = np.zeros(len(self.spec.wavelengths()))
 
     @pyqtSlot()
@@ -183,6 +196,8 @@ class QSpectrometer(QObject):
 
     @pyqtSlot()
     def clear_lamp(self):
+        """ Clear the lamp spectrum. """
+        self.logger.info('Clearing the lamp spectrum.')
         self.lamp = np.zeros(len(self.spec.wavelengths()))
 
     @pyqtSlot()
@@ -192,6 +207,7 @@ class QSpectrometer(QObject):
         that sets the button to checked.
         """
         if not self.transmission:
+            self.logger.info('setting transmission to True')
             self.transmission = True
             self.transmission_set.emit()
 

@@ -12,6 +12,10 @@ import time
 
 
 class PowerMeterPlotWidget(QtWidgets.QWidget):
+    """
+    PyQt plot widget for the powermeter data. Plots a total of 10 seconds of measurement data,
+    corresponding to 2000 samples.
+    """
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.logger_plot = logging.getLogger('plot.PowerMeter')
@@ -33,24 +37,38 @@ class PowerMeterPlotWidget(QtWidgets.QWidget):
         self.annotation = None
 
     def connect_signals_slots(self):
+        """ Connect powermeter signal to the powermeter plot. """
+        self.logger_plot.info('Connecting signals to powermeter plotwidget')
         self.powermeter.measurement_complete_multiple.connect(self.plot)
 
     def disconnect_signals_slots(self):
+        """ Disconnect powermeter signal from plot widget. """
+        self.logger_plot.info(' Disconnecting signals from powermeter plotwiget')
         self.powermeter.measurement_complete_multiple.disconnect(self.plot)
 
     @pyqtSlot(list, list, str)
     def plot(self, times, power, plotinfo):
+        """
+        Plot the powermeter data.
+        Append the new powermeter data to the old log, discard the oldest values.
+        """
         self.log_power = np.append(self.log_power, power)
 
         if not self.blitmanager:
             self.init_blitmanager(plotinfo)
         else:
+            self.logger_plot.info('updating powermeter plot')
             self.line.set_ydata(1000*self.log_power[-2001:-1])
             self.annotation.set_text(plotinfo)
         self.blitmanager.update()
 
     def init_blitmanager(self, plotinfo):
+        """
+        Initialize the blitmanager for the powermeter plot to allow faster rendering, preventing the gui from freezing.
+        Artists are the powermeter data line and annotation.
+        """
         self.blitmanager = None
+        self.logger_plot.info('Initializing blitmanager powermeter. ')
         self.line, = self.ax.plot(self.log_time, 1000 * self.log_power[-2001:-1], animated=True)
         self.annotation = self.ax.annotate(plotinfo, (0, 1), xycoords="axes fraction", xytext=(10, -10),
                                            textcoords="offset points", ha="left", va="top", animated=True)
@@ -66,10 +84,14 @@ class PowerMeterPlotWidget(QtWidgets.QWidget):
         pass
 
     def fit_plots(self):
+        """ Fit the plots to the screen by redrawing the canvas. """
         if self.blitmanager:
+            self.logger_plot.info('Fitting powermeter plot to window. ')
             self.blitmanager.redraw_canvas_powermeter()
 
     def clear(self):
+        """ Clear the plotwindow. """
+        self.logger_plot.info('Clearing the powermeter plotwindow.')
         self.figure.clear()
         self.canvas.draw()
 

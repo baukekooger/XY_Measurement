@@ -5,7 +5,8 @@ from PyQt5.QtCore import QObject, QMutexLocker, QMutex, pyqtSignal, pyqtSlot
 
 
 class QShutterControl(QObject):
-    """ VISA-control class for the Thorlabs SC10 shutter as a QObject
+    """
+    VISA-control class for the Thorlabs SC10 shutter as a QObject
     """
     shutter_status = pyqtSignal(bool)
 
@@ -24,7 +25,9 @@ class QShutterControl(QObject):
         self.measuring = False
 
     def connect(self, name=None):
+        """ Connect the shuttercontroller. """
         try:
+            self.logger.info('Attempting to connect the shuttercontroller.')
             if not name:
                 name = self.get_port('THORLABS SC10')
             self.sc = serial.Serial(name, 9600, parity=serial.PARITY_NONE, timeout=0.1)
@@ -34,18 +37,23 @@ class QShutterControl(QObject):
             raise ConnectionError('Could not connect to Thorlabs SC10 shuttercontroller')
 
     def disconnect(self):
+        """ Disconnect the shuttercontroller. """
         if not self.connected:
+            self.logger.info('Shuttercontroller already disconnected')
             return
+        self.logger.info('Disconnecting shuttercontroller')
         self.sc.close()
         self.connected = False
 
     def enable(self):
-        """ Opens the shutter"""
+        """ Open the shutter. """
+        self.logger.info('Enabling shutter unless already open')
         with(QMutexLocker(self.mutex)):
             if not int(self.query_value('ens')):
                 self.write_value('ens')
 
     def measure(self):
+        """ Measure the shutter status. """
         self.logger.info('measuring shutter status')
         self.measuring = True
         with(QMutexLocker(self.mutex)):
@@ -65,7 +73,7 @@ class QShutterControl(QObject):
 
     def get_port(self, modelname):
         """
-        Retrieves the first port the selected modelname is connected to.
+        Retrieve the first port the selected modelname is connected to.
         Code adapted from https://stackoverflow.com/questions/12090503/listing-available-com-ports-with-python
         and https://stackoverflow.com/questions/16811807/how-to-find-all-serial-devices-com .
 
@@ -78,6 +86,7 @@ class QShutterControl(QObject):
         Raises:
             NameError: if the desired device cannot be found
         """
+        self.logger.info('Retrieving shuttercontrol port. ')
         ports = [p.device for p in serial.tools.list_ports_windows.comports()]
         for port in ports:
             try:
@@ -92,6 +101,8 @@ class QShutterControl(QObject):
         raise NameError('{} could not be found!'.format(modelname))
 
     def query_value(self, command):
+        """ Query the shuttercontroller. """
+        self.logger.debug(f'Querying the shuttercontroller with command {command}')
         if not self.connected:
             raise ConnectionError('Shuttercontrol not connected, please connect first')
         self.sc.write('{}?\r'.format(command).encode())
@@ -101,7 +112,10 @@ class QShutterControl(QObject):
         return int(v[-2])
 
     def write_value(self, command, value=None):
+        """ Write a value to the shuttercontroller. """
+        self.logger.info(f'Attempting to write to the shuttercontroller, command = {command}, value = {value}')
         if not self.connected:
+            self.logger.error('Shuttercontrol not connected')
             raise ConnectionError('Shuttercontrol not connected, please connect first')
         if not value:
             self.sc.write('{}\r'.format(command).encode())

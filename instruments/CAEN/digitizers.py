@@ -1,5 +1,5 @@
 import time
-from PyQt5.QtCore import QObject, QMutex, pyqtSlot, pyqtSignal
+from PyQt5.QtCore import pyqtSlot
 from ctypes import c_char, c_char_p, byref, windll, pointer, c_uint32, c_int32
 import os
 import numpy as np
@@ -41,6 +41,10 @@ def list_available_devices():
 
 def handle_error(error_code):
     if error_code is not definitions.ErrorCode.Success.value:
+        # if error_code == -5:
+        #     print('invalid device handle, digitizer probably closed while busy')
+        #     pass
+        # else:
         raise definitions.Error(error_code)
     return error_code
 
@@ -82,12 +86,14 @@ class Digitizer(DigitizerHandle):
     @property
     def buffer_size_max(self):
         """ Return the maximum buffer size """
+        self.logger_instrument.info('Requesting buffer size')
         return definitions.Buffersize[definitions.ModelNumber[self.model]] \
                - definitions.BufferCorr[definitions.ModelNumber[self.model]]
 
     @property
     def sample_rate(self):
         """ Return sample rate in samples/s """
+        self.logger_instrument.info('Requesting sample rate')
         return definitions.SampleRate[definitions.ModelNumber[self.model]] * 1e6
 
     @property
@@ -134,10 +140,12 @@ class Digitizer(DigitizerHandle):
         """ Get/sets the post trigger size """
         return_value = c_uint32(0)
         handle_error(_lib.CAEN_DGTZ_GetPostTriggerSize(self._handle, byref(return_value)))
+        self.logger_instrument.info(f'Requested post trigger size, is {return_value.value}')
         return return_value.value
 
     @post_trigger_size.setter
     def post_trigger_size(self, value):
+        self.logger_instrument.info(f'setting post trigger size to {value}')
         set_value = c_uint32(value)
         handle_error(_lib.CAEN_DGTZ_SetPostTriggerSize(self._handle, set_value))
 
@@ -151,6 +159,7 @@ class Digitizer(DigitizerHandle):
 
     @max_num_events_blt.setter
     def max_num_events_blt(self, value):
+        self.logger_instrument.info(f'Setting max num events per block transfer to {value}')
         set_value = c_uint32(value)
         handle_error(_lib.CAEN_DGTZ_SetMaxNumEventsBLT(self._handle, set_value))
 
@@ -165,7 +174,7 @@ class Digitizer(DigitizerHandle):
         address = 0x800c
         value = c_int32(0)
         handle_error(_lib.CAEN_DGTZ_ReadRegister(self._handle, address, byref(value)))
-        self.logger_instrument.info(f'Number of buffers per channel memory = {1 << value.value}')
+        self.logger_instrument.debug(f'Number of buffers per channel memory = {1 << value.value}')
         return 1 << value.value
 
     @buffer_organization.setter
@@ -173,7 +182,7 @@ class Digitizer(DigitizerHandle):
         address = 0x800c
         set_value = c_int32(set_value)
         handle_error(_lib.CAEN_DGTZ_WriteRegister(self._handle, address, set_value))
-        self.logger_instrument.info(f'Number of buffers per channel memory set to {1 << set_value.value}')
+        self.logger_instrument.debug(f'Number of buffers per channel memory set to {1 << set_value.value}')
 
     @property
     def number_of_channels(self):
@@ -181,6 +190,7 @@ class Digitizer(DigitizerHandle):
 
         board_info = definitions.BoardInfo()
         _lib.CAEN_DGTZ_GetInfo(self._handle, byref(board_info))
+        self.logger_instrument.debug(f'Number of channels on board  = {board_info.Channels}')
         return board_info.Channels
 
     @property
@@ -188,6 +198,7 @@ class Digitizer(DigitizerHandle):
         """ Returns the number of ADC bits """
         board_info = definitions.BoardInfo()
         _lib.CAEN_DGTZ_GetInfo(self._handle, byref(board_info))
+        self.logger_instrument.debug(f'requested number of adc bits, is {board_info.ADC_NBits}')
         return board_info.ADC_NBits
 
     @property
@@ -199,6 +210,7 @@ class Digitizer(DigitizerHandle):
         for i, x in enumerate(reversed(mask)):
             if int(x):
                 active.add(i)
+        self.logger_instrument.debug(f'Active channels = {active}')
         return active
 
     @active_channels.setter
@@ -208,6 +220,7 @@ class Digitizer(DigitizerHandle):
         :param channels: channels to participate in measurement
         :type channels: list
         """
+        self.logger_instrument.info(f'Set active channels to {channels}')
         mask = 0
         for channel in channels:
             mask += 1 << channel
@@ -221,6 +234,7 @@ class Digitizer(DigitizerHandle):
         """
         return_value = c_uint32(0)
         handle_error(_lib.CAEN_DGTZ_GetChannelEnableMask(self._handle, byref(return_value)))
+        self.logger_instrument.debug(f'Channel enable mask  = {return_value.value}')
         return bin(return_value.value)
 
     @channel_enable_mask.setter
@@ -229,10 +243,12 @@ class Digitizer(DigitizerHandle):
         Set the enabled channels mask
         :param value: mask (bit per channel -> 13 corresponds to 1101 or channels [0, 2, 3]
         """
+        self.logger_instrument.debug(f'Setting channel enable mask to {value}')
         set_value = c_uint32(value)
         handle_error(_lib.CAEN_DGTZ_SetChannelEnableMask(self._handle, set_value))
 
     def set_channel_gain(self, channel, value):
+        self.logger_instrument.debug(f'setting channel {channel} gain to {value}')
         address = 0x1028 + 0x100 * channel
         set_value = c_uint32(value)
         handle_error(_lib.CAEN_DGTZ_WriteRegister(self._handle, address, set_value))
@@ -241,6 +257,7 @@ class Digitizer(DigitizerHandle):
         address = 0x1028 + 0x100 * channel
         value = c_int32(0)
         handle_error(_lib.CAEN_DGTZ_ReadRegister(self._handle, address, byref(value)))
+        self.logger_instrument.debug(f'Channel {channel} gain  = {value.value}')
         return value.value
 
     @property
@@ -260,10 +277,12 @@ class Digitizer(DigitizerHandle):
         """
         return_value = c_uint32(0)
         handle_error(_lib.CAEN_DGTZ_GetAcquisitionMode(self._handle, byref(return_value)))
+        self.logger_instrument.debug(f'acquisition mode  = {return_value.value}')
         return AcqMode(return_value.value)
 
     @acquisition_mode.setter
     def acquisition_mode(self, value):
+        self.logger_instrument.debug(f'setting acquisition mode to {value}')
         if isinstance(value, AcqMode):
             value = value.value
         set_value = c_uint32(value)
@@ -282,10 +301,12 @@ class Digitizer(DigitizerHandle):
         """
         return_value = c_uint32(0)
         handle_error(_lib.CAEN_DGTZ_GetSWTriggerMode(self._handle, byref(return_value)))
+        self.logger_instrument.debug(f'software trigger mode = {return_value.value}')
         return TriggerMode(return_value.value)
 
     @software_trigger_mode.setter
     def software_trigger_mode(self, value):
+        self.logger_instrument.debug(f'setting software trigger mode to {value}')
         if isinstance(value, TriggerMode):
             value = value.value
         set_value = c_uint32(value)
@@ -304,10 +325,12 @@ class Digitizer(DigitizerHandle):
         """
         return_value = c_uint32(0)
         handle_error(_lib.CAEN_DGTZ_GetExtTriggerInputMode(self._handle, byref(return_value)))
+        self.logger_instrument.debug(f'external trigger mode = {return_value.value}')
         return TriggerMode(return_value.value)
 
     @external_trigger_mode.setter
     def external_trigger_mode(self, value):
+        self.logger_instrument.debug(f'setting external trigger mode to {value}')
         if isinstance(value, TriggerMode):
             value = value.value
         set_value = c_uint32(value)
@@ -323,6 +346,7 @@ class Digitizer(DigitizerHandle):
         """
         return_value = c_uint32(0)
         handle_error(_lib.CAEN_DGTZ_GetIOLevel(self._handle, byref(return_value)))
+        self.logger_instrument.debug(f'external trigger level = {return_value.value}')
         return IOLevel(return_value.value)
 
     @external_trigger_level.setter
@@ -333,6 +357,7 @@ class Digitizer(DigitizerHandle):
         IOLevel.NIM = 0
         IOLevel.TTL = 1
         """
+        self.logger_instrument.debug(f'setting external trigger level to {value}')
         if isinstance(value, IOLevel):
             value = value.value
         set_value = c_uint32(value)
@@ -354,6 +379,7 @@ class Digitizer(DigitizerHandle):
         """
         return_value = c_int32(0)
         handle_error(_lib.CAEN_DGTZ_ReadRegister(self._handle, 0x8044, byref(return_value)))
+        self.logger_instrument.debug(f'decitmation factor  = {return_value.value}')
         return return_value.value
 
     @decimation_factor.setter
@@ -373,6 +399,7 @@ class Digitizer(DigitizerHandle):
         """
         value = 0 if value < 0 else value
         value = 7 if value > 7 else value
+        self.logger_instrument.debug(f'setting decimation factor to {value}')
         record_length = self.record_length
         self.manual_record_length(record_length // (1 << value))
         set_value = c_int32(value)
@@ -382,9 +409,11 @@ class Digitizer(DigitizerHandle):
         channel = c_uint32(channel)
         threshold = c_uint32(0)
         handle_error(_lib.CAEN_DGTZ_GetChannelTriggerThreshold(self._handle, channel, byref(threshold)))
+        self.logger_instrument.debug(f'trigger treshold = {threshold.value}')
         return threshold.value
 
     def set_trigger_threshold(self, channel, threshold):
+        self.logger_instrument.debug(f'setting trigger treshold to {threshold}')
         channel = c_uint32(channel)
         threshold = c_uint32(threshold)
         handle_error(_lib.CAEN_DGTZ_SetChannelTriggerThreshold(self._handle, channel, threshold))
@@ -406,6 +435,7 @@ class Digitizer(DigitizerHandle):
         return_value = c_uint32(0)
         get_channel = c_uint32(channel)
         handle_error(_lib.CAEN_DGTZ_GetChannelSelfTrigger(self._handle, get_channel, byref(return_value)))
+        self.logger_instrument.debug(f'self trigger channel {channel} = {return_value.value}')
         return TriggerMode(return_value.value)
 
     def set_self_trigger(self, channel, mode):
@@ -427,6 +457,7 @@ class Digitizer(DigitizerHandle):
         """
         if isinstance(mode, TriggerMode):
             mode = mode.value
+            self.logger_instrument.debug(f'setting self trigger channel {channel} to {mode}')
         for i in range(self.number_of_channels):
             set_channel = c_uint32(1 << i)
             set_mode = c_uint32(definitions.TriggerMode.DISABLED.value)
@@ -448,6 +479,7 @@ class Digitizer(DigitizerHandle):
         get_channel = c_uint32(channel)
         return_value = c_uint32(0)
         handle_error(_lib.CAEN_DGTZ_GetTriggerPolarity(self._handle, get_channel, byref(return_value)))
+        self.logger_instrument.debug(f'trigger polarity channel {channel} = {return_value.value}')
         return TriggerPolarity(return_value.value)
 
     def set_trigger_polarity(self, channel, polarity):
@@ -459,6 +491,7 @@ class Digitizer(DigitizerHandle):
                          TriggerPolarity.ON_RISING_EDGE = 0
                          TriggerPolarity.ON_FALLING_EDGE = 1
         """
+        self.logger_instrument.debug(f'setting trigger polarity channel {channel} to {polarity}')
         set_channel = c_uint32(channel)
         if isinstance(polarity, TriggerPolarity):
             polarity = polarity.value
@@ -476,6 +509,7 @@ class Digitizer(DigitizerHandle):
         get_channel = c_uint32(channel)
         return_value = c_uint32(0)
         handle_error(_lib.CAEN_DGTZ_GetChannelPulsePolarity(self._handle, get_channel, byref(return_value)))
+        self.logger_instrument.debug(f'Pulse polarity {channel} = {return_value.value}')
         return TriggerPolarity(return_value.value)
 
     def set_pulse_polarity(self, channel, polarity):
@@ -487,6 +521,7 @@ class Digitizer(DigitizerHandle):
                          TriggerPolarity.ON_RISING_EDGE = 0
                          TriggerPolarity.ON_FALLING_EDGE = 1
         """
+        self.logger_instrument.debug(f'setting pulse polarity {channel} to {polarity}')
         set_channel = c_uint32(channel)
         if isinstance(polarity, TriggerPolarity):
             polarity = polarity.value
@@ -505,6 +540,7 @@ class Digitizer(DigitizerHandle):
         get_channel = c_uint32(channel)
         return_value = c_uint32(0)
         handle_error(_lib.CAEN_DGTZ_GetChannelDCOffset(self._handle, get_channel, byref(return_value)))
+        self.logger_instrument.debug(f'dc offset channel {channel} = {return_value.value}')
         return return_value.value * 100 / 0xFFFF
 
     def set_dc_offset(self, channel, offset):
@@ -516,6 +552,7 @@ class Digitizer(DigitizerHandle):
         :param offset: desired DC offset in percent
         :type offset: int
         """
+        self.logger_instrument.debug(f'setting offset to {offset}')
         if offset > 100 or offset < 0:
             raise ValueError('DC offset out of bounds!')
         set_channel = c_uint32(channel)
@@ -528,6 +565,7 @@ class Digitizer(DigitizerHandle):
 
         .. note:: Only works with multiple event measurement.
         """
+        self.logger_instrument.debug('enabling efficient readout')
         record_length = self.record_length
         buffer_size = self.buffer_size_max
         self.max_num_events_blt = max([128, buffer_size // record_length])
@@ -535,6 +573,7 @@ class Digitizer(DigitizerHandle):
     def connect_device(self):
         """ Open the connection to the Digitizer. """
 
+        self.logger_instrument.info('connecting digitizer')
         handle = list_available_devices()[0]
         DigitizerHandle.__init__(self, handle.usb_index, handle.model, handle.serial)
 
@@ -551,11 +590,13 @@ class Digitizer(DigitizerHandle):
 
     def close(self):
         """ Close the Digitizer connection. """
+        self.logger_instrument.info('closing digitizer')
         handle_error(_lib.CAEN_DGTZ_Reset(self._handle))
         handle_error(_lib.CAEN_DGTZ_CloseDigitizer(self._handle))
 
     def _hardware_info(self):
         """ Read information about the digitizer. """
+        self.logger_instrument.debug('reading digitizer hardware info')
         board_info = definitions.BoardInfo()
         error_code = _lib.CAEN_DGTZ_GetInfo(self._handle, byref(board_info))
         if error_code is not definitions.ErrorCode.Success.value:
@@ -564,7 +605,6 @@ class Digitizer(DigitizerHandle):
 
     def free_event(self):
         """ Release the event memory buffer allocated by either the DecodeEvent or AllocateEvent function. """
-
         self.logger_instrument.info('CAEN DT57xx frees event')
         handle_error(_lib.CAEN_DGTZ_FreeEvent(self._handle, byref(self.event)))
 
@@ -584,13 +624,14 @@ class Digitizer(DigitizerHandle):
         handle_error(_lib.CAEN_DGTZ_SendSWtrigger(self._handle))
 
     def start_measurement(self):
+        self.logger_instrument.debug('starting a measurement')
         self.buffer_size = c_uint32(0)
         self.malloc_readout_buffer()
         self.allocate_event()
         self.sw_start_acquisition()
         time.sleep(0.001)
 
-    @pyqtSlot()
+    # @pyqtSlot()
     def finish_measurement(self):
         """ This function finishes up the measurement by stopping the acquisition and freeing all buffers. """
         self.logger_instrument.debug("finishing measurement")
@@ -627,7 +668,7 @@ class Digitizer(DigitizerHandle):
         :param event_index: index to the event, 1 for first event in buffer
         :return: evtptr: pointer to event, event_info: info about event
         """
-        # self.info_stream('CAEN DT57xx retrieves event information')
+        self.logger_instrument.debug('getting event information')
         event_info = definitions.EventInfo()
         evtptr = c_char_p()
         handle_error(_lib.CAEN_DGTZ_GetEventInfo(self._handle, self.buffer, self.buffer_size, event_index,
@@ -662,6 +703,7 @@ class Digitizer(DigitizerHandle):
         return data
 
     def decode_only(self, ptr):
+        """ Decode the event to which the pointer points. """
         handle_error(_lib.CAEN_DGTZ_DecodeEvent(self._handle, ptr, byref(self.event)))
 
     def read_data(self, readoutmode=definitions.ReadMode.POLLING_MBLT.value):
@@ -685,9 +727,7 @@ class Digitizer(DigitizerHandle):
         return self.buffer_size.value
 
     def read_readout_status(self):
-        """
-            Read the Readout Status register.
-        """
+        """ Read the Readout Status register. """
         self.logger_instrument.info('Read CAEN DT57xx Acquisition Status Register')
         address = 0xEF04
         status = c_int32(0)
@@ -756,7 +796,7 @@ class Digitizer(DigitizerHandle):
 
         :return: data [channels][samples]
         """
-
+        self.logger_instrument.debug('measure a single event')
         # check it here such that the correct number is used if channels are changed in meantime
         active_channels = self.active_channels
         self.start_measurement()

@@ -17,6 +17,11 @@ import time
 
 
 class XYStagePlotWidget(QtWidgets.QWidget):
+    """
+    PyQt widget plotting the position of the sampleholder with respect to the lightsource.
+
+    When setting experiment, it plots the positions of all the different measurements.
+    """
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -35,7 +40,7 @@ class XYStagePlotWidget(QtWidgets.QWidget):
         self.experiment = 'transmission'
         self.substrate = '50X50 mm (Borofloat)'
         self.zoom = False
-        self.bm = None
+        self.blitmanager = None
         self.holder_patch = None
         self.holder_sample_edge_patch = None
         self.holder_sample_patch = None
@@ -45,21 +50,26 @@ class XYStagePlotWidget(QtWidgets.QWidget):
             self.config = yaml_safe_load(file)
 
     def connect_signals_slots(self):
+        """ Connect signals from xy stage and buttons to plot functions. """
+        self.logger_plot.info('Connecting signals xy stage to plotwidget.')
         self.xystage.measurement_complete.connect(self.plot_position)
         self.zoombutton.clicked.connect(self.zoomview)
 
     def disconnect_signals_slots(self):
+        """ Disconnect xy stage signals from plotwidget. """
+        self.logger_plot.info('Disconnect signals xy stage from plotwidget.')
         self.xystage.measurement_complete.disconnect(self.plot_position)
         self.zoombutton.clicked.disconnect(self.zoomview)
 
     @pyqtSlot(float, float)
     def plot_position(self, x, y):
+        """
+        Plot the position of the sampleholder with respect to the lightsource.
+        Add extra distance for the smallest substrate.
+        """
         if not self.zoombutton.isVisible():
             self.zoombutton.setVisible(True)
-        if self.substrate == '22X22 mm (Quartz small)':
-            # adds extra distance for small holder
-            x = x + 25
-        if not self.bm:
+        if not self.blitmanager:
             self.init_blitmanager(x, y)
         else:
             who = 200  # width holder outline
@@ -84,9 +94,15 @@ class XYStagePlotWidget(QtWidgets.QWidget):
             self.holder_sample_patch.set_width(-ws)
             self.holder_sample_patch.set_height(-hs)
             self.light_source_patch.set_center((lightsource_x, lightsource_y))
-            self.bm.update()
+            self.blitmanager.update()
 
     def init_blitmanager(self, x, y):
+        """
+        Initialize the blitmanager for plotting the live position of the sampleholder.
+        The different shapes together forming the sampleholder are all added as artists.
+        Settings for the artists for different samples are taken from the config file.
+        """
+        self.logger_plot.info('Initializing blitmanager for plotting live position.')
         self.ax.clear()
         who = 200  # width holder outline
         hho = 100  # height holder outline
@@ -116,13 +132,15 @@ class XYStagePlotWidget(QtWidgets.QWidget):
         self.ax.invert_xaxis()
         self.ax.xaxis.set_ticks([])
         self.ax.yaxis.set_ticks([])
-        self.bm = BlitManager(self.canvas, [self.holder_patch, self.holder_sample_edge_patch,
+        self.blitmanager = BlitManager(self.canvas, [self.holder_patch, self.holder_sample_edge_patch,
                                             self.holder_sample_patch, self.light_source_patch])
         self.figure.tight_layout()
         self.canvas.draw()
 
     @pyqtSlot()
     def zoomview(self):
+        """ Zoom into or out from the region around the lightsource, by setting different axes limits. """
+
         who = 200
         hho = 100
         whse = self.config['substrates'][self.substrate]['whse']  # width holder sample edge
@@ -131,6 +149,7 @@ class XYStagePlotWidget(QtWidgets.QWidget):
         lightsource_x = self.config['substrates'][self.substrate][f'x_{lightsource}']
         lightsource_y = self.config['substrates'][self.substrate][f'y_{lightsource}']
         if not self.zoom:
+            self.logger_plot.info('Zooming into the region around lightsource.')
             self.zoom = True
             self.zoombutton.setText('zoom out')
             self.ax.set_xlim(lightsource_x - whse / 2 * 1.1, lightsource_x + whse / 2 * 1.1)
@@ -139,6 +158,7 @@ class XYStagePlotWidget(QtWidgets.QWidget):
             self.ax.xaxis.set_ticks([])
             self.ax.yaxis.set_ticks([])
         else:
+            self.logger_plot.info('Zooming out from region around lightsource.')
             self.zoom = False
             self.zoombutton.setText('zoom to lightsource')
             self.ax.set_xlim(-200, 100)
@@ -151,11 +171,15 @@ class XYStagePlotWidget(QtWidgets.QWidget):
         self.canvas.draw()
 
     def plot_layout(self, xnum, ynum, xoffleft, xoffright, yoffbottom, yofftop, xindex=None, yindex=None):
+        """
+        Plot the layout of the measurements on the sample.
+        """
+        self.logger_plot.info('Showing the measurement positions on the sample.')
         if self.zoombutton.isVisible():
             self.zoombutton.setVisible(False)
         self.ax.clear()
-        if self.bm:
-            self.bm = None
+        if self.blitmanager:
+            self.blitmanager = None
         whse = self.config['substrates'][self.substrate]['whse']  # width holder sample edge
         hhse = self.config['substrates'][self.substrate]['hhse']  # height holder sample edge
         ws = self.config['substrates'][self.substrate]['ws']  # width sample

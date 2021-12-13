@@ -94,9 +94,9 @@ substrates: {
     },
     22X22 mm (Quartz small): {
         name: 'Quartz 22 x 22 mm',
-        x_lamp: 8.5,         # x position same as Quartz position
+        x_lamp: -16.5,       # x position same as Quartz position
         y_lamp: -5.3,        # y postion same as Quartz position
-        x_laser: 10.5,       # x position same as Quartz position
+        x_laser: -14.5,      # x position same as Quartz position
         y_laser: 85,         # y position same as Quartz position
         whse: 26,            # width holder sample edge
         hhse: 26,            # height holder sample edge

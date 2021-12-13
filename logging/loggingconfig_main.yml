@@ -9,12 +9,12 @@ formatters:
 handlers:
   console:
     class: logging.StreamHandler
-    level: DEBUG
+    level: INFO
     formatter: regular
     stream: ext://sys.stdout
   file:
     class: logging.handlers.RotatingFileHandler
-    level: DEBUG
+    level: INFO
     formatter: regular
     mode: w
     filename: logging/logout.txt

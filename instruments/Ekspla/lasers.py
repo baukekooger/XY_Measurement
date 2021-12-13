@@ -70,6 +70,7 @@ class QLaser(QObject):
         reg = "WaveLength"
         wavelength = self._get_register_double(dev, reg)
         if wavelength:
+            self.logger.info(f'laser wavelength = {wavelength}')
             wavelength = int(wavelength)
             self.wavelength_signal.emit(wavelength)
         return wavelength
@@ -118,6 +119,7 @@ class QLaser(QObject):
         dev = "CPU8000:16"
         reg = "Power"
         output_enabled = self._get_register_double(dev, reg)
+        self.logger.info(f'laser output = {output_enabled}')
         return bool(output_enabled)
 
     @output.setter
@@ -125,6 +127,7 @@ class QLaser(QObject):
         """
         setter of the output, true for enabled
         """
+        self.logger.info(f'setting laser output to {status}')
         dev = "CPU8000:16"
         reg = "Power"
         self._set_register_double(dev, reg, int(status))
@@ -137,10 +140,12 @@ class QLaser(QObject):
         dev = "MidiOPG:31"
         reg = "Configuration"
         SCU = self._get_register_double(dev, reg)
+        self.logger.info(f'spectral cleaning unit status = {SCU}')
         return bool(SCU)
 
     @use_spectral_cleaning_unit.setter
     def use_spectral_cleaning_unit(self, status):
+        self.logger.info(f'setting spectral cleaning unit status to {status}')
         dev = "MidiOPG:31"
         reg = "Configuration"
         self._set_register_double(dev, reg, int(status))
@@ -157,10 +162,12 @@ class QLaser(QObject):
         reg = "Output Energy level"
         k = ['Off', 'Adjust', 'Max']
         energylevel = k[int(self._get_register_double(dev, reg))]
+        self.logger.info(f'energy level  = {energylevel}')
         return energylevel
 
     @energylevel.setter
     def energylevel(self, level):
+        self.logger.info(f'setting energy level to {level}')
         dev = "CPU8000:16"
         reg = "Output Energy level"
         levels = ['Off', 'Adjust', 'Max']
@@ -179,6 +186,7 @@ class QLaser(QObject):
         dev = "11PMK:56"
         reg = "Power"
         power = self._get_register_double(dev, reg)
+        self.logger.info(f'laser pump power = {power}')
         return power
 
     @property
@@ -192,12 +200,13 @@ class QLaser(QObject):
         reg = "Status"
         status = ['Off', 'Initiation', 'Tuning...', 'OK']
         status = status[int(self._get_register_double(dev, reg))]
+        self.logger.info(f'laser status = {status}')
         return status
 
     def _set_register_double(self, dev, reg, val):
-        """
-            Sets a register value
-        """
+        """ Set a register value. """
+
+        self.logger.debug(f'setting laser register double, dev = {dev}, reg = {reg}, val = {val}')
         d = c_char_p(bytes(dev, 'utf-8'))
         r = c_char_p(bytes(reg, 'utf-8'))
         v = c_double(val)
@@ -210,8 +219,8 @@ class QLaser(QObject):
         self._is_error(e)
 
     def _get_register_double(self, dev, reg):
-        """Retrieves a register value
-        """
+        """ Retrieve a register value. """
+        self.logger.debug(f'getting laser register double, dev = {dev}, reg = {reg}')
         d = c_char_p(bytes(dev, 'utf-8'))
         r = c_char_p(bytes(reg, 'utf-8'))
         resp = c_double()
@@ -281,6 +290,7 @@ class QLaser(QObject):
             | float: power
             | bool: stability of the laser
         """
+        self.logger.info('Measuring laser parameters. ')
         self.measuring = True
         with(QMutexLocker(self.mutex)):
             self.logger.info('Measuring laser...')
@@ -301,6 +311,7 @@ class QLaser(QObject):
         Returns:
             (bool): True/False depending on stability
         """
+        self.logger.debug('measuring if laser stable')
         p = []
         for _ in range(5):
             p.append(self.power)

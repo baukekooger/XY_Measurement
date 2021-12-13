@@ -430,7 +430,8 @@ class StateMachine(QObject):
         where the light from the lamp goes directly through to the integrating sphere.
         """
         dark_lamp_x = np.array(0)
-        dark_lamp_y = np.array(0)
+        # this y position makes sure it also works for the 22X22 sample
+        dark_lamp_y = np.array(20)
         self.measurement_parameters['x'] = np.hstack((dark_lamp_x, self.measurement_parameters['x']))
         self.measurement_parameters['y'] = np.hstack((dark_lamp_y, self.measurement_parameters['y']))
 
@@ -515,7 +516,7 @@ class StateMachine(QObject):
         off1_mm = (ss - bw) * off1 / (100 + off2)
         off2_mm = (ss - bw) * off2 / (100 + off1)
         span = ss - bw - off1_mm - off2_mm
-        self.logger.info(f'off1 = {off1_mm}, off2 = {off2_mm}, span = {span}')
+        self.logger.info(f'off1 = {off1_mm}, off2 = {off2_mm}, span = {span}, start = {start}')
 
         # need the left offset from x and the top offset from y
         if num == 1:
@@ -646,7 +647,7 @@ class StateMachine(QObject):
         self.logger.info('writing position settings')
         positionsettings = self.dataset.createGroup(f'settings/xystage')
         # exclude positions of dark and lamp spectra where applicable.
-        paramdict = {'transmission': 2, 'excitation_emission': 1, 'decay': 1}
+        paramdict = {'transmission': 2, 'excitation_emission': 1, 'decay': 0}
         positionsettings.xnum = len(np.unique(self.measurement_parameters['x'][paramdict[self.experiment]:]))
         positionsettings.ynum = len(np.unique(self.measurement_parameters['y'][paramdict[self.experiment]:]))
         positionsettings.sample_width = self.position_offsets['x']['sample_width']
@@ -768,7 +769,7 @@ class StateMachine(QObject):
         self.logger.info(f'creating dimensions for {self.experiment} data')
         self.dataset.createDimension('xy_position', 2)
         self.dataset.createDimension('single', 1)
-        excitation_wavelenghts = len(np.unique(self.measurement_parameters['wl'][1:]))
+        excitation_wavelenghts = len(np.unique(self.measurement_parameters['wl'][:]))
         self.dataset.createDimension('excitation_wavelengths', excitation_wavelenghts)
         samples = int(self.instruments['digitizer'].record_length)
         self.dataset.createDimension('samples', samples)
@@ -985,9 +986,9 @@ class StateMachine(QObject):
     def _measure_decay(self):
         """ Call the measure function of the digitizer with relevant plotinfo. """
         x_inx, y_iny, wl_inwl = self._variable_index()
-        xnum = len(np.unique(self.measurement_parameters['x'][1:]))
-        ynum = len(np.unique(self.measurement_parameters['y'][1:]))
-        wlnum = len(np.unique(self.measurement_parameters['wl'][1:]))
+        xnum = len(np.unique(self.measurement_parameters['x'][:]))
+        ynum = len(np.unique(self.measurement_parameters['y'][:]))
+        wlnum = len(np.unique(self.measurement_parameters['wl'][:]))
         wl = self.measurement_parameters['wl'][self.measurement_index]
         self.logger.info(f'Measuring Decay Spectrum. X = {x_inx + 1} of {xnum}, '
                          f'Y = {y_iny + 1} of {ynum}\nWavelength = {wl_inwl + 1} of {wlnum} ({wl} nm)')
