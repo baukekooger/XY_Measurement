@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>397</width>
-    <height>345</height>
+    <width>268</width>
+    <height>318</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
+   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
@@ -30,8 +30,8 @@
      </property>
      <property name="minimumSize">
       <size>
-       <width>0</width>
-       <height>280</height>
+       <width>250</width>
+       <height>300</height>
       </size>
      </property>
      <property name="maximumSize">
@@ -46,6 +46,9 @@
      <layout class="QGridLayout" name="gridLayout">
       <item row="0" column="0">
        <layout class="QVBoxLayout" name="verticalLayout">
+        <property name="sizeConstraint">
+         <enum>QLayout::SetDefaultConstraint</enum>
+        </property>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <property name="sizeConstraint">
@@ -67,7 +70,7 @@
             </property>
             <property name="maximumSize">
              <size>
-              <width>90</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
             </property>
@@ -77,7 +80,14 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit_sample"/>
+           <widget class="QLineEdit" name="lineEdit_sample">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
           </item>
          </layout>
         </item>
@@ -99,7 +109,7 @@
             </property>
             <property name="maximumSize">
              <size>
-              <width>90</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
             </property>
@@ -110,6 +120,18 @@
           </item>
           <item>
            <widget class="QComboBox" name="comboBox_substrate">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="currentIndex">
              <number>0</number>
             </property>
@@ -150,7 +172,7 @@
             </property>
             <property name="maximumSize">
              <size>
-              <width>90</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
             </property>
@@ -193,7 +215,7 @@
             </property>
             <property name="maximumSize">
              <size>
-              <width>90</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
             </property>
@@ -331,7 +353,7 @@
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_7">
           <item>
-           <widget class="QLabel" name="label_6">
+           <widget class="QLabel" name="label_8">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
               <horstretch>0</horstretch>
@@ -344,6 +366,12 @@
               <height>0</height>
              </size>
             </property>
+            <property name="maximumSize">
+             <size>
+              <width>16777215</width>
+              <height>16777215</height>
+             </size>
+            </property>
             <property name="text">
              <string>bandpass filter</string>
             </property>
@@ -351,6 +379,12 @@
           </item>
           <item>
            <widget class="QComboBox" name="comboBox_bandpass_filter">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <item>
              <property name="text">
               <string>none</string>
@@ -448,7 +482,7 @@
             </property>
             <property name="maximumSize">
              <size>
-              <width>90</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
             </property>
@@ -460,7 +494,7 @@
           <item>
            <widget class="QPlainTextEdit" name="plainTextEdit_comments">
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+             <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
@@ -470,6 +504,9 @@
               <width>0</width>
               <height>0</height>
              </size>
+            </property>
+            <property name="sizeAdjustPolicy">
+             <enum>QAbstractScrollArea::AdjustToContentsOnFirstShow</enum>
             </property>
            </widget>
           </item>
@@ -493,7 +530,7 @@
             </property>
             <property name="maximumSize">
              <size>
-              <width>90</width>
+              <width>16777215</width>
               <height>16777215</height>
              </size>
             </property>
@@ -503,7 +540,14 @@
            </widget>
           </item>
           <item>
-           <widget class="QLineEdit" name="lineEdit_directory"/>
+           <widget class="QLineEdit" name="lineEdit_directory">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+           </widget>
           </item>
           <item>
            <widget class="QToolButton" name="toolButton_directory">

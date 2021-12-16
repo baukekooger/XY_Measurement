@@ -55,6 +55,7 @@ class XYSetup(QtWidgets.QMainWindow):
         self.statemachine.signal_return_setexperiment.connect(self.reset_setexperiment)
         self.statemachine.ect.connect(self.update_completion_time)
         self.statemachine.progress.connect(self.update_progress)
+        self.statemachine.measurement_completed.connect(self._messagebox_experiment_completed)
         self.statemachine.calibration_half_signal.connect(self.beamsplitter_calibration_half)
         self.statemachine.calibration_complete_signal.connect(self.beamsplitter_calibration_complete)
         self.statemachine.calibration_status.connect(self.update_status_calibration)
@@ -640,9 +641,10 @@ class XYSetup(QtWidgets.QMainWindow):
         """ Update the progressbar in the ui. """
         self.logger.info(f'setting progressbar to {progress}')
         self.ui.progressBar.setValue(progress)
-        if progress == 100 and not self.statemachine.calibration:
-            self._messagebox_experiment_completed()
+        # if progress == 100 and not self.statemachine.calibration:
+        #     self._messagebox_experiment_completed()
 
+    @pyqtSlot()
     def _messagebox_experiment_completed(self):
         """ Messagebox prompting the user the experiment is completed. """
         self.logger.info('messagebox experiment completed')

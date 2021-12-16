@@ -52,6 +52,7 @@ class StateMachine(QObject):
     signalstatechange = pyqtSignal(str)  # signal that emits the state
     progress = pyqtSignal(int)  # signal emitting the progress of the measurement
     ect = pyqtSignal(int)  # estimated completion time
+    measurement_completed = pyqtSignal()  # signal emitted when measurement routine completed.
     signal_return_setexperiment = pyqtSignal()  # signal for returning gui to set experiment state
     save_configuration = pyqtSignal()  # signal to start saving the current instrument config
     state = pyqtSignal(str)  # signal emitting current statemachine state
@@ -1183,7 +1184,7 @@ class StateMachine(QObject):
         return xy_pos, em_wl, spectrum, spectrum_t
 
     def _create_variables_excitation_emission(self, datagroup):
-        """ Create variable for the excitation emission data. """
+        """ Create variables for the excitation emission data. """
         self.logger.info('creating variables for excitation emission data')
         xy_pos = datagroup.createVariable('position', 'f8', 'xy_position', fill_value=np.nan)
         xy_pos.units = 'mm'
@@ -1219,7 +1220,7 @@ class StateMachine(QObject):
             return xy_pos, em_wl, spectrum, spectrum_t, ex_wl, t_power, power
 
     def _create_variables_decay(self, datagroup):
-        """ Create variable for the decay data. """
+        """ Create variables for the decay data. """
         self.logger.info('create variables for the decay data')
         xy_pos = datagroup.createVariable('position', 'f8', 'xy_position', fill_value=np.nan)
         xy_pos.units = 'mm'
@@ -1232,7 +1233,7 @@ class StateMachine(QObject):
         return xy_pos, ex_wl, pulses
 
     def _write_position(self):
-        """ Get the x and y position"""
+        """ Get the x and y position to write to file. """
         keep_trying = 5
         while keep_trying:
             failed = False
@@ -1325,12 +1326,13 @@ class StateMachine(QObject):
     def _measurement_completed(self):
         """ Measurement completed. Close datasets, reset instuments. """
         self.logger.info('measurement completed!')
-        if not self.calibration:
-            self.dataset.close()
-        else:
-            self.calibration_complete_signal.emit()
         self.is_done = True
         self.reset_instruments()
+        if not self.calibration:
+            self.dataset.close()
+            self.measurement_completed.emit()
+        else:
+            self.calibration_complete_signal.emit()
         self.finish_experiment()
         self.return_setexperiment()
 
