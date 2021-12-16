@@ -11,7 +11,7 @@ from PyQt5 import QtCore, QtGui, QtWidgets
 class Ui_Form(object):
     def setupUi(self, Form):
         Form.setObjectName("Form")
-        Form.resize(866, 367)
+        Form.resize(719, 367)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
@@ -58,7 +58,7 @@ class Ui_Form(object):
         self.label_integration_time_experiment.setObjectName("label_integration_time_experiment")
         self.horizontalLayout.addWidget(self.label_integration_time_experiment)
         self.spinBox_integration_time_experiment = QtWidgets.QSpinBox(self.groupBox_experiment)
-        self.spinBox_integration_time_experiment.setMinimum(30)
+        self.spinBox_integration_time_experiment.setMinimum(8)
         self.spinBox_integration_time_experiment.setMaximum(100000)
         self.spinBox_integration_time_experiment.setObjectName("spinBox_integration_time_experiment")
         self.horizontalLayout.addWidget(self.spinBox_integration_time_experiment)
@@ -139,7 +139,7 @@ class Ui_Form(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.spinBox_integration_time_alignment.sizePolicy().hasHeightForWidth())
         self.spinBox_integration_time_alignment.setSizePolicy(sizePolicy)
-        self.spinBox_integration_time_alignment.setMinimum(30)
+        self.spinBox_integration_time_alignment.setMinimum(8)
         self.spinBox_integration_time_alignment.setMaximum(100000)
         self.spinBox_integration_time_alignment.setObjectName("spinBox_integration_time_alignment")
         self.horizontalLayout_5.addWidget(self.spinBox_integration_time_alignment)
@@ -213,7 +213,7 @@ class Ui_Form(object):
         self.gridLayout.addWidget(self.stackedWidget, 0, 0, 1, 1)
 
         self.retranslateUi(Form)
-        self.stackedWidget.setCurrentIndex(1)
+        self.stackedWidget.setCurrentIndex(0)
         QtCore.QMetaObject.connectSlotsByName(Form)
 
     def retranslateUi(self, Form):

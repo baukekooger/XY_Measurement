@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>866</width>
+    <width>719</width>
     <height>367</height>
    </rect>
   </property>
@@ -29,7 +29,7 @@
       </sizepolicy>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="page_experiment">
       <property name="sizePolicy">
@@ -90,7 +90,7 @@
             <item>
              <widget class="QSpinBox" name="spinBox_integration_time_experiment">
               <property name="minimum">
-               <number>30</number>
+               <number>8</number>
               </property>
               <property name="maximum">
                <number>100000</number>
@@ -235,7 +235,7 @@
                </sizepolicy>
               </property>
               <property name="minimum">
-               <number>30</number>
+               <number>8</number>
               </property>
               <property name="maximum">
                <number>100000</number>
